@@ -1,0 +1,80 @@
+<p><a href="/">home</a></p>
+
+<h1><%== @net[:info]['NetName'] %></h1>
+
+<h2>Log</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Num</th>
+      <th>Call Sign</th>
+      <th>Name</th>
+      <th>Remarks</th>
+      <th>Time</th>
+      <th>Grid Square</th>
+      <th>Status</th>
+      <th>City</th>
+      <th>State</th>
+      <th>Country</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @net[:log].each do |entry| %>
+      <tr>
+        <td><%== entry[:num] %></td>
+        <td><%== entry[:call_sign] %></td>
+        <td><%== entry[:name] %></td>
+        <td><%== entry[:remarks] %></td>
+        <td><%== entry[:checkin_time].strftime('%Y-%m-%d %H:%M:%S') %></td>
+        <td><%== entry[:grid_square] %></td>
+        <td><%== entry[:status] %></td>
+        <td><%== entry[:city] %></td>
+        <td><%== entry[:state] %></td>
+        <td><%== entry[:country] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h2>Messages</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Call Sign</th>
+      <th>Message</th>
+      <th>Timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @net[:messages].sort_by { |m| m[:timestamp] }.each do |message| %>
+      <tr>
+        <td><%== message[:call_sign] %></td>
+        <td><%== message[:message] %></td>
+        <td><%== message[:timestamp].strftime('%Y-%m-%d %H:%M:%S') %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h2>Monitors</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Call Sign</th>
+      <th>Version</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @net[:monitors].sort_by { |m| m[:call_sign] }.each do |monitor| %>
+      <tr>
+        <td><%== monitor[:call_sign] %></td>
+        <td><%== monitor[:version] %></td>
+        <td><span class="<%== monitor[:status] %>"><%== monitor[:status] %></span></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
