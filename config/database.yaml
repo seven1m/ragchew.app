@@ -1,0 +1,11 @@
+development:
+  adapter: mysql2
+  database: netlogger
+  username: netlogger
+  password: netlogger
+
+production:
+  adapter: mysql2
+  database: netlogger
+  username: netlogger
+  password: netlogger
