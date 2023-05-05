@@ -22,10 +22,10 @@ class CreateTables < ActiveRecord::Migration[7.0]
 
     create_table :checkins do |t|
       t.references :net
-      t.string :num
+      t.integer :num
       t.string :call_sign
       t.string :name
-      t.string :first_name
+      t.string :nickname
       t.string :remarks
       t.string :qsl_info
       t.datetime :checked_in_at
@@ -38,6 +38,7 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.string :country
       t.string :status
       t.string :dscc
+      t.boolean :currently_operating, default: false, null: false
       t.timestamps
     end
 

@@ -12,7 +12,7 @@ class NetInfo
     @name = name
     @record = Tables::Net.find_by!(name:)
   rescue ActiveRecord::RecordNotFound
-    raise NotFoundError, "Net not found"
+    raise NotFoundError, "Net is closed"
   end
 
   def info
@@ -79,23 +79,23 @@ class NetInfo
   end
 
   def fetch
+    fetcher = Fetcher.new(@record.host)
+    # DeltaUpdateTime=2023-05-04%2001:54:25&IMSerial=1192458&LastExtDataSerial=570630
+
     begin
-      fetcher = Fetcher.new(@record.host)
-      # DeltaUpdateTime=2023-05-04%2001:54:25&IMSerial=1192458&LastExtDataSerial=570630
+      data = fetcher.get(
+        'GetUpdates3.php',
+        'ProtocolVersion' => '2.3',
+        'NetName' => CGI.escape(@record.name)
+      )
     rescue Fetcher::NotFoundError => e
-      raise NotFoundError, e.message
+      raise NotFoundError, "Net is closed (#{e.message})"
     end
 
-    data = fetcher.get(
-      'GetUpdates3.php',
-      'ProtocolVersion' => '2.3',
-      'NetName' => CGI.escape(@record.name)
-    )
-
-    checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, first_name|
+    checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, nickname|
       next if call_sign == 'future use 2'
       {
-        num:,
+        num: num.to_i,
         call_sign:,
         city:,
         state:,
@@ -109,9 +109,16 @@ class NetInfo
         zip:,
         status:,
         country:,
-        first_name:,
+        nickname:,
+        currently_operating: false,
       }
     end.compact
+
+    if data['NetLogger Start Data'].last[0] =~ /^`(\d+)/
+      if (active = checkins.detect { |c| c[:num] == $1.to_i })
+        active[:currently_operating] = true
+      end
+    end
 
     monitors = data['NetMonitors Start'].map do |call_sign_and_info, ip_address|
       call_sign, version, status = call_sign_and_info.split(' - ')
@@ -125,7 +132,7 @@ class NetInfo
 
     messages = data['IM Start'].map do |log_id, call_sign, _always_one, message, sent_at, ip_address|
       {
-        log_id:,
+        log_id: log_id.to_i,
         call_sign:,
         message:,
         sent_at: Time.parse(sent_at),

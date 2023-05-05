@@ -1,5 +1,19 @@
 <h1>NetLogger Web</h1>
 
+<%= erb :_timestamps %>
+
+<% if @user %>
+  <p>
+    <%= @user.call_sign %> |
+    <a href="/logout">logout</a>
+  </p>
+<% else %>
+  <p>
+    <a href="/login">login</a> |
+    <a href="/register">register</a>
+  </p>
+<% end %>
+
 <h2>Nets</h2>
 
 <table>
@@ -9,7 +23,7 @@
       <th>Frequency</th>
       <th>Mode</th>
       <th>Band</th>
-      <th>Start Time</th>
+      <th>Started At</th>
       <th>Subscribers</th>
       <th>Host</th>
     </tr>
@@ -21,12 +35,10 @@
         <td><%== net[:frequency] %></td>
         <td><%== net[:mode] %></td>
         <td><%== net[:band] %></td>
-        <td><%== net[:start_time] %></td>
+        <td><%== net[:started_at].strftime('%Y-%m-%d %H:%M UTC') %></td>
         <td><%== net[:subscribers] %></td>
         <td><%== net[:host] %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
-
-<p class="last-updated">Last updated <%= distance_of_time_in_words Time.now, @last_updated_at %> ago</p>

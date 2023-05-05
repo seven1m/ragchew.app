@@ -7,7 +7,6 @@ class Fetcher
 
   def get(endpoint, params)
     params_string = params.map { |k, v| "#{k}=#{v}" }.join('&')
-    p URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")
     html = Net::HTTP.get(URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}"))
     raise NotFoundError, $1 if html =~ /\*error - (.*?)\*/m
 

@@ -2,6 +2,8 @@
 
 <h1><%== @net.name %></h1>
 
+<%= erb :_timestamps %>
+
 <h2>Log</h2>
 
 <table>
@@ -21,12 +23,12 @@
   </thead>
   <tbody>
     <% @net.checkins.each do |entry| %>
-      <tr>
+      <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
         <td><%== entry[:num] %></td>
         <td><%== entry[:call_sign] %></td>
         <td><%== entry[:name] %></td>
         <td><%== entry[:remarks] %></td>
-        <td><%== entry[:checked_in_at].strftime('%Y-%m-%d %H:%M:%S') %></td>
+        <td><%== entry[:checked_in_at].strftime('%Y-%m-%d %H:%M:%S UTC') %></td>
         <td><%== entry[:grid_square] %></td>
         <td><%== entry[:status] %></td>
         <td><%== entry[:city] %></td>
@@ -50,9 +52,9 @@
   <tbody>
     <% @net.messages.order(:sent_at).each do |message| %>
       <tr>
-        <td><%== message[:call_sign] %></td>
+        <td class="nowrap"><%== message[:call_sign] %></td>
         <td><%== message[:message] %></td>
-        <td><%== message[:sent_at].strftime('%Y-%m-%d %H:%M:%S') %></td>
+        <td class="nowrap"><%== message[:sent_at].strftime('%Y-%m-%d %H:%M:%S UTC') %></td>
       </tr>
     <% end %>
   </tbody>
@@ -71,12 +73,10 @@
   <tbody>
     <% @net.monitors.order(:call_sign).each do |monitor| %>
       <tr>
-        <td><%== monitor[:call_sign] %></td>
-        <td><%== monitor[:version] %></td>
-        <td><span class="<%== monitor[:status] %>"><%== monitor[:status] %></span></td>
+        <td class="nowrap"><%== monitor[:call_sign] %></td>
+        <td class="nowrap"><%== monitor[:version] %></td>
+        <td class="nowrap"><span class="<%== monitor[:status] %>"><%== monitor[:status] %></span></td>
       </tr>
     <% end %>
   </tbody>
 </table>
-
-<p class="last-updated">Last updated <%= distance_of_time_in_words Time.now, @last_updated_at %> ago</p>
