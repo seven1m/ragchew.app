@@ -2,81 +2,95 @@
 
 <h1><%== @net.name %></h1>
 
+<p>
+  <%== @net.frequency %>
+  <%== @net.mode %>
+  <%== @net.band %>
+  started at <%== format_time(@net.started_at) %>
+  <%== @net.host %>
+</p>
+
 <%= erb :_timestamps %>
 
 <h2>Log</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Num</th>
-      <th>Call Sign</th>
-      <th>Name</th>
-      <th>Remarks</th>
-      <th>Time</th>
-      <th>Grid Square</th>
-      <th>Status</th>
-      <th>City</th>
-      <th>State</th>
-      <th>Country</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @net.checkins.each do |entry| %>
-      <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
-        <td><%== entry[:num] %></td>
-        <td><%== entry[:call_sign] %></td>
-        <td><%== entry[:name] %></td>
-        <td><%== entry[:remarks] %></td>
-        <td><%== entry[:checked_in_at].strftime('%Y-%m-%d %H:%M:%S UTC') %></td>
-        <td><%== entry[:grid_square] %></td>
-        <td><%== entry[:status] %></td>
-        <td><%== entry[:city] %></td>
-        <td><%== entry[:state] %></td>
-        <td><%== entry[:country] %></td>
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Num</th>
+        <th>Call Sign</th>
+        <th>Name</th>
+        <th>Remarks</th>
+        <th>Time</th>
+        <th>Grid Square</th>
+        <th>Status</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Country</th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% @net.checkins.each do |entry| %>
+        <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
+          <td><%== entry[:num] %></td>
+          <td><%== entry[:call_sign] %></td>
+          <td><%== entry[:name] %></td>
+          <td class="can-wrap"><%== entry[:remarks] %></td>
+          <td><%== format_time(entry[:checked_in_at]) %></td>
+          <td><%== entry[:grid_square] %></td>
+          <td><%== entry[:status] %></td>
+          <td><%== entry[:city] %></td>
+          <td><%== entry[:state] %></td>
+          <td><%== entry[:country] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
 
 <h2>Messages</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Call Sign</th>
-      <th>Message</th>
-      <th>Timestamp</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @net.messages.order(:sent_at).each do |message| %>
+<div class="table-wrapper">
+  <table>
+    <thead>
       <tr>
-        <td class="nowrap"><%== message[:call_sign] %></td>
-        <td><%== message[:message] %></td>
-        <td class="nowrap"><%== message[:sent_at].strftime('%Y-%m-%d %H:%M:%S UTC') %></td>
+        <th>Call Sign</th>
+        <th>Message</th>
+        <th>Timestamp</th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% @net.messages.order(:sent_at).each do |message| %>
+        <tr>
+          <td><%== message[:call_sign] %></td>
+          <td class="can-wrap"><%== message[:message] %></td>
+          <td><%== format_time(message[:sent_at]) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
 
 <h2>Monitors</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Call Sign</th>
-      <th>Version</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @net.monitors.order(:call_sign).each do |monitor| %>
+<div class="table-wrapper">
+  <table>
+    <thead>
       <tr>
-        <td class="nowrap"><%== monitor[:call_sign] %></td>
-        <td class="nowrap"><%== monitor[:version] %></td>
-        <td class="nowrap"><span class="<%== monitor[:status] %>"><%== monitor[:status] %></span></td>
+        <th>Call Sign</th>
+        <th>Version</th>
+        <th>Status</th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% @net.monitors.order(:call_sign).each do |monitor| %>
+        <tr>
+          <td><%== monitor[:call_sign] %></td>
+          <td><%== monitor[:version] %></td>
+          <td><span class="<%== monitor[:status] %>"><%== monitor[:status] %></span></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

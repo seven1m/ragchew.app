@@ -23,6 +23,14 @@ if development?
   end
 end
 
+helpers do
+  def format_time(ts)
+    return '' unless ts
+
+    ts.strftime('%Y-%m-%d %H:%M:%S UTC')
+  end
+end
+
 include DOTIW::Methods
 
 ENV['TZ'] = 'UTC'

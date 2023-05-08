@@ -15,9 +15,15 @@
       footer p { font-size: smaller; color: #999; }
       footer a, footer a:visited { color: #999; }
       tr.currently-operating td { background-color: #fcf; }
-      td.nowrap { white-space: nowrap; }
+      td { white-space: nowrap; }
+      td.can-wrap { white-space: normal; min-width: 150px; }
       .error { color: red; }
       input { padding: 3px; margin: 0 3px 3px 0; }
+      @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
+        .table-wrapper {
+          overflow-x: auto;
+        }
+      }
     </style>
   </head>
   <body>
