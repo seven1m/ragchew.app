@@ -4,7 +4,7 @@ class CreateUsers < ActiveRecord::Migration[7.0]
       t.string :call_sign, null: false
       t.string :first_name
       t.string :last_name
-      t.string :hashed_password, null: false
+      t.datetime :last_signed_in_at
       t.timestamps
 
       t.index :call_sign

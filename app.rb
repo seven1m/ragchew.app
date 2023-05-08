@@ -7,13 +7,13 @@ require 'erb'
 require 'net/http'
 require 'sinatra'
 require 'sinatra/reloader' if development?
-require 'scrypt'
 require 'time'
 require 'uri'
 require 'yaml'
 
 require_relative './lib/net_info'
 require_relative './lib/net_list'
+require_relative './lib/qrz'
 
 enable :sessions
 
@@ -33,7 +33,7 @@ ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if development?
 
 get '/' do
-  @user = session[:user] && Tables::User.find(session[:user])
+  @user = session[:user_id] && Tables::User.find(session[:user_id])
   service = NetList.new
   @nets = service.list
   @last_updated_at = @nets.sort_by { |n| n.updated_at }.last.updated_at
@@ -41,7 +41,7 @@ get '/' do
 end
 
 get '/net/:name' do
-  @user = session[:user] && Tables::User.find(session[:user])
+  @user = session[:user_id] && Tables::User.find(session[:user_id])
   unless @user
     redirect "/login?net=#{params[:name]}"
     return
@@ -56,55 +56,29 @@ rescue NetInfo::NotFoundError => e
   erb :missing, status: 404
 end
 
-get '/register' do
-  erb :register
-end
-
-post '/register' do
-  if Tables::User.find_by(call_sign: params[:call_sign])
-    erb "Already registered", status: 401
-    return
-  end
-
-  if params[:password] != params[:password_confirmation]
-    erb "Passwords do not match", status: 401
-    return
-  end
-
-  if params[:password].size < 8
-    erb "Passwords must be 8 or more characters", status: 401
-    return
-  end
-
-  @user = Tables::User.create!(
-    call_sign: params[:call_sign],
-    hashed_password: SCrypt::Password.create(params[:password])
-  )
-  session[:user] = @user.id
-  redirect '/'
-end
-
 get '/login' do
   erb :login
 end
 
 post '/login' do
-  @user = Tables::User.find_by(call_sign: params[:call_sign])
-  unless @user
-    erb "Not found", status: 404
-    return
-  end
+  qrz = Qrz.login(
+    username: params[:call_sign],
+    password: params[:password],
+  )
+  result = qrz.lookup(params[:call_sign])
 
-  if SCrypt::Password.new(@user.hashed_password) == params[:password]
-    session[:user] = @user.id
-  else
-    erb "Password incorrect", status: 401
-  end
+  @user = Tables::User.find_or_initialize_by(call_sign: result[:call_sign])
+  @user.update!(result)
+
+  session[:user_id] = @user.id
 
   redirect params[:net] ? "/net/#{params[:net]}" : '/'
+rescue Qrz::Error => e
+  @error = e.message
+  erb :login
 end
 
 get '/logout' do
-  session.delete(:user)
+  session.delete(:user_id)
   redirect '/'
 end

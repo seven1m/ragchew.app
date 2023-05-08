@@ -1,3 +1,9 @@
+<p>Please log in with your <a href="https://www.qrz.com/">QRZ.com</a> username and password:</p>
+
+<% if @error %>
+  <p class="error"><%== @error %></p>
+<% end %>
+
 <form action="/login" method="post">
   <% if params[:net] %>
     <input type="hidden" name="net" value="<%== CGI.escape(params[:net]) %>"/>

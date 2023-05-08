@@ -4,13 +4,12 @@
 
 <% if @user %>
   <p>
-    <%= @user.call_sign %> |
-    <a href="/logout">logout</a>
+    <%== @user.call_sign %> |
+    <a href="/logout">log out</a>
   </p>
 <% else %>
   <p>
-    <a href="/login">login</a> |
-    <a href="/register">register</a>
+    <a href="/login">log in</a>
   </p>
 <% end %>
 
