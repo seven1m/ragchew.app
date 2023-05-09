@@ -1,9 +1,11 @@
 require 'bundler/setup'
 require 'active_record'
+require 'erubis'
 require './lib/migrations/001_create_tables'
 require './lib/migrations/002_create_users'
 
-db_config = YAML.safe_load(File.read('config/database.yaml')) 
+template = Erubis::Eruby.new(File.read('config/database.yaml'))
+db_config = YAML.safe_load(template.result) 
 env = ENV['RACK_ENV'] || 'development'
 ActiveRecord::Base.establish_connection(db_config[env])
 
