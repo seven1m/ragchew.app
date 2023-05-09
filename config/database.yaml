@@ -5,5 +5,4 @@ development:
   password: netlogger
 
 production:
-  adapter: mysql2
-  url: <%= ENV['DATABASE_URL'] %>
+  url: <%= ENV['DATABASE_URL'].sub(/^mysql:/, 'mysql2:') %>
