@@ -1,6 +1,7 @@
 require 'bundler/setup'
 
 require 'active_record'
+require 'erubis'
 require 'dotiw'
 require 'cgi'
 require 'erb'
@@ -39,7 +40,8 @@ include DOTIW::Methods
 
 ENV['TZ'] = 'UTC'
 
-db_config = YAML.safe_load(File.read('config/database.yaml')) 
+template = Erubis::Eruby.new(File.read('config/database.yaml'))
+db_config = YAML.safe_load(template.result) 
 env = development? ? :development : :production
 ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if development?
