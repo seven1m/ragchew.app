@@ -3,7 +3,7 @@ require 'net/http'
 require 'uri'
 
 class Qrz
-  AGENT = "netlogger-api.org" # TODO: decide url
+  AGENT = "netlogger.71m.us"
   BASE_URL = "https://xmldata.qrz.com/xml/current/"
 
   class Error < StandardError; end
