@@ -4,6 +4,7 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.references :server
       t.string :name
       t.string :alt_name
+      t.string :image, limit: 1000
       t.string :frequency
       t.string :mode
       t.string :net_control
@@ -80,6 +81,16 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.index :name
       t.index :is_public
     end
+
+    create_table :stations do |t|
+      t.string :call_sign, null: false
+      t.string :image, limit: 1000
+      t.datetime :expires_at
+      t.timestamps
+
+      t.index :call_sign
+      t.index :expires_at
+    end
   end
 
   def down
@@ -88,5 +99,6 @@ class CreateTables < ActiveRecord::Migration[7.0]
     drop_table :monitors
     drop_table :messages
     drop_table :servers
+    drop_table :stations
   end
 end

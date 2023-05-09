@@ -62,12 +62,52 @@ get '/net/:name' do
 
   service = NetInfo.new(CGI.unescape(params[:name]))
   @net = service.info
+  @messages = @net.messages.order(:sent_at)
   @last_updated_at = @net.updated_at
   @update_interval = @net.update_interval_in_seconds
   erb :net
 rescue NetInfo::NotFoundError => e
   @message = e.message
   erb :missing, status: 404
+end
+
+get '/station/:call_sign/image' do
+  station = Tables::Station.find_by(call_sign: params[:call_sign])
+
+  expires Tables::Station::EXPIRATION_IN_SECONDS, :public, :must_revalidate
+
+  if station
+    if station.image
+      redirect station.image
+    else
+      erb 'not found', status: 401
+    end
+    return
+  end
+
+  unless session[:qrz_session]
+    erb 'there was an error; please log out and try again', status: 401
+    return
+  end
+
+  qrz = Qrz.new(session: session[:qrz_session])
+  begin
+    unless (image = qrz.lookup(params[:call_sign])[:image])
+      erb 'not found', status: 401
+      return
+    end
+  rescue Qrz::NotFound
+    image = nil
+    erb 'not found', status: 401
+    return
+  end
+
+  Tables::Station.create!(
+    call_sign: params[:call_sign],
+    image:
+  )
+
+  redirect image
 end
 
 get '/login' do
@@ -85,6 +125,7 @@ post '/login' do
   @user.update!(result)
 
   session[:user_id] = @user.id
+  session[:qrz_session] = qrz.session
 
   redirect params[:net] ? "/net/#{params[:net]}" : '/'
 rescue Qrz::Error => e
@@ -95,4 +136,14 @@ end
 get '/logout' do
   session.delete(:user_id)
   redirect '/'
+end
+
+def serve(url)
+  uri = URI(url)
+  req = Net::HTTP::Get.new(uri)
+  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
+    http.request(req)
+  end
+  content_type response.content_type
+  raise response.body.inspect
 end

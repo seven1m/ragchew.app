@@ -1,0 +1,11 @@
+module Tables
+  class Station < ActiveRecord::Base
+    EXPIRATION_IN_SECONDS = 24 * 60 * 60
+
+    before_update :set_expires_at
+
+    def set_expires_at
+      self.expires_at = Time.now + EXPIRATION_IN_SECONDS
+    end
+  end
+end

@@ -1,17 +1,18 @@
+<div class="user-nav">
+  <% if @user %>
+    <% if @user.image %>
+      <img src="<%== @user.image %>" style="height:40px"/><br/>
+    <% end %>
+    <a href="https://www.qrz.com/db/<%== url_escape(@user.call_sign) %>"><%== @user.call_sign %></a> |
+    <a href="/logout">log out</a>
+  <% else %>
+    <a href="/login">log in</a>
+  <% end %>
+</div>
+
 <h1>NetLogger Web</h1>
 
 <%= erb :_timestamps %>
-
-<% if @user %>
-  <p>
-    <%== @user.call_sign %> |
-    <a href="/logout">log out</a>
-  </p>
-<% else %>
-  <p>
-    <a href="/login">log in</a>
-  </p>
-<% end %>
 
 <h2>Nets</h2>
 
