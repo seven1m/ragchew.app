@@ -29,6 +29,10 @@ helpers do
 
     ts.strftime('%Y-%m-%d %H:%M:%S UTC')
   end
+
+  def url_escape(s)
+    CGI.escape(s)
+  end
 end
 
 include DOTIW::Methods
@@ -41,15 +45,16 @@ ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if development?
 
 get '/' do
-  @user = session[:user_id] && Tables::User.find(session[:user_id])
+  @user = session[:user_id] && Tables::User.find_by(id: session[:user_id])
   service = NetList.new
   @nets = service.list
   @last_updated_at = @nets.sort_by { |n| n.updated_at }.last.updated_at
+  @update_interval = 30
   erb :index
 end
 
 get '/net/:name' do
-  @user = session[:user_id] && Tables::User.find(session[:user_id])
+  @user = session[:user_id] && Tables::User.find_by(id: session[:user_id])
   unless @user
     redirect "/login?net=#{params[:name]}"
     return
@@ -58,6 +63,7 @@ get '/net/:name' do
   service = NetInfo.new(CGI.unescape(params[:name]))
   @net = service.info
   @last_updated_at = @net.updated_at
+  @update_interval = @net.update_interval_in_seconds
   erb :net
 rescue NetInfo::NotFoundError => e
   @message = e.message

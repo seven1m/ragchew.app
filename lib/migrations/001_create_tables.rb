@@ -1,6 +1,7 @@
 class CreateTables < ActiveRecord::Migration[7.0]
   def up
     create_table :nets do |t|
+      t.references :server
       t.string :name
       t.string :alt_name
       t.string :frequency
@@ -60,6 +61,25 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.string :ip_address
       t.timestamps
     end
+
+    create_table :servers do |t|
+      t.string :name, null: false
+      t.string :host, null: false
+      t.string :state
+      t.boolean :is_public
+      t.datetime :server_created_at
+      t.boolean :delta_updates
+      t.boolean :ext_data
+      t.boolean :token_support
+      t.integer :min_aim_interval
+      t.integer :default_aim_interval
+      t.integer :timestamp_utc_offset
+      t.timestamps
+
+      t.index :host
+      t.index :name
+      t.index :is_public
+    end
   end
 
   def down
@@ -67,5 +87,6 @@ class CreateTables < ActiveRecord::Migration[7.0]
     drop_table :checkins
     drop_table :monitors
     drop_table :messages
+    drop_table :servers
   end
 end

@@ -6,7 +6,7 @@
 
 <form action="/login" method="post">
   <% if params[:net] %>
-    <input type="hidden" name="net" value="<%== CGI.escape(params[:net]) %>"/>
+    <input type="hidden" name="net" value="<%== url_escape(params[:net]) %>"/>
   <% end %>
   <input name="call_sign" placeholder="call sign"/><br>
   <input type="password" name="password" placeholder="password"/><br/>

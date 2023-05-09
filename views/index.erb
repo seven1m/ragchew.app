@@ -31,7 +31,7 @@
     <tbody>
       <% @nets.each do |net| %>
         <tr>
-          <td><a href="/net/<%== CGI.escape(net[:name]) %>"><%== net[:name] %></a></td>
+          <td><a href="/net/<%== url_escape(net[:name]) %>"><%== net[:name] %></a></td>
           <td><%== net[:frequency] %></td>
           <td><%== net[:mode] %></td>
           <td><%== net[:band] %></td>

@@ -5,9 +5,10 @@ class Fetcher
     @host = host
   end
 
-  def get(endpoint, params)
+  def get(endpoint, params = {})
     params_string = params.map { |k, v| "#{k}=#{v}" }.join('&')
-    html = Net::HTTP.get(URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}"))
+    uri = URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")
+    html = Net::HTTP.get(uri)
     raise NotFoundError, $1 if html =~ /\*error - (.*?)\*/m
 
     {}.tap do |result|

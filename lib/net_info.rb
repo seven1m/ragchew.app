@@ -4,8 +4,6 @@ require_relative './fetcher'
 require_relative './tables'
 
 class NetInfo
-  CACHE_LENGTH_IN_SECONDS = 30
-
   class NotFoundError < StandardError; end
 
   def initialize(name)
@@ -16,7 +14,7 @@ class NetInfo
   end
 
   def info
-    if !@record.fully_updated_at || @record.fully_updated_at < Time.now - CACHE_LENGTH_IN_SECONDS
+    if !@record.fully_updated_at || @record.fully_updated_at < Time.now - @record.update_interval_in_seconds
       update_cache
     end
 
@@ -26,26 +24,29 @@ class NetInfo
   private
 
   def update_cache
-    data = fetch
+    Tables::Net.transaction do
+      data = fetch
 
-    update_checkins(data[:checkins])
-    update_monitors(data[:monitors])
-    update_messages(data[:messages])
+      update_checkins(data[:checkins], currently_operating: data[:currently_operating])
+      update_monitors(data[:monitors])
+      update_messages(data[:messages])
 
-    # do this last
-    update_net_info(
-      data[:info].merge(
-        partially_updated_at: Time.now,
-        fully_updated_at: Time.now
-      )
-    )
+      # do this last
+      update_net_info(data[:info])
+    end
   end
 
   def update_net_info(info)
-    @record.update!(info.merge(updated_at: Time.now))
+    @record.fully_updated_at = Time.now
+    @record.update!(info)
   end
 
-  def update_checkins(checkins)
+  def update_checkins(checkins, currently_operating:)
+    if currently_operating
+      @record.checkins.update_all(currently_operating: false)
+      @record.checkins.where(num: currently_operating).update_all(currently_operating: true)
+    end
+
     records = @record.checkins.all
     checkins.each do |checkin|
       if (existing = records.detect { |r| r.num == checkin[:num] })
@@ -79,15 +80,31 @@ class NetInfo
   end
 
   def fetch
+    log_last_updated_at = @record.checkins.maximum(:checked_in_at)
+    im_last_serial = @record.messages.maximum(:log_id)
+
     fetcher = Fetcher.new(@record.host)
-    # DeltaUpdateTime=2023-05-04%2001:54:25&IMSerial=1192458&LastExtDataSerial=570630
+    # LastExtDataSerial=570630
+
+    params = {
+      'ProtocolVersion' => '2.3',
+      'NetName' => CGI.escape(@record.name)
+    }
+
+    if (log_last_updated_at)
+      params.merge!(
+        'DeltaUpdateTime' => log_last_updated_at.strftime('%Y-%m-%d %H:%M:%S')
+      )
+    end
+
+    if (im_last_serial)
+      params.merge!(
+        'IMSerial' => im_last_serial
+      )
+    end
 
     begin
-      data = fetcher.get(
-        'GetUpdates3.php',
-        'ProtocolVersion' => '2.3',
-        'NetName' => CGI.escape(@record.name)
-      )
+      data = fetcher.get('GetUpdates3.php', params)
     rescue Fetcher::NotFoundError => e
       raise NotFoundError, "Net is closed (#{e.message})"
     end
@@ -110,14 +127,11 @@ class NetInfo
         status:,
         country:,
         nickname:,
-        currently_operating: false,
       }
     end.compact
 
     if data['NetLogger Start Data'].last[0] =~ /^`(\d+)/
-      if (active = checkins.detect { |c| c[:num] == $1.to_i })
-        active[:currently_operating] = true
-      end
+      currently_operating = $1.to_i
     end
 
     monitors = data['NetMonitors Start'].map do |call_sign_and_info, ip_address|
@@ -160,7 +174,8 @@ class NetInfo
       checkins:,
       monitors:,
       messages:,
-      info:
+      info:,
+      currently_operating:
     }
   end
 end

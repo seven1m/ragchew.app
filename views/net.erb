@@ -34,7 +34,7 @@
       <% @net.checkins.each do |entry| %>
         <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
           <td><%== entry[:num] %></td>
-          <td><%== entry[:call_sign] %></td>
+          <td><a href="https://www.qrz.com/db/<%== url_escape(entry[:call_sign]) %>"><%== entry[:call_sign] %></a></td>
           <td><%== entry[:name] %></td>
           <td class="can-wrap"><%== entry[:remarks] %></td>
           <td><%== format_time(entry[:checked_in_at]) %></td>

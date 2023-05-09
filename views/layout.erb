@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/typesafe.css">
+    <script src="/main.js"></script>
     <style>
       span.Offline { color: #ccc; }
       em.highlight { font-style: normal; background-color: #ffc; }
@@ -25,6 +26,17 @@
         }
       }
     </style>
+    <% if @last_updated_at %>
+      <script>
+        const secondsToWaitBetweenUpdates = <%= @update_interval || 20 %> + 1
+        setTimeout(() => {
+          updatePage()
+          const interval = setInterval(updatePage, secondsToWaitBetweenUpdates * 1000)
+          const twoHours = 60 * 60 * 2 * 1000
+          setTimeout(() => { clearInterval(interval) }, twoHours)
+        }, (secondsToWaitBetweenUpdates - <%= Time.now - @last_updated_at %>) * 1000)
+      </script>
+    <% end %>
   </head>
   <body>
     <%= yield %>
