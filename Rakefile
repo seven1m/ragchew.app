@@ -33,11 +33,21 @@ task :runner do
   eval(ENV.fetch('CODE'))
 end
 
-task :cleanup do
-  Tables::User
-    .where.not(monitoring_net: nil)
-    .where('monitoring_net_last_refreshed_at < ?', 5 * 60)
-    .each do |user|
+MAX_IDLE_MONITORING_IN_SECONDS = 120 # 5 * 60 # 5 minutes
 
+task :cleanup do
+  scope = Tables::User
+    .is_monitoring
+    .where('monitoring_net_last_refreshed_at < ?', Time.now - MAX_IDLE_MONITORING_IN_SECONDS)
+  count = scope.count
+  scope.find_each do |user|
+      if (net = user.monitoring_net)
+        NetInfo.new(id: net.id).stop_monitoring!(user:)
+      end
+      user.update!(
+        monitoring_net: nil,
+        monitoring_net_last_refreshed_at: nil,
+      )
     end
+  puts "#{count} user(s) stopped monitoring"
 end

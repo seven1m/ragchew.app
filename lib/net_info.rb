@@ -4,6 +4,8 @@ require_relative './fetcher'
 require_relative './tables'
 
 class NetInfo
+  NET_LOGGER_FAKE_VERSION = 'v3.1.7L'
+
   class NotFoundError < StandardError; end
 
   def initialize(name: nil, id: nil)
@@ -256,12 +258,12 @@ class NetInfo
   def name_for_monitoring(user)
     name = name_for_chat(user)
     # NOTE: must use a real version here or UnsubscribeFromNet won't work :-(
-    name + ' - v3.1.7L'
+    name + " - #{NET_LOGGER_FAKE_VERSION}"
   end
 
   def name_for_chat(user)
     name = user.call_sign
     name += '-' + user.first_name unless user.first_name.to_s.strip.empty?
-    name
+    name.upcase
   end
 end
