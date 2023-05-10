@@ -33,7 +33,7 @@ task :runner do
   eval(ENV.fetch('CODE'))
 end
 
-MAX_IDLE_MONITORING_IN_SECONDS = 120 # 5 * 60 # 5 minutes
+MAX_IDLE_MONITORING_IN_SECONDS = 5 * 60 # 5 minutes
 
 task :cleanup do
   scope = Tables::User
