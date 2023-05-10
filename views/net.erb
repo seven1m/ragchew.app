@@ -35,9 +35,13 @@
       <% @net.checkins.each do |entry| %>
         <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
           <td><%== entry[:num] %></td>
-          <td>
+          <td style="height:64px">
             <a href="/station/<%== url_escape entry[:call_sign] %>/image" style="text-decoration:none">
-              <img src="/station/<%== url_escape entry[:call_sign] %>/image" style="max-height:40px;max-width:40px" onerror="this.parentNode.removeChild(this)"/>
+              <img
+                src="/station/<%== url_escape entry[:call_sign] %>/image"
+                style="max-height:40px;max-width:40px"
+                onerror="this.parentNode.removeChild(this)"
+              />
             </a>
           </td>
           <td>
