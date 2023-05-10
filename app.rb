@@ -1,20 +1,9 @@
 require 'bundler/setup'
 
-require 'active_record'
-require 'erubis'
-require 'dotiw'
-require 'cgi'
-require 'erb'
-require 'net/http'
 require 'sinatra'
 require 'sinatra/reloader' if development?
-require 'time'
-require 'uri'
-require 'yaml'
 
-require_relative './lib/net_info'
-require_relative './lib/net_list'
-require_relative './lib/qrz'
+require_relative './boot'
 
 enable :sessions
 set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
@@ -34,6 +23,10 @@ helpers do
 
   def url_escape(s)
     CGI.escape(s)
+  end
+
+  def development?
+    ENV['RACK_ENV'] == 'development'
   end
 end
 

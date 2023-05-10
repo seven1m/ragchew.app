@@ -1,0 +1,17 @@
+require 'bundler/setup'
+
+require 'active_record'
+require 'erubis'
+require 'dotiw'
+require 'cgi'
+require 'erb'
+require 'net/http'
+require 'time'
+require 'uri'
+require 'yaml'
+
+require_relative './lib/fetcher'
+require_relative './lib/net_info'
+require_relative './lib/net_list'
+require_relative './lib/qrz'
+require_relative './lib/tables'
