@@ -51,7 +51,7 @@ get '/' do
   @user = session[:user_id] && Tables::User.find_by(id: session[:user_id])
   service = NetList.new
   @nets = service.list
-  @last_updated_at = @nets.sort_by { |n| n.updated_at }.last.updated_at
+  @last_updated_at = Tables::Server.maximum(:net_list_fetched_at)
   @update_interval = 30
   erb :index
 end

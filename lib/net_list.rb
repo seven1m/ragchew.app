@@ -70,7 +70,7 @@ class NetList
   end
 
   def update_net_cache
-    last_updated = Tables::Net.maximum(:partially_updated_at)
+    last_updated = Tables::Server.maximum(:net_list_fetched_at)
     return if last_updated && last_updated > Time.now - CACHE_LENGTH_IN_SECONDS
 
     data = fetch
@@ -89,7 +89,9 @@ class NetList
     cached.values.each(&:destroy)
 
     # update all the timestamps at once
-    Tables::Net.update_all(partially_updated_at: Time.now)
+    now = Time.now
+    Tables::Net.update_all(partially_updated_at: now)
+    Tables::Server.update_all(net_list_fetched_at: now)
   end
 
   def fetch

@@ -75,6 +75,7 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.integer :min_aim_interval
       t.integer :default_aim_interval
       t.integer :timestamp_utc_offset
+      t.datetime :net_list_fetched_at
       t.timestamps
 
       t.index :host

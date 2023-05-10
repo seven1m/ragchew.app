@@ -3,7 +3,7 @@ require 'net/http'
 require 'uri'
 
 class Qrz
-  AGENT = "netlogger.71m.us"
+  AGENT = "https://ragchew.app"
   BASE_URL = "https://xmldata.qrz.com/xml/current/"
 
   class Error < StandardError; end
