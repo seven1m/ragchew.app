@@ -1,0 +1,8 @@
+{
+  "cron": [
+    {
+      "command": "bundle exec rake cleanup",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
