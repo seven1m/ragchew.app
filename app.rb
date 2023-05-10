@@ -143,7 +143,9 @@ get '/admin/stats' do
     return
   end
 
-  @user_count = Tables::User.count
+  @user_count_total = Tables::User.count
+  @user_count_last_24_hours = Tables::User.where('last_signed_in_at > ?', Time.now - (24 * 60 * 60)).count
+  @user_count_last_1_hour = Tables::User.where('last_signed_in_at > ?', Time.now - (1 * 60 * 60)).count
   erb :admin_stats
 end
 
