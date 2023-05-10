@@ -1,0 +1,11 @@
+<div class="user-nav">
+  <% if @user %>
+    <% if @user.image %>
+      <img src="<%== @user.image %>" style="height:40px"/><br/>
+    <% end %>
+    <a href="https://www.qrz.com/db/<%== url_escape(@user.call_sign) %>"><%== @user.call_sign %></a> |
+    <a href="/logout">log out</a>
+  <% else %>
+    <a href="/login">log in</a>
+  <% end %>
+</div>

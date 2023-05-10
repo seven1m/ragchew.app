@@ -8,6 +8,8 @@ require_relative './boot'
 enable :sessions
 set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
 
+set :static_cache_control, [:public, max_age: 60]
+
 if development?
   Dir['./lib/**/*.rb'].each do |path|
     also_reload(path)
@@ -56,11 +58,18 @@ get '/net/:name' do
     return
   end
 
-  service = NetInfo.new(CGI.unescape(params[:name]))
-  @net = service.info
-  @messages = @net.messages.order(:sent_at)
+  service = NetInfo.new(name: CGI.unescape(params[:name]))
+  @net = service.net
+  @checkins = @net.checkins.order(:num).to_a
+  @messages = @net.messages.order(:sent_at).to_a
+  @monitors = @net.monitors.order(:call_sign).to_a
   @last_updated_at = @net.updated_at
   @update_interval = @net.update_interval_in_seconds
+
+  if @user.monitoring_net == @net
+    @user.update!(monitoring_net_last_refreshed_at: Time.now)
+  end
+
   erb :net
 rescue NetInfo::NotFoundError => e
   @message = e.message
@@ -149,14 +158,76 @@ get '/admin/stats' do
   erb :admin_stats
 end
 
-def get_user
-  if session[:user_id] && (user = Tables::User.find_by(id: session[:user_id]))
-    now = Time.now
-    one_hour = 60 * 60
-    if !user.last_signed_in_at || now - user.last_signed_in_at > one_hour
-      user.last_signed_in_at = now
-      user.save!
-    end
-    user
+post '/monitor/:net_id' do
+  @user = get_user
+  unless @user
+    redirect '/'
+    return
   end
+
+  @net_info = NetInfo.new(id: params[:net_id])
+  @net_info.monitor!(user: @user)
+
+  @net = @net_info.net
+
+  @user.update!(monitoring_net: @net)
+
+  redirect "/net/#{url_escape @net.name}#messages"
+end
+
+post '/unmonitor/:net_id' do
+  @user = get_user
+  unless @user
+    redirect '/'
+    return
+  end
+
+  @net_info = NetInfo.new(id: params[:net_id])
+  @net_info.stop_monitoring!(user: @user)
+
+  @net = @net_info.net
+
+  @user.update!(monitoring_net: nil)
+
+  redirect "/net/#{url_escape @net.name}#messages"
+end
+
+post '/message/:net_id' do
+  @user = get_user
+  unless @user
+    redirect '/'
+    return
+  end
+
+  if params[:message].to_s.strip.empty?
+    status 400
+    return 'no message sent'
+  end
+
+  @net_info = NetInfo.new(id: params[:net_id])
+  @net_info.send_message!(user: @user, message: params[:message])
+
+  @net = @net_info.net_without_cache_update
+
+  session[:message_sent] = { net_id: @net.id, count_before: @net.messages.count, message: params[:message] }
+
+  redirect "/net/#{url_escape @net.name}"
+end
+
+def get_user
+  if !session[:user_id] || !(user = Tables::User.find_by(id: session[:user_id]))
+    return
+  end
+
+  # seems that QRZ sessions don't last very long :-(
+  now = Time.now
+  login_expiration_in_seconds = 4 * 60 * 60
+  if user.last_signed_in_at && now - user.last_signed_in_at > login_expiration_in_seconds
+    session.delete(:user_id)
+    session.delete(:qrz_session)
+    redirect '/'
+    return
+  end
+
+  user
 end

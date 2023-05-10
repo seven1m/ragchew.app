@@ -6,19 +6,94 @@ require_relative './tables'
 class NetInfo
   class NotFoundError < StandardError; end
 
-  def initialize(name)
-    @name = name
-    @record = Tables::Net.find_by!(name:)
+  def initialize(name: nil, id: nil)
+    if id
+      @record = Tables::Net.find_by!(id:)
+    elsif name
+      @record = Tables::Net.find_by!(name:)
+    else
+      raise 'must supply either id or name to NetInfo.new'
+    end
   rescue ActiveRecord::RecordNotFound
     raise NotFoundError, "Net is closed"
   end
 
-  def info
+  def net
     if !@record.fully_updated_at || @record.fully_updated_at < Time.now - @record.update_interval_in_seconds
       update_cache
     end
 
     @record
+  end
+
+  def net_without_cache_update
+    @record
+  end
+
+  def monitor!(user:)
+    # 2023-05-09 17:40:45 GET http://www.netlogger.org/cgi-bin/NetLogger/SubscribeToNet.php?ProtocolVersion=2.3&NetName=Daily%20Check%20in%20Net&Callsign=KI5ZDF-TIM%20MORGAN%20-%20v3.1.7L&IMSerial=0&LastExtDataSerial=0                                                                                                                                                     
+    #                        ← 200 OK text/html 2.15k 150ms
+    #                             Request                                                          Response                                                          Detail
+    #Host:          www.netlogger.org                                                                                                                                                                 
+    #Accept:        www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript                                                     
+    #Content-Type:  application/x-www-form-urlencoded                                                                                                                                                 
+    #Query                                                                                                                                                                                      [m:auto]
+    #ProtocolVersion:   2.3
+    #NetName:           Daily Check in Net
+    #Callsign:          KI5ZDF-TIM MORGAN - v3.1.7L
+    #IMSerial:          0
+    #LastExtDataSerial: 0
+
+    fetcher = Fetcher.new(@record.host)
+    fetcher.get(
+      'SubscribeToNet.php',
+      'ProtocolVersion' => '2.3',
+      'NetName' => CGI.escapeURIComponent(@record.name),
+      'Callsign' => CGI.escapeURIComponent(name_for_monitoring(user)),
+      'IMSerial' => '0',
+      'LastExtDataSerial' => '0',
+    )
+  end
+
+  def stop_monitoring!(user:)
+    # 2023-05-09 17:41:58 GET http://www.netlogger.org/cgi-bin/NetLogger/UnsubscribeFromNet.php?&Callsign=KI5ZDF-TIM%20MORGAN%20-%20v3.1.7L&NetName=Daily%20Check%20in%20Net                           
+    #                        ← 200 OK text/html 176b 143ms
+    #                             Request                                                          Response                                                          Detail
+    #Host:          www.netlogger.org                                                                                                                                                                 
+    #Accept:        www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript                                                     
+    #Content-Type:  application/x-www-form-urlencoded                                                                                                                                                 
+    #Query                                                                                                                                                                                      [m:auto]
+    #Callsign: KI5ZDF-TIM MORGAN - v3.1.7L
+    #NetName:  Daily Check in Net
+
+    fetcher = Fetcher.new(@record.host)
+    fetcher.get(
+      'UnsubscribeFromNet.php',
+      'Callsign' => CGI.escapeURIComponent(name_for_monitoring(user)),
+      'NetName' => CGI.escapeURIComponent(@record.name),
+    )
+  end
+
+  def send_message!(user:, message:)
+    # 2023-05-09 17:24:31 POST http://www.netlogger.org/cgi-bin/NetLogger/SendInstantMessage.php                                                                                                       
+    #                         ← 200 OK text/html 176b 206ms
+    #                             Request                                                          Response                                                          Detail
+    #Host:            www.netlogger.org                                                                                                                                                               
+    #Accept:          www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript                                                   
+    #Content-Type:    application/x-www-form-urlencoded                                                                                                                                               
+    #Content-Length:  130                                                                                                                                                                             
+    #URLEncoded form                                                                                                                                                                            [m:auto]
+    #NetName:      Test net JUST TESTING
+    #Callsign:     KI5ZDF-TIM MORGAN
+    #IsNetControl: X
+    #Message:      hello just testing https://ragchew.app
+    fetcher = Fetcher.new(@record.host)
+    fetcher.post(
+      'SendInstantMessage.php',
+      'NetName' => @record.name,
+      'Callsign' => name_for_chat(user),
+      'Message' => message,
+    )
   end
 
   private
@@ -176,5 +251,17 @@ class NetInfo
       info:,
       currently_operating:
     }
+  end
+
+  def name_for_monitoring(user)
+    name = name_for_chat(user)
+    # NOTE: must use a real version here or UnsubscribeFromNet won't work :-(
+    name + ' - v3.1.7L'
+  end
+
+  def name_for_chat(user)
+    name = user.call_sign
+    name += '-' + user.first_name unless user.first_name.to_s.strip.empty?
+    name
   end
 end

@@ -9,6 +9,7 @@ class Qrz
   class Error < StandardError; end
   class NotFound < Error; end
   class WrongUsernamePassword < Error; end
+  class SessionTimeout < Error; end
 
   def initialize(session:)
     @session = session
@@ -20,8 +21,11 @@ class Qrz
     result = self.class.call(s: @session, callsign: call_sign)
     if result =~ /<Error>(.*?)<\/Error>/
       message = $1.strip
-      if message =~ /^not found/i
+      case message
+      when /^not found/i
         raise NotFound, message
+      when /session timeout/i
+        raise SessionTimeout, message
       else
         raise Error, message
       end

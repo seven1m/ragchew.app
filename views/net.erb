@@ -1,3 +1,5 @@
+<%= erb :_user %>
+
 <p><a href="/">home</a></p>
 
 <h1><%== @net.name %></h1>
@@ -14,80 +16,112 @@
 
 <h2>Log</h2>
 
-<div class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th>Num</th>
-        <th>Image</th>
-        <th>Call Sign</th>
-        <th>Name</th>
-        <th>Remarks</th>
-        <th>Time</th>
-        <th>Grid Square</th>
-        <th>Status</th>
-        <th>City</th>
-        <th>State</th>
-        <th>Country</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @net.checkins.each do |entry| %>
-        <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
-          <td><%== entry[:num] %></td>
-          <td style="height:64px">
-            <a href="/station/<%== url_escape entry[:call_sign] %>/image" style="text-decoration:none">
-              <img
-                src="/station/<%== url_escape entry[:call_sign] %>/image"
-                style="max-height:40px;max-width:40px"
-                onerror="this.parentNode.removeChild(this)"
-              />
-            </a>
-          </td>
-          <td>
-            <a href="https://www.qrz.com/db/<%== url_escape(entry[:call_sign]) %>">
-              <%== entry[:call_sign] %>
-            </a>
-          </td>
-          <td><%== entry[:name] %></td>
-          <td class="can-wrap"><%== entry[:remarks] %></td>
-          <td><%== format_time(entry[:checked_in_at]) %></td>
-          <td><%== entry[:grid_square] %></td>
-          <td><%== entry[:status] %></td>
-          <td><%== entry[:city] %></td>
-          <td><%== entry[:state] %></td>
-          <td><%== entry[:country] %></td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
-
-<h2>Messages</h2>
-
-<% if @messages.any? %>
+<% if @checkins.any? %>
   <div class="table-wrapper">
     <table>
       <thead>
         <tr>
+          <th>Num</th>
+          <th>Image</th>
           <th>Call Sign</th>
-          <th>Message</th>
-          <th>Timestamp</th>
+          <th>Name</th>
+          <th>Remarks</th>
+          <th>Time</th>
+          <th>Grid Square</th>
+          <th>Status</th>
+          <th>City</th>
+          <th>State</th>
+          <th>Country</th>
         </tr>
       </thead>
       <tbody>
-        <% @messages.each do |message| %>
-          <tr>
-            <td><%== message[:call_sign] %></td>
-            <td class="can-wrap"><%== message[:message] %></td>
-            <td><%== format_time(message[:sent_at]) %></td>
+        <% @net.checkins.each do |entry| %>
+          <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
+            <td><%== entry[:num] %></td>
+            <td style="height:64px">
+              <a href="/station/<%== url_escape entry[:call_sign] %>/image" style="text-decoration:none">
+                <img
+                  src="/station/<%== url_escape entry[:call_sign] %>/image"
+                  style="max-height:40px;max-width:40px"
+                  onerror="this.parentNode.removeChild(this)"
+                />
+              </a>
+            </td>
+            <td>
+              <a href="https://www.qrz.com/db/<%== url_escape(entry[:call_sign]) %>">
+                <%== entry[:call_sign] %>
+              </a>
+            </td>
+            <td><%== entry[:name] %></td>
+            <td class="can-wrap"><%== entry[:remarks] %></td>
+            <td><%== format_time(entry[:checked_in_at]) %></td>
+            <td><%== entry[:grid_square] %></td>
+            <td><%== entry[:status] %></td>
+            <td><%== entry[:city] %></td>
+            <td><%== entry[:state] %></td>
+            <td><%== entry[:country] %></td>
           </tr>
         <% end %>
       </tbody>
     </table>
   </div>
 <% else %>
-  <p><em>no messages yet</em></p>
+  <p><em>no checkins yet</em></p>
+<% end %>
+
+<h2 id="messages">Messages</h2>
+
+<% if @user.monitoring_net == @net %>
+  <% if @messages.any? %>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Call Sign</th>
+            <th>Message</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @messages.each do |message| %>
+            <tr>
+              <td><%== message[:call_sign] %></td>
+              <td class="can-wrap"><%== message[:message] %></td>
+              <td><%== format_time(message[:sent_at]) %></td>
+            </tr>
+          <% end %>
+          <% if session.dig(:message_sent, :net_id) == @net.id %>
+            <% if @messages.size == session.dig(:message_sent, :count_before) %>
+              <tr>
+                <td>
+                  <%== @user.call_sign %>
+                  <em>sending...</em>
+                </td>
+                <td class="can-wrap"><%== session.dig(:message_sent, :message) %></td>
+                <td><%== format_time(Time.now) %></td>
+              </tr>
+            <% else %>
+              <% session.delete(:message_sent) %>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p><em>no messages yet</em></p>
+  <% end %>
+  <form action="/message/<%= @net.id %>" method="post" onsubmit="sendMessage(this); return false">
+    <input id="message" type="text" name="message" placeholder="type your message" style="width:calc(100% - 100px)"/>
+    <input type="submit" value="Send"/>
+  </form>
+  <p>
+    <form action="/unmonitor/<%= @net.id %>" method="post"><button>Stop participating in this Net</button></form>
+  </p>
+<% else %>
+  <p>
+    <em><%= @messages.size %> message<%= @messages.size == 1 ? '' : 's' %>.</em> Click below to participate.
+    <form action="/monitor/<%= @net.id %>" method="post"><button>Monitor this Net</button></form>
+  </p>
 <% end %>
 
 <h2>Monitors</h2>
@@ -102,7 +136,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @net.monitors.order(:call_sign).each do |monitor| %>
+      <% @monitors.each do |monitor| %>
         <tr>
           <td><%== monitor[:call_sign] %></td>
           <td><%== monitor[:version] %></td>

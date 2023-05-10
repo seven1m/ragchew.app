@@ -1,10 +1,44 @@
 function updatePage() {
+  const focused = document.activeElement.id
+  if (document.activeElement &&
+      document.activeElement.tagName.toLowerCase() == 'input' &&
+      document.activeElement.type.toLowerCase() == 'text' &&
+      document.activeElement.value != '') {
+    console.log('text input has focus; skipping page update')
+    return
+  }
   fetch(location.href)
-    .then((r) => r.text())
+    .then((resp) => {
+      if (resp.redirected)
+        location.href = '/'
+      return resp.text()
+    })
     .then((html) => {
       const newDocument = new DOMParser().parseFromString(html, 'text/html')
       document.querySelector('body').innerHTML = newDocument.querySelector('body').innerHTML
+      if (focused) document.getElementById(focused).focus()
     })
+}
+
+function sendMessage(form) {
+  const input = document.getElementById('message')
+  fetch(
+    form.getAttribute('action'),
+    {
+      method: form.getAttribute('method'),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=ISO-8859-1'
+      },
+      body: 'message=' + encodeURIComponent(input.value)
+    }
+  ).then((data) => {
+    return data.text()
+  }).then((_html) => {
+    input.value = ''
+    updatePage()
+  }).catch((error) => {
+    console.error(error)
+  })
 }
 
 function updateCurrentTime() {
