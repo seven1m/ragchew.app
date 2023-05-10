@@ -51,9 +51,8 @@ class NetInfo
       end
     end
 
-    if currently_operating
-      @record.checkins.update_all(currently_operating: false)
-      @record.checkins.where(num: currently_operating).update_all(currently_operating: true)
+    if currently_operating && records.detect { |r| r.currently_operating? }&.num != currently_operating
+      @record.checkins.update_all("currently_operating = (num = #{currently_operating.to_i})")
     end
   end
 
