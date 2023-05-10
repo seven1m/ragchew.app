@@ -41,7 +41,7 @@ ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if development?
 
 get '/' do
-  @user = session[:user_id] && Tables::User.find_by(id: session[:user_id])
+  @user = get_user
   service = NetList.new
   @nets = service.list
   @last_updated_at = Tables::Server.maximum(:net_list_fetched_at)
@@ -50,7 +50,7 @@ get '/' do
 end
 
 get '/net/:name' do
-  @user = session[:user_id] && Tables::User.find_by(id: session[:user_id])
+  @user = get_user
   unless @user
     redirect "/login?net=#{params[:name]}"
     return
@@ -118,6 +118,7 @@ post '/login' do
   result = qrz.lookup(params[:call_sign])
 
   @user = Tables::User.find_or_initialize_by(call_sign: result[:call_sign])
+  @user.last_signed_in_at = Time.now
   @user.update!(result)
 
   session[:user_id] = @user.id
@@ -134,12 +135,14 @@ get '/logout' do
   redirect '/'
 end
 
-def serve(url)
-  uri = URI(url)
-  req = Net::HTTP::Get.new(uri)
-  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
-    http.request(req)
+def get_user
+  if session[:user_id] && (user = Tables::User.find_by(id: session[:user_id]))
+    now = Time.now
+    one_hour = 60 * 60
+    if !user.last_signed_in_at || now - user.last_signed_in_at > one_hour
+      user.last_signed_in_at = now
+      user.save!
+    end
+    user
   end
-  content_type response.content_type
-  raise response.body.inspect
 end
