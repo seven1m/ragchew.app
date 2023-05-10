@@ -11,6 +11,7 @@ GEM
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
+    cgi (0.3.6)
     concurrent-ruby (1.2.2)
     dotiw (5.3.3)
       activesupport
@@ -51,6 +52,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord
+  cgi
   dotiw
   erubis
   mysql2
