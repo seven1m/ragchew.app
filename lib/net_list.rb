@@ -10,7 +10,7 @@ class NetList
 
   def list
     update_cache
-    Tables::Net.order(:name)
+    Tables::Net.order(:name).to_a
   end
 
   private

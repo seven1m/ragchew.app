@@ -11,31 +11,35 @@
 
 <h2>Nets</h2>
 
-<div class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Frequency</th>
-        <th>Mode</th>
-        <th>Band</th>
-        <th>Started At</th>
-        <th>Subscribers</th>
-        <th>Host</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @nets.each do |net| %>
+<% if @nets.any? %>
+  <div class="table-wrapper">
+    <table>
+      <thead>
         <tr>
-          <td><a href="/net/<%== url_escape(net[:name]) %>"><%== net[:name] %></a></td>
-          <td><%== net[:frequency] %></td>
-          <td><%== net[:mode] %></td>
-          <td><%== net[:band] %></td>
-          <td><%== format_time(net[:started_at]) %></td>
-          <td><%== net[:subscribers] %></td>
-          <td><%== net[:host] %></td>
+          <th>Name</th>
+          <th>Frequency</th>
+          <th>Mode</th>
+          <th>Band</th>
+          <th>Started At</th>
+          <th>Subscribers</th>
+          <th>Host</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        <% @nets.each do |net| %>
+          <tr>
+            <td><a href="/net/<%== url_escape(net[:name]) %>"><%== net[:name] %></a></td>
+            <td><%== net[:frequency] %></td>
+            <td><%== net[:mode] %></td>
+            <td><%== net[:band] %></td>
+            <td><%== format_time(net[:started_at]) %></td>
+            <td><%== net[:subscribers] %></td>
+            <td><%== net[:host] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p><em>no active nets</em></p>
+<% end %>
