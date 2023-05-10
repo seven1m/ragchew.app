@@ -135,6 +135,18 @@ get '/logout' do
   redirect '/'
 end
 
+get '/admin/stats' do
+  @user = get_user
+
+  if @user&.call_sign != 'KI5ZDF'
+    redirect '/'
+    return
+  end
+
+  @user_count = Tables::User.count
+  erb :admin_stats
+end
+
 def get_user
   if session[:user_id] && (user = Tables::User.find_by(id: session[:user_id]))
     now = Time.now
