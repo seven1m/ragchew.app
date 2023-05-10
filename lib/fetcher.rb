@@ -9,7 +9,7 @@ class Fetcher
     params_string = params.map { |k, v| "#{k}=#{v}" }.join('&')
     uri = URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")
     puts uri
-    html = Net::HTTP.get(uri)
+    html = Net::HTTP.get(uri).force_encoding('ISO-8859-1')
     raise NotFoundError, $1 if html =~ /\*error - (.*?)\*/m
 
     {}.tap do |result|
