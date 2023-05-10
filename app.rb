@@ -17,6 +17,7 @@ require_relative './lib/net_list'
 require_relative './lib/qrz'
 
 enable :sessions
+set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
 
 if development?
   Dir['./lib/**/*.rb'].each do |path|

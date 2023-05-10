@@ -27,9 +27,9 @@ class Qrz
       end
     elsif result =~ /<call>(.*?)<\/call>/i
       actual_call_sign = $1.strip
-      first_name = result.match(/<fname>(.*?)<\/fname>/)[1]
-      last_name = result.match(/<name>(.*?)<\/name>/)[1]
-      image = result.match(/<image>(.*?)<\/image>/)[1] rescue nil
+      first_name = (result.match(/<fname>(.*?)<\/fname>/) || [])[1]
+      last_name = (result.match(/<name>(.*?)<\/name>/) || [])[1]
+      image = (result.match(/<image>(.*?)<\/image>/) || [])[1]
       {
         call_sign: actual_call_sign,
         first_name:,

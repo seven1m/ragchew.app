@@ -42,11 +42,6 @@ class NetInfo
   end
 
   def update_checkins(checkins, currently_operating:)
-    if currently_operating
-      @record.checkins.update_all(currently_operating: false)
-      @record.checkins.where(num: currently_operating).update_all(currently_operating: true)
-    end
-
     records = @record.checkins.all
     checkins.each do |checkin|
       if (existing = records.detect { |r| r.num == checkin[:num] })
@@ -54,6 +49,11 @@ class NetInfo
       else
         @record.checkins.create!(checkin)
       end
+    end
+
+    if currently_operating
+      @record.checkins.update_all(currently_operating: false)
+      @record.checkins.where(num: currently_operating).update_all(currently_operating: true)
     end
   end
 
