@@ -114,6 +114,10 @@ get '/station/:call_sign/image' do
     status 404
     erb 'not found'
     return
+  rescue Qrz::Error
+    status 404
+    erb 'qrz session expired'
+    return
   end
 
   Tables::Station.create!(
@@ -139,6 +143,7 @@ post '/login' do
   @user.last_signed_in_at = Time.now
   @user.update!(result)
 
+  session.clear
   session[:user_id] = @user.id
   session[:qrz_session] = qrz.session
 
@@ -149,7 +154,7 @@ rescue Qrz::Error => e
 end
 
 get '/logout' do
-  session.delete(:user_id)
+  session.clear
   redirect '/'
 end
 

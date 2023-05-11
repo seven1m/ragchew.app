@@ -187,23 +187,30 @@ class NetInfo
 
     checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, nickname|
       next if call_sign == 'future use 2'
-      {
-        num: num.to_i,
-        call_sign:,
-        city:,
-        state:,
-        name:,
-        remarks:,
-        qsl_info:,
-        checked_in_at: Time.parse(checked_in_at),
-        county:,
-        grid_square:,
-        street:,
-        zip:,
-        status:,
-        country:,
-        nickname:,
-      }
+      begin
+        checked_in_at = Time.parse(checked_in_at)
+      rescue ArgumentError
+        # bad checkin?
+        nil
+      else
+        {
+          num: num.to_i,
+          call_sign:,
+          city:,
+          state:,
+          name:,
+          remarks:,
+          qsl_info:,
+          checked_in_at:,
+          county:,
+          grid_square:,
+          street:,
+          zip:,
+          status:,
+          country:,
+          nickname:,
+        }
+      end
     end.compact
 
     if data['NetLogger Start Data'].last[0] =~ /^`(\d+)/
@@ -221,14 +228,21 @@ class NetInfo
     end
 
     messages = data['IM Start'].map do |log_id, call_sign, _always_one, message, sent_at, ip_address|
-      {
-        log_id: log_id.to_i,
-        call_sign:,
-        message:,
-        sent_at: Time.parse(sent_at),
-        ip_address:
-      }
-    end
+      begin
+        sent_at = Time.parse(sent_at)
+      rescue ArgumentError
+        # bad message?
+        nil
+      else
+        {
+          log_id: log_id.to_i,
+          call_sign:,
+          message:,
+          sent_at:,
+          ip_address:
+        }
+      end
+    end.compact
 
     raw_info = data['Net Info Start'].first.each_with_object({}) do |param, hash|
       (key, value) = param.split('=')
