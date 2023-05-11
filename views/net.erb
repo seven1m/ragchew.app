@@ -37,7 +37,7 @@
         </tr>
       </thead>
       <tbody>
-        <% @net.checkins.each do |entry| %>
+        <% @checkins.each do |entry| %>
           <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
             <td><%== entry[:num] %></td>
             <td style="height:64px">
