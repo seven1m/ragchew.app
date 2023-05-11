@@ -16,11 +16,7 @@ function updatePage() {
       const netNetMap = newDocument.getElementById('net-map')
       if (netNetMap) {
         const existingCoords = new Set(
-          JSON.parse(
-            document.getElementById('net-map').getAttribute('data-coords')
-          ).map(
-            (coord) => JSON.stringify(coord)
-          )
+          window.netMapCoords.map((coord) => JSON.stringify(coord))
         )
         let newCoords = []
         JSON.parse(netNetMap.getAttribute('data-coords')).forEach((coord) => {
