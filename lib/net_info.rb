@@ -218,11 +218,14 @@ class NetInfo
     end
 
     monitors = data['NetMonitors Start'].map do |call_sign_and_info, ip_address|
-      call_sign, version, status = call_sign_and_info.split(' - ')
+      parts = call_sign_and_info.split(' - ')
+      call_sign = parts.first
+      version = parts.grep(/v\d/).last
+      status = parts.grep(/(On|Off)line/).first || 'Online'
       {
         call_sign:,
         version:,
-        status: status || 'Online',
+        status:,
         ip_address:,
       }
     end
