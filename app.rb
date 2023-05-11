@@ -7,9 +7,7 @@ require_relative './boot'
 
 enable :sessions
 set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
-set :sessions do
-  { same_site: :strict }
-end
+set :sessions, same_site: :strict, expire_after: 365 * 24 * 60 * 60 # 1 year
 
 set :static_cache_control, [:public, max_age: 60]
 
@@ -83,7 +81,13 @@ rescue NetInfo::NotFoundError => e
 end
 
 get '/station/:call_sign/image' do
-  station = Tables::Station.find_by(call_sign: params[:call_sign])
+  call_sign = params[:call_sign]
+  station = Tables::Station.find_by(call_sign:)
+
+  if station&.expired?
+    station.destroy!
+    station = nil
+  end
 
   expires Tables::Station::EXPIRATION_IN_SECONDS, :public, :must_revalidate
 
@@ -97,35 +101,24 @@ get '/station/:call_sign/image' do
     return
   end
 
-  unless session[:qrz_session]
-    status 404
-    erb 'there was an error; please log out and try again'
-    return
-  end
-
-  qrz = Qrz.new(session: session[:qrz_session])
+  qrz = QrzAutoSession.new
   begin
-    unless (image = qrz.lookup(params[:call_sign])[:image])
+    if (image = qrz.lookup(call_sign)[:image])
+      Tables::Station.create!(call_sign:, image:)
+      redirect image
+    else
+      Tables::Station.create!(call_sign:, image: nil)
       status 404
       erb 'not found'
-      return
     end
   rescue Qrz::NotFound
+    Tables::Station.create!(call_sign:, image: nil)
     status 404
     erb 'not found'
-    return
-  rescue Qrz::Error
-    status 404
-    erb 'qrz session expired'
-    return
+  rescue Qrz::Error => e
+    status 500
+    erb "qrz error: #{e.message}"
   end
-
-  Tables::Station.create!(
-    call_sign: params[:call_sign],
-    image:
-  )
-
-  redirect image
 end
 
 get '/login' do
@@ -205,7 +198,10 @@ post '/unmonitor/:net_id' do
 
   @net = @net_info.net
 
-  @user.update!(monitoring_net: nil)
+  @user.update!(
+    monitoring_net: nil,
+    monitoring_net_last_refreshed_at: nil,
+  )
 
   redirect "/net/#{url_escape @net.name}#messages"
 end
@@ -237,21 +233,17 @@ def get_user
     return
   end
 
-  # seems that QRZ sessions don't last very long :-(
   now = Time.now
-  login_expiration_in_seconds = 4 * 60 * 60
-  if user.last_signed_in_at && now - user.last_signed_in_at > login_expiration_in_seconds
-    session.delete(:user_id)
-    session.delete(:qrz_session)
-    redirect '/'
-    return
+  if user.last_signed_in_at && now - user.last_signed_in_at > 20 * 60 # 20 minutes
+    user.update!(last_signed_in_at: now)
   end
 
   user
 end
 
 def require_admin!
-  return if @user&.call_sign == 'KI5ZDF'
+  admins = ENV.fetch('ADMIN_CALL_SIGNS').split(',')
+  return if @user && admins.include?(@user.call_sign)
 
   redirect '/'
 end

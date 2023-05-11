@@ -7,5 +7,9 @@ module Tables
     def set_expires_at
       self.expires_at = Time.now + EXPIRATION_IN_SECONDS
     end
+
+    def expired?
+      expires_at && expires_at < Time.now
+    end
   end
 end
