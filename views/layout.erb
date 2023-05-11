@@ -26,6 +26,9 @@
       .error { color: red; }
       input { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
       .user-nav { float: right; text-align: right; }
+      #net-map {
+        height: 300px;
+      }
       @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
         .table-wrapper {
           overflow-x: auto;
@@ -47,6 +50,8 @@
         }, (secondsToWaitBetweenUpdates - Math.min(secondsToWaitBetweenUpdates, <%= Time.now - @last_updated_at %>)) * 1000)
       </script>
     <% end %>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   </head>
   <body>
     <%= yield %>

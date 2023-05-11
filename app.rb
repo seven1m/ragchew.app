@@ -69,6 +69,7 @@ get '/net/:name' do
   @monitors = @net.monitors.order(:call_sign).to_a
   @last_updated_at = @net.updated_at
   @update_interval = @net.update_interval_in_seconds + 1
+  @coords = @checkins.map { |c| GridSquare.new(c.grid_square).to_a }.compact
 
   if @user.monitoring_net == @net
     @user.update!(monitoring_net_last_refreshed_at: Time.now)

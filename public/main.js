@@ -1,12 +1,4 @@
 function updatePage() {
-  const focused = document.activeElement.id
-  if (document.activeElement &&
-      document.activeElement.tagName.toLowerCase() == 'input' &&
-      document.activeElement.type.toLowerCase() == 'text' &&
-      document.activeElement.value != '') {
-    console.log('text input has focus; skipping page update')
-    return
-  }
   fetch(location.href)
     .then((resp) => {
       if (resp.redirected)
@@ -15,8 +7,29 @@ function updatePage() {
     })
     .then((html) => {
       const newDocument = new DOMParser().parseFromString(html, 'text/html')
-      document.querySelector('body').innerHTML = newDocument.querySelector('body').innerHTML
-      if (focused) document.getElementById(focused).focus()
+      newDocument.querySelectorAll('.update-in-place').forEach((newElm) => {
+        if (newElm.id) {
+          const existingElm = document.getElementById(newElm.id)
+          existingElm.parentNode.replaceChild(newElm, existingElm)
+        }
+      })
+      const netNetMap = newDocument.getElementById('net-map')
+      if (netNetMap) {
+        const existingCoords = new Set(
+          JSON.parse(
+            document.getElementById('net-map').getAttribute('data-coords')
+          ).map(
+            (coord) => JSON.stringify(coord)
+          )
+        )
+        let newCoords = []
+        JSON.parse(netNetMap.getAttribute('data-coords')).forEach((coord) => {
+          if (!existingCoords.has(JSON.stringify(coord)))
+            newCoords.push(coord)
+        })
+        if (newCoords.length > 0)
+          showNetMap(newCoords)
+      }
     })
 }
 
@@ -39,6 +52,24 @@ function sendMessage(form) {
   }).catch((error) => {
     console.error(error)
   })
+}
+
+function showNetMap(coords) {
+  if (!window.netMap) {
+    window.netMap = L.map('net-map').setView([51.505, -0.09], 13)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(netMap)
+  }
+  if (window.netMapCoords)
+    window.netMapCoords = window.netMapCoords.concat(coords)
+  else
+    window.netMapCoords = coords
+  coords.forEach(([lat, lon]) => {
+    L.marker([lat, lon]).addTo(netMap)
+  })
+  netMap.fitBounds(netMapCoords)
 }
 
 function updateCurrentTime() {
