@@ -120,6 +120,7 @@ class NetInfo
 
   def update_checkins(checkins, currently_operating:)
     records = @record.checkins.all
+
     checkins.each do |checkin|
       if (existing = records.detect { |r| r.num == checkin[:num] })
         existing.update!(checkin)
@@ -131,6 +132,15 @@ class NetInfo
     if currently_operating && records.detect { |r| r.currently_operating? }&.num != currently_operating
       @record.checkins.update_all("currently_operating = (num = #{currently_operating.to_i})")
     end
+
+    # Sometimes the server returns dupes or we get messed up with our transactions
+    # or whatever, so let's clean up any duplicates.
+    # NOTE: I don't like this. Gonna leave it off for now. Let's see if it happens again.
+    #@record.checkins.group(:num).having('count(num) > 1').pluck(:num).each do |num|
+      #@record.checkins.where(num:).order(:updated_at).drop(1).each do |duplicated_checkin|
+        #duplicated_checkin.destroy
+      #end
+    #end
   end
 
   def update_monitors(monitors)
