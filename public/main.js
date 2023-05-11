@@ -52,7 +52,7 @@ function sendMessage(form) {
 
 function showNetMap(coords) {
   if (!window.netMap) {
-    window.netMap = L.map('net-map').setView([51.505, -0.09], 13)
+    window.netMap = L.map('net-map').setView([38.53, -100.25], 4)
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
