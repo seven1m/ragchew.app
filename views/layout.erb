@@ -34,12 +34,16 @@
     </style>
     <% if @last_updated_at %>
       <script>
-        const secondsToWaitBetweenUpdates = <%= @update_interval || 20 %> + 1
-        setTimeout(() => {
+        let secondsToWaitBetweenUpdates = <%= @update_interval || 30 %>
+        const updateBackoff = <%= @update_backoff || 0 %>
+        function updatePageAndScheduleNext() {
           updatePage()
-          const interval = setInterval(updatePage, secondsToWaitBetweenUpdates * 1000)
-          const twoHours = 60 * 60 * 2 * 1000
-          setTimeout(() => { clearInterval(interval) }, twoHours)
+          secondsToWaitBetweenUpdates += updateBackoff
+          console.log(`waiting ${secondsToWaitBetweenUpdates} seconds till next update`)
+          setTimeout(updatePageAndScheduleNext, secondsToWaitBetweenUpdates * 1000)
+        }
+        setTimeout(() => {
+          updatePageAndScheduleNext()
         }, (secondsToWaitBetweenUpdates - Math.min(secondsToWaitBetweenUpdates, <%= Time.now - @last_updated_at %>)) * 1000)
       </script>
     <% end %>

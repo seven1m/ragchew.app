@@ -51,6 +51,7 @@ get '/' do
   @nets = service.list
   @last_updated_at = Tables::Server.maximum(:net_list_fetched_at)
   @update_interval = 30
+  @update_backoff = 5
   erb :index
 end
 
@@ -67,7 +68,7 @@ get '/net/:name' do
   @messages = @net.messages.order(:sent_at).to_a
   @monitors = @net.monitors.order(:call_sign).to_a
   @last_updated_at = @net.updated_at
-  @update_interval = @net.update_interval_in_seconds
+  @update_interval = @net.update_interval_in_seconds + 1
 
   if @user.monitoring_net == @net
     @user.update!(monitoring_net_last_refreshed_at: Time.now)
