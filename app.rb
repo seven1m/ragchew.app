@@ -149,16 +149,20 @@ end
 
 get '/admin/stats' do
   @user = get_user
-
-  if @user&.call_sign != 'KI5ZDF'
-    redirect '/'
-    return
-  end
+  require_admin!
 
   @user_count_total = Tables::User.count
   @user_count_last_24_hours = Tables::User.where('last_signed_in_at > ?', Time.now - (24 * 60 * 60)).count
   @user_count_last_1_hour = Tables::User.where('last_signed_in_at > ?', Time.now - (1 * 60 * 60)).count
   erb :admin_stats
+end
+
+get '/admin/users' do
+  @user = get_user
+  require_admin!
+
+  @users = Tables::User.order(last_signed_in_at: :desc).limit(100).to_a
+  erb :admin_users
 end
 
 post '/monitor/:net_id' do
@@ -233,4 +237,10 @@ def get_user
   end
 
   user
+end
+
+def require_admin!
+  return if @user&.call_sign == 'KI5ZDF'
+
+  redirect '/'
 end
