@@ -109,12 +109,12 @@ get '/station/:call_sign/image' do
     else
       Tables::Station.create!(call_sign:, image: nil)
       status 404
-      erb 'not found'
+      erb 'no image for this call sign'
     end
   rescue Qrz::NotFound
     Tables::Station.create!(call_sign:, image: nil)
     status 404
-    erb 'not found'
+    erb 'call sign not found'
   rescue Qrz::Error => e
     status 500
     erb "qrz error: #{e.message}"
