@@ -68,7 +68,7 @@
     </table>
   </div>
 <% else %>
-  <p><em>no checkins yet</em></p>
+  <p class="update-in-place" id="checkins-table"><em>no checkins yet</em></p>
 <% end %>
 
 <h2 id="messages">Messages</h2>
@@ -110,7 +110,7 @@
       </table>
     </div>
   <% else %>
-    <p><em>no messages yet</em></p>
+    <p class="update-in-place" id="messages-table"><em>no messages yet</em></p>
   <% end %>
   <form action="/message/<%= @net.id %>" method="post" onsubmit="sendMessage(this); return false">
     <input id="message" type="text" name="message" placeholder="type your message" style="width:calc(100% - 100px)"/>
