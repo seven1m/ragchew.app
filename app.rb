@@ -89,7 +89,7 @@ get '/station/:call_sign/image' do
     if station.image
       redirect station.image
     else
-      erb 'not found', status: 401
+      erb 'not found', status: 404
     end
     return
   end
@@ -102,12 +102,11 @@ get '/station/:call_sign/image' do
   qrz = Qrz.new(session: session[:qrz_session])
   begin
     unless (image = qrz.lookup(params[:call_sign])[:image])
-      erb 'not found', status: 401
+      erb 'not found', status: 404
       return
     end
   rescue Qrz::NotFound
-    image = nil
-    erb 'not found', status: 401
+    erb 'not found', status: 404
     return
   end
 

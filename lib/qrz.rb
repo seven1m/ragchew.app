@@ -38,7 +38,7 @@ class Qrz
         call_sign: actual_call_sign,
         first_name:,
         last_name:,
-        image:
+        image:,
       }
     else
       raise Error, "unknown error occurred: #{result}"
