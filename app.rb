@@ -78,7 +78,8 @@ get '/net/:name' do
   erb :net
 rescue NetInfo::NotFoundError => e
   @message = e.message
-  erb :missing, status: 404
+  status 404
+  erb :missing
 end
 
 get '/station/:call_sign/image' do
@@ -90,24 +91,28 @@ get '/station/:call_sign/image' do
     if station.image
       redirect station.image
     else
-      erb 'not found', status: 404
+      status 404
+      erb 'not found'
     end
     return
   end
 
   unless session[:qrz_session]
-    erb 'there was an error; please log out and try again', status: 401
+    status 404
+    erb 'there was an error; please log out and try again'
     return
   end
 
   qrz = Qrz.new(session: session[:qrz_session])
   begin
     unless (image = qrz.lookup(params[:call_sign])[:image])
-      erb 'not found', status: 404
+      status 404
+      erb 'not found'
       return
     end
   rescue Qrz::NotFound
-    erb 'not found', status: 404
+    status 404
+    erb 'not found'
     return
   end
 

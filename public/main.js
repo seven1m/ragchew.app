@@ -3,6 +3,8 @@ function updatePage() {
     .then((resp) => {
       if (resp.redirected)
         location.href = '/'
+      else if (resp.status != 200)
+        location.reload()
       return resp.text()
     })
     .then((html) => {
