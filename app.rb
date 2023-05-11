@@ -7,6 +7,9 @@ require_relative './boot'
 
 enable :sessions
 set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
+set :sessions do
+  { same_site: :strict }
+end
 
 set :static_cache_control, [:public, max_age: 60]
 
