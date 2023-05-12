@@ -25,6 +25,7 @@ function updatePage() {
           if (!existingCoords.has(JSON.stringify(coord)))
             newCoords.push(coord)
         })
+        console.log(newCoords)
         if (newCoords.length > 0)
           showNetMap(newCoords)
       }
@@ -64,8 +65,11 @@ function showNetMap(coords) {
     window.netMapCoords = window.netMapCoords.concat(coords)
   else
     window.netMapCoords = coords
-  coords.forEach(([lat, lon]) => {
-    L.marker([lat, lon]).addTo(netMap)
+  coords.forEach(([lat, lon, callSign]) => {
+    const marker = L.marker([lat, lon])
+      .addTo(netMap)
+    if (callSign)
+      marker.bindPopup(callSign)
   })
   netMap.fitBounds(netMapCoords)
 }
