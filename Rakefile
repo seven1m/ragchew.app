@@ -36,6 +36,7 @@ end
 MAX_IDLE_MONITORING_IN_SECONDS = 5 * 60 # 5 minutes
 
 task :cleanup do
+  # users stop monitoring if they have not refreshed the page in a while
   scope = Tables::User
     .is_monitoring
     .where('monitoring_net_last_refreshed_at < ?', Time.now - MAX_IDLE_MONITORING_IN_SECONDS)
@@ -50,4 +51,13 @@ task :cleanup do
       )
     end
   puts "#{count} user(s) stopped monitoring"
+
+  # old checkins get cleaned up
+  # (we keep the most recent 100 around so the homepage has something to show)
+  total = Tables::Checkin.where(net_id: nil).count
+  count_to_delete = [0, total - 100].max
+  if count_to_delete > 0
+    Tables::Checkin.where(net_id: nil).order(:updated_at).limit(count_to_delete).delete_all
+  end
+  puts "#{count_to_delete} checkin(s) deleted"
 end

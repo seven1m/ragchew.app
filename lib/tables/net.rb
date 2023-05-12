@@ -1,7 +1,7 @@
 module Tables
   class Net < ActiveRecord::Base
     belongs_to :server
-    has_many :checkins, dependent: :delete_all
+    has_many :checkins, dependent: :nullify # these get cleaned up by `rake cleanup`
     has_many :monitors, dependent: :delete_all
     has_many :messages, dependent: :delete_all
 
