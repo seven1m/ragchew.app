@@ -117,10 +117,10 @@
     <input type="submit" value="Send"/>
   </form>
   <p>
-    <form action="/unmonitor/<%= @net.id %>" method="post"><button>Stop participating in this Net</button></form>
+    <form action="/unmonitor/<%= @net.id %>" method="post"><button>Stop monitoring this Net</button></form>
   </p>
 <% else %>
-  <p>
+  <p class="update-in-place" id="messages-table">
     <em><%= @messages.size %> message<%= @messages.size == 1 ? '' : 's' %>.</em> Click below to participate.
     <form action="/monitor/<%= @net.id %>" method="post"><button>Monitor this Net</button></form>
   </p>
