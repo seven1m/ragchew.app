@@ -1,9 +1,6 @@
 require_relative './qrz'
 
 class QrzAutoSession
-  USERNAME = ENV.fetch('QRZ_USERNAME')
-  PASSWORD = ENV.fetch('QRZ_PASSWORD')
-
   def lookup(call_sign)
     service.lookup(call_sign)
   rescue Qrz::SessionTimeout
@@ -17,9 +14,17 @@ class QrzAutoSession
     if (session = Thread.current[:qrz_session])
       Qrz.new(session:)
     else
-      qrz = Qrz.login(username: USERNAME, password: PASSWORD)
+      qrz = Qrz.login(username:, password:)
       Thread.current[:qrz_session] = qrz.session
       qrz
     end
+  end
+
+  def username
+    ENV.fetch('QRZ_USERNAME')
+  end
+
+  def password
+    ENV.fetch('QRZ_PASSWORD')
   end
 end
