@@ -7,6 +7,8 @@
   <a href="http://netlogger.org/">NetLogger</a> desktop software.
 </p>
 
+<div id="net-map" data-coords="<%= @coords.to_json %>"></div>
+
 <%= erb :_timestamps %>
 
 <h2>Nets</h2>
@@ -43,3 +45,8 @@
 <% else %>
   <p class="update-in-place" id="index-table"><em>no active nets</em></p>
 <% end %>
+
+<script id="map-script">
+  const coords = JSON.parse(document.getElementById('net-map').getAttribute('data-coords'))
+  showNetMap(coords)
+</script>

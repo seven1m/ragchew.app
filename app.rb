@@ -50,6 +50,10 @@ get '/' do
   @last_updated_at = Tables::Server.maximum(:net_list_fetched_at)
   @update_interval = 30
   @update_backoff = 5
+  @coords = Tables::Checkin.order(created_at: :desc)
+              .limit(100)
+              .map { |c| GridSquare.new(c.grid_square).to_a }
+              .compact
   erb :index
 end
 
