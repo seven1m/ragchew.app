@@ -39,11 +39,17 @@
       <script>
         let secondsToWaitBetweenUpdates = <%= @update_interval || 30 %>
         const updateBackoff = <%= @update_backoff || 0 %>
+        const startTime = new Date()
+        const maxTimeToRefreshInSeconds = 3 * 60 * 60 // 3 hours
         function updatePageAndScheduleNext() {
           updatePage()
           secondsToWaitBetweenUpdates += updateBackoff
-          console.log(`waiting ${secondsToWaitBetweenUpdates} seconds till next update`)
-          setTimeout(updatePageAndScheduleNext, secondsToWaitBetweenUpdates * 1000)
+          if ((new Date() - startTime) < (maxTimeToRefreshInSeconds * 1000)) {
+            console.log(`waiting ${secondsToWaitBetweenUpdates} seconds till next update`)
+            setTimeout(updatePageAndScheduleNext, secondsToWaitBetweenUpdates * 1000)
+          } else {
+            console.log(`stopped refreshing after ${maxTimeToRefreshInSeconds} seconds`)
+          }
         }
         setTimeout(() => {
           updatePageAndScheduleNext()
