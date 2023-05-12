@@ -18,13 +18,17 @@ class NetList
   def update_cache
     if server_cache_needs_updating?
       Tables::Net.with_advisory_lock(:update_server_list_cache, timeout_seconds: 2) do
-        update_server_cache
+        if server_cache_needs_updating?
+          update_server_cache
+        end
       end
     end
 
     if net_cache_needs_updating?
       Tables::Net.with_advisory_lock(:update_net_list_cache, timeout_seconds: 2) do
-        update_net_cache
+        if net_cache_needs_updating?
+          update_net_cache
+        end
       end
     end
   end
