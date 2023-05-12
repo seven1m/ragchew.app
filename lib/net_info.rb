@@ -21,8 +21,13 @@ class NetInfo
   end
 
   def net
-    if !@record.fully_updated_at || @record.fully_updated_at < Time.now - @record.update_interval_in_seconds
-      update_cache
+    if cache_needs_updating?
+      Tables::Net.with_advisory_lock(:update_net_cache, timeout_seconds: 2) do
+        @record.reload
+        if cache_needs_updating?
+          update_cache
+        end
+      end
     end
 
     @record
@@ -101,16 +106,14 @@ class NetInfo
   private
 
   def update_cache
-    Tables::Net.transaction do
-      data = fetch
+    data = fetch
 
-      update_checkins(data[:checkins], currently_operating: data[:currently_operating])
-      update_monitors(data[:monitors])
-      update_messages(data[:messages])
+    update_checkins(data[:checkins], currently_operating: data[:currently_operating])
+    update_monitors(data[:monitors])
+    update_messages(data[:messages])
 
-      # do this last
-      update_net_info(data[:info])
-    end
+    # do this last
+    update_net_info(data[:info])
   end
 
   def update_net_info(info)
@@ -132,15 +135,6 @@ class NetInfo
     if currently_operating && records.detect { |r| r.currently_operating? }&.num != currently_operating
       @record.checkins.update_all("currently_operating = (num = #{currently_operating.to_i})")
     end
-
-    # Sometimes the server returns dupes or we get messed up with our transactions
-    # or whatever, so let's clean up any duplicates.
-    # NOTE: I don't like this. Gonna leave it off for now. Let's see if it happens again.
-    #@record.checkins.group(:num).having('count(num) > 1').pluck(:num).each do |num|
-      #@record.checkins.where(num:).order(:updated_at).drop(1).each do |duplicated_checkin|
-        #duplicated_checkin.destroy
-      #end
-    #end
   end
 
   def update_monitors(monitors)
@@ -163,6 +157,10 @@ class NetInfo
         @record.messages.create!(message)
       end
     end
+  end
+
+  def cache_needs_updating?
+    !@record.fully_updated_at || @record.fully_updated_at < Time.now - @record.update_interval_in_seconds
   end
 
   def fetch

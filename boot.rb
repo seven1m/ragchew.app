@@ -10,6 +10,7 @@ require 'net/http'
 require 'time'
 require 'uri'
 require 'yaml'
+require 'with_advisory_lock'
 
 require_relative './lib/fetcher'
 require_relative './lib/grid_square'

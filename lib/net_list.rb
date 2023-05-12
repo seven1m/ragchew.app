@@ -16,17 +16,21 @@ class NetList
   private
 
   def update_cache
-    Tables::Server.transaction do
-      update_server_cache
+    if server_cache_needs_updating?
+      Tables::Net.with_advisory_lock(:update_server_list_cache, timeout_seconds: 2) do
+        update_server_cache
+      end
     end
-    Tables::Net.transaction do
-      update_net_cache
+
+    if net_cache_needs_updating?
+      Tables::Net.with_advisory_lock(:update_net_list_cache, timeout_seconds: 2) do
+        update_net_cache
+      end
     end
   end
 
   def update_server_cache
-    last_updated = Tables::Server.maximum(:updated_at)
-    return if last_updated && last_updated > Time.now - SERVER_CACHE_LENGTH_IN_SECONDS
+    return unless server_cache_needs_updating?
 
     puts 'Updating server cache'
 
@@ -69,9 +73,13 @@ class NetList
     cached.values.each(&:destroy)
   end
 
+  def server_cache_needs_updating?
+    last_updated = Tables::Server.maximum(:updated_at)
+    !last_updated || last_updated < Time.now - SERVER_CACHE_LENGTH_IN_SECONDS
+  end
+
   def update_net_cache
-    last_updated = Tables::Server.maximum(:net_list_fetched_at)
-    return if last_updated && last_updated > Time.now - CACHE_LENGTH_IN_SECONDS
+    return unless net_cache_needs_updating?
 
     data = fetch
     cached = Tables::Net.all_by_name
@@ -92,6 +100,11 @@ class NetList
     now = Time.now
     Tables::Net.update_all(partially_updated_at: now)
     Tables::Server.update_all(net_list_fetched_at: now)
+  end
+
+  def net_cache_needs_updating?
+    last_updated = Tables::Server.maximum(:net_list_fetched_at)
+    !last_updated || last_updated < Time.now - CACHE_LENGTH_IN_SECONDS
   end
 
   def fetch

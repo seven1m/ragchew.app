@@ -46,6 +46,8 @@ GEM
     tilt (2.1.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    with_advisory_lock (4.6.0)
+      activerecord (>= 4.2)
 
 PLATFORMS
   x86_64-linux
@@ -60,6 +62,7 @@ DEPENDENCIES
   rake
   sinatra
   sinatra-contrib
+  with_advisory_lock
 
 BUNDLED WITH
    2.4.12
