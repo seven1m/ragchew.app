@@ -69,7 +69,7 @@ get '/net/:name' do
   @checkins = @net.checkins.order(:num).to_a
   @messages = @net.messages.order(:sent_at).to_a
   @monitors = @net.monitors.order(:call_sign).to_a
-  @last_updated_at = @net.updated_at
+  @last_updated_at = @net.fully_updated_at
   @update_interval = @net.update_interval_in_seconds + 1
   @coords = @checkins.map { |c| GridSquare.new(c.grid_square).to_a }.compact
 
@@ -181,9 +181,18 @@ post '/monitor/:net_id' do
   end
 
   @net_info = NetInfo.new(id: params[:net_id])
-  @net_info.monitor!(user: @user)
-
   @net = @net_info.net
+
+  if @user.monitoring_net && @user.monitoring_net != @net
+    # already monitoring one, stop stop that first
+    begin
+      NetInfo.new(id: @user.monitoring_net_id).stop_monitoring!(user: @user)
+    rescue NetInfo::NotFoundError
+      # no biggie I guess
+    end
+  end
+
+  @net_info.monitor!(user: @user)
 
   @user.update!(monitoring_net: @net)
 
@@ -223,9 +232,14 @@ post '/message/:net_id' do
   end
 
   @net_info = NetInfo.new(id: params[:net_id])
-  @net_info.send_message!(user: @user, message: params[:message])
-
   @net = @net_info.net_without_cache_update
+
+  if @user.monitoring_net != @net
+    status 401
+    return 'not monitoring this net'
+  end
+
+  @net_info.send_message!(user: @user, message: params[:message])
 
   session[:message_sent] = { net_id: @net.id, count_before: @net.messages.count, message: params[:message] }
 
