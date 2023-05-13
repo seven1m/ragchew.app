@@ -163,10 +163,7 @@ get '/admin/stats' do
   @user = get_user
   require_admin!
 
-  @user_count_total = Tables::User.count
-  @user_count_last_24_hours = Tables::User.where('last_signed_in_at > ?', Time.now - (24 * 60 * 60)).count
-  @user_count_last_1_hour = Tables::User.where('last_signed_in_at > ?', Time.now - (1 * 60 * 60)).count
-  erb :admin_stats
+  redirect '/admin/users'
 end
 
 get '/admin/users' do
@@ -174,6 +171,9 @@ get '/admin/users' do
   require_admin!
 
   @users = Tables::User.order(last_signed_in_at: :desc).limit(100).to_a
+  @user_count_total = Tables::User.count
+  @user_count_last_24_hours = Tables::User.where('last_signed_in_at > ?', Time.now - (24 * 60 * 60)).count
+  @user_count_last_1_hour = Tables::User.where('last_signed_in_at > ?', Time.now - (1 * 60 * 60)).count
   erb :admin_users
 end
 
