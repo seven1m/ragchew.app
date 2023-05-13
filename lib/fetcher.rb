@@ -15,6 +15,7 @@ class Fetcher
 
     {}.tap do |result|
       html.scan(/<!--(.*?)-->(.*?)<!--.*?-->/m).each do |section, data|
+        data.gsub!(/:~:/, '') # line-continuation ??
         result[section.strip] = data.split(/~|\n/).map { |line| line.split('|') }
       end
     end

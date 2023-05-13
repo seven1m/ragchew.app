@@ -197,7 +197,7 @@ class NetInfo
       next if call_sign == 'future use 2'
       begin
         checked_in_at = Time.parse(checked_in_at)
-      rescue ArgumentError
+      rescue ArgumentError, TypeError
         # bad checkin?
         nil
       else
@@ -241,7 +241,7 @@ class NetInfo
     messages = data['IM Start'].map do |log_id, call_sign, _always_one, message, sent_at, ip_address|
       begin
         sent_at = Time.parse(sent_at)
-      rescue ArgumentError
+      rescue ArgumentError, TypeError
         # bad message?
         nil
       else
