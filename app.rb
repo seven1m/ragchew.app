@@ -230,7 +230,16 @@ post '/message/:net_id' do
     return
   end
 
-  if params[:message].to_s.strip.empty?
+  message = params[:message].to_s.strip
+    .tr("‘ʼ’", "'")
+    .tr("“”", '"')
+    .tr("-–—−⁃᠆", "-")
+    .gsub("…", "...")
+
+  message_with_silly_encoding = message.encode('ISO-8859-1', invalid: :replace, undef: :replace)
+  message = message_with_silly_encoding.encode('UTF-8', invalid: :replace, undef: :replace)
+
+  if message_with_silly_encoding.empty?
     status 400
     return 'no message sent'
   end
@@ -243,9 +252,9 @@ post '/message/:net_id' do
     return 'not monitoring this net'
   end
 
-  @net_info.send_message!(user: @user, message: params[:message])
+  @net_info.send_message!(user: @user, message: message_with_silly_encoding)
 
-  session[:message_sent] = { net_id: @net.id, count_before: @net.messages.count, message: params[:message] }
+  session[:message_sent] = { net_id: @net.id, count_before: @net.messages.count, message: }
 
   redirect "/net/#{url_escape @net.name}"
 end
