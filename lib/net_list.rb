@@ -55,14 +55,21 @@ class NetList
         key, value = line.split('=')
         hash[key] = value
       end
+
       is_public = details['ServerState'] == 'Public'
+
+      begin
+        server_created_at = Time.parse(details['CreationDateUTC'])
+      rescue ArgumentError
+        server_created_at = nil
+      end
 
       record = cached.delete(host) || Tables::Server.new(host:)
       record.update!(
         name: details['ServerName'],
         state: details['ServerState'],
         is_public:,
-        server_created_at: Time.parse(details['CreationDateUTC']),
+        server_created_at:,
         min_aim_interval: details['MinAIMInterval'],
         default_aim_interval: details['DefaultAIMInterval'],
         token_support: details['TokenSupport'].downcase == 'true',
