@@ -3,6 +3,10 @@
     {
       "command": "bundle exec rake cleanup",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "command": "bundle exec rake populate",
+      "schedule": "13 0,12 * * *"
     }
   ]
 }

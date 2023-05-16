@@ -35,6 +35,7 @@ end
 
 MAX_IDLE_MONITORING_IN_SECONDS = 5 * 60 # 5 minutes
 
+# Runs every 5 minutes
 task :cleanup do
   # users stop monitoring if they have not refreshed the page in a while
   scope = Tables::User
@@ -60,4 +61,13 @@ task :cleanup do
     Tables::Checkin.where(net_id: nil).order(:updated_at).limit(count_to_delete).delete_all
   end
   puts "#{count_to_delete} checkin(s) deleted"
+end
+
+# Runs twice daily
+task :populate do
+  ActiveRecord::Base.logger = Logger.new($stdout)
+  nets = NetList.new.list
+  if (random_net = nets.sample)
+    NetInfo.new(id: random_net.id).net
+  end
 end
