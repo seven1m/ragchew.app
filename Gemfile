@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'activerecord'
 gem 'cgi'
+gem 'dotenv'
 gem 'dotiw'
 gem 'erubis'
 gem 'mysql2'

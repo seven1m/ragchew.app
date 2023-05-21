@@ -13,6 +13,7 @@ GEM
       tzinfo (~> 2.0)
     cgi (0.3.6)
     concurrent-ruby (1.2.2)
+    dotenv (2.8.1)
     dotiw (5.3.3)
       activesupport
       i18n
@@ -55,6 +56,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord
   cgi
+  dotenv
   dotiw
   erubis
   mysql2

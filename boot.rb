@@ -2,6 +2,7 @@ require 'bundler/setup'
 
 require 'active_record'
 require 'erubis'
+require 'dotenv/load'
 require 'dotiw'
 require 'cgi'
 require 'erb'
