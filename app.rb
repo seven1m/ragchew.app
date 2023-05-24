@@ -88,6 +88,8 @@ rescue NetInfo::NotFoundError => e
   erb :missing
 end
 
+ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/1x1.png', __dir__))
+
 get '/station/:call_sign/image' do
   call_sign = params[:call_sign]
   station = Tables::Station.find_by(call_sign:)
@@ -102,11 +104,11 @@ get '/station/:call_sign/image' do
   if station
     if station.image
       redirect station.image
+      return
     else
-      status 404
-      erb 'not found'
+      content_type 'image/png'
+      return ONE_PIXEL_IMAGE
     end
-    return
   end
 
   qrz = QrzAutoSession.new
@@ -116,13 +118,13 @@ get '/station/:call_sign/image' do
       redirect image
     else
       Tables::Station.create!(call_sign:, image: nil)
-      status 404
-      erb 'no image for this call sign'
+      content_type 'image/png'
+      return ONE_PIXEL_IMAGE
     end
   rescue Qrz::NotFound
     Tables::Station.create!(call_sign:, image: nil)
-    status 404
-    erb 'call sign not found'
+    content_type 'image/png'
+    return ONE_PIXEL_IMAGE
   rescue Qrz::Error => e
     status 500
     erb "qrz error: #{e.message}"
