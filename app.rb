@@ -68,13 +68,14 @@ get '/' do
 end
 
 get '/net/:name' do
+  service = NetInfo.new(name: CGI.unescape(params[:name]))
+
   @user = get_user
   unless @user
     redirect "/login?net=#{params[:name]}"
     return
   end
 
-  service = NetInfo.new(name: CGI.unescape(params[:name]))
   service.update!
   @net = service.net
   @checkins = @net.checkins.order(:num).to_a
