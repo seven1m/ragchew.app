@@ -5,6 +5,11 @@ require_relative './tables'
 
 class NetInfo
   NET_LOGGER_FAKE_VERSION = 'v3.1.7L'
+  EARTH_RADIUS_IN_KM = 6378.137
+  CENTER_PERCENTILE = 75
+  MIN_LATITUDES_FOR_MAJORITY = 3
+  MIN_LONGITUDES_FOR_MAJORITY = 3
+  MIN_CENTER_RADIUS_IN_METERS = 50000
 
   class NotFoundError < StandardError; end
 
@@ -21,20 +26,18 @@ class NetInfo
   end
 
   def net
-    if cache_needs_updating?
-      Tables::Net.with_advisory_lock(:update_net_cache, timeout_seconds: 2) do
-        @record.reload
-        if cache_needs_updating?
-          update_cache
-        end
-      end
-    end
-
     @record
   end
 
-  def net_without_cache_update
-    @record
+  def update!
+    return unless cache_needs_updating?
+
+    Tables::Net.with_advisory_lock(:update_net_cache, timeout_seconds: 2) do
+      @record.reload
+      if cache_needs_updating?
+        update_cache
+      end
+    end
   end
 
   def monitor!(user:)
@@ -117,8 +120,43 @@ class NetInfo
   end
 
   def update_net_info(info)
+    update_center
     @record.fully_updated_at = Time.now
     @record.update!(info)
+  end
+
+  def update_center
+    checkins = @record.checkins.to_a
+
+    minority_factor = (100 - CENTER_PERCENTILE) / 100.0
+
+    latitudes = checkins.map(&:latitude).compact.sort
+    minority_lat_size = (latitudes.size * minority_factor).to_i
+    if minority_lat_size >= 2
+      majority_latitudes = latitudes[(minority_lat_size / 2)...-(minority_lat_size / 2)]
+    else
+      majority_latitudes = latitudes
+    end
+    @record.center_latitude = average([majority_latitudes.first, majority_latitudes.last])
+
+    longitudes = checkins.map(&:longitude).compact.sort
+    minority_lon_size = (longitudes.size * minority_factor).to_i
+    if minority_lon_size >= 2
+      majority_longitudes = longitudes[(minority_lon_size / 2)...-(minority_lon_size / 2)]
+    else
+      majority_longitudes = longitudes
+    end
+    @record.center_longitude = average([majority_longitudes.first, majority_longitudes.last])
+
+    if majority_latitudes.any? && majority_longitudes.any?
+      distance = haversine_distance_in_meters(
+        majority_latitudes.first,
+        majority_longitudes.first,
+        majority_latitudes.last,
+        majority_longitudes.last,
+      )
+      @record.center_radius = [distance / 2, MIN_CENTER_RADIUS_IN_METERS].max
+    end
   end
 
   def update_checkins(checkins, currently_operating:)
@@ -195,6 +233,7 @@ class NetInfo
 
     checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, nickname|
       next if call_sign == 'future use 2'
+      (latitude, longitude) = GridSquare.new(grid_square).to_a
       begin
         checked_in_at = Time.parse(checked_in_at)
       rescue ArgumentError, TypeError
@@ -217,6 +256,8 @@ class NetInfo
           status:,
           country:,
           nickname:,
+          latitude:,
+          longitude:,
         }
       end
     end.compact
@@ -290,5 +331,35 @@ class NetInfo
     name = user.call_sign
     name += '-' + user.first_name unless user.first_name.to_s.strip.empty?
     name.upcase
+  end
+
+  def median(ary)
+    return if ary.empty?
+
+    if ary.size.odd?
+      ary[ary.size / 2]
+    else
+      (ary[(ary.size - 1) / 2] + ary[ary.size / 2]) / 2.0
+    end
+  end
+
+  def average(ary)
+    ary = ary.compact
+    return if ary.empty?
+
+    ary.sum / ary.size.to_f
+  end
+
+  # https://stackoverflow.com/a/11172685
+  def haversine_distance_in_meters(lat1, lon1, lat2, lon2)
+    dLat = lat2 * Math::PI / 180 - lat1 * Math::PI / 180
+    dLon = lon2 * Math::PI / 180 - lon1 * Math::PI / 180
+    a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math::PI / 180) *
+        Math.cos(lat2 * Math::PI / 180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+    d = EARTH_RADIUS_IN_KM * c
+    d * 1000
   end
 end

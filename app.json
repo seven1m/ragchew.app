@@ -6,7 +6,7 @@
     },
     {
       "command": "bundle exec rake populate",
-      "schedule": "13 0,12 * * *"
+      "schedule": "3,13,23,33,43,53 * * * *"
     }
   ]
 }

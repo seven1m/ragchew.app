@@ -28,13 +28,11 @@
       input { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
       .user-nav { float: right; text-align: right; }
       .blue-screen { background-color: #e8f4f8; }
-      #net-map {
-        height: 300px;
-      }
+      .index-map-explanation { color: #999; font-size: smaller; font-style: italic; }
+      #net-map { height: 500px; }
       @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
-        .table-wrapper {
-          overflow-x: auto;
-        }
+        .table-wrapper { overflow-x: auto; }
+        #net-map { height: 300px; }
       }
     </style>
     <% if @last_updated_at %>

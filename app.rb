@@ -54,6 +54,16 @@ get '/' do
               .limit(100)
               .map { |c| GridSquare.new(c.grid_square).to_a }
               .compact
+  @centers = @nets.map do |net|
+    next unless net.show_circle?
+    {
+      latitude: net.center_latitude,
+      longitude: net.center_longitude,
+      radius: net.center_radius,
+      name: net.name,
+      url: "/net/#{url_escape(net.name)}",
+    }
+  end.compact.sort_by { |c| c[:radius] }.reverse
   erb :index
 end
 
@@ -65,6 +75,7 @@ get '/net/:name' do
   end
 
   service = NetInfo.new(name: CGI.unescape(params[:name]))
+  service.update!
   @net = service.net
   @checkins = @net.checkins.order(:num).to_a
   @messages = @net.messages.order(:sent_at).to_a
@@ -247,7 +258,7 @@ post '/message/:net_id' do
   end
 
   @net_info = NetInfo.new(id: params[:net_id])
-  @net = @net_info.net_without_cache_update
+  @net = @net_info.net
 
   if @user.monitoring_net != @net
     status 401

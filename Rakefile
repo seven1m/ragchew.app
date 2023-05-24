@@ -43,14 +43,14 @@ task :cleanup do
     .where('monitoring_net_last_refreshed_at < ?', Time.now - MAX_IDLE_MONITORING_IN_SECONDS)
   count = scope.count
   scope.find_each do |user|
-      if (net = user.monitoring_net)
-        NetInfo.new(id: net.id).stop_monitoring!(user:)
-      end
-      user.update!(
-        monitoring_net: nil,
-        monitoring_net_last_refreshed_at: nil,
-      )
+    if (net = user.monitoring_net)
+      NetInfo.new(id: net.id).stop_monitoring!(user:)
     end
+    user.update!(
+      monitoring_net: nil,
+      monitoring_net_last_refreshed_at: nil,
+    )
+  end
   puts "#{count} user(s) stopped monitoring"
 
   # old checkins get cleaned up
@@ -63,11 +63,12 @@ task :cleanup do
   puts "#{count_to_delete} checkin(s) deleted"
 end
 
-# Runs twice daily
+# Runs every 10 minutes
 task :populate do
   ActiveRecord::Base.logger = Logger.new($stdout)
   nets = NetList.new.list
-  if (random_net = nets.sample)
-    NetInfo.new(id: random_net.id).net
+  nets.each do |net|
+    NetInfo.new(id: net.id).update!
+    sleep 5
   end
 end

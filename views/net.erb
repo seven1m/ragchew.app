@@ -150,6 +150,8 @@
 </div>
 
 <script id="map-script">
-  const coords = JSON.parse(document.getElementById('net-map').getAttribute('data-coords'))
-  showNetMap(coords)
+  const elm = document.getElementById('net-map')
+  const coords = JSON.parse(elm.getAttribute('data-coords'))
+  buildNetMap()
+  updateNetMapCoords(coords)
 </script>

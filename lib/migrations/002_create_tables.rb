@@ -17,6 +17,9 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.string :host
       t.datetime :partially_updated_at
       t.datetime :fully_updated_at
+      t.float :center_latitude
+      t.float :center_longitude
+      t.integer :center_radius
       t.timestamps
 
       t.index :name
@@ -41,6 +44,8 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.string :status
       t.string :dscc
       t.boolean :currently_operating, default: false, null: false
+      t.float :latitude
+      t.float :longitude
       t.timestamps
     end
 
