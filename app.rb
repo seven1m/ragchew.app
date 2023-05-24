@@ -202,7 +202,7 @@ post '/monitor/:net_id' do
   @net = @net_info.net
 
   if @user.monitoring_net && @user.monitoring_net != @net
-    # already monitoring one, stop stop that first
+    # already monitoring one, so stop that first
     begin
       NetInfo.new(id: @user.monitoring_net_id).stop_monitoring!(user: @user)
     rescue NetInfo::NotFoundError
@@ -224,17 +224,20 @@ post '/unmonitor/:net_id' do
     return
   end
 
-  @net_info = NetInfo.new(id: params[:net_id])
-  @net_info.stop_monitoring!(user: @user)
-
-  @net = @net_info.net
-
   @user.update!(
     monitoring_net: nil,
     monitoring_net_last_refreshed_at: nil,
   )
 
+  @net_info = NetInfo.new(id: params[:net_id])
+  @net_info.stop_monitoring!(user: @user)
+
+  @net = @net_info.net
+
   redirect "/net/#{url_escape @net.name}#messages"
+rescue NetInfo::NotFoundError
+  # net must have closed so just go home
+  redirect '/'
 end
 
 post '/message/:net_id' do
