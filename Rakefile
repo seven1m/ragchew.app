@@ -1,8 +1,8 @@
 require_relative './boot'
 
-require_relative './lib/migrations/001_create_users'
-require_relative './lib/migrations/002_create_tables'
-require_relative './lib/migrations/003_add_monitoring_net_id_to_users'
+Dir['./lib/migrations/*.rb'].to_a.each do |file|
+  require file
+end
 
 template = Erubis::Eruby.new(File.read('config/database.yaml'))
 db_config = YAML.safe_load(template.result) 
@@ -11,15 +11,19 @@ ActiveRecord::Base.establish_connection(db_config[env])
 
 namespace :db do
   task :migrate do
-    CreateUsers.new.up
-    CreateTables.new.up
-    AddMonitoringNetIdToUsers.new.change
+    [
+      CreateUsers,
+      CreateTables,
+      AddMonitoringNetIdToUsers,
+      CreateFavorites,
+    ].each { |m| m.new.migrate(:up) }
   end
 
   namespace :migrate do
-    task :redo do
-      CreateTables.new.down
-      CreateTables.new.up
+    desc 'Delete and recreate the cache tables'
+    task :redo_cache do
+      CreateTables.new.migrate(:down)
+      CreateTables.new.migrate(:up)
     end
   end
 end
@@ -52,15 +56,6 @@ task :cleanup do
     )
   end
   puts "#{count} user(s) stopped monitoring"
-
-  # old checkins get cleaned up
-  # (we keep the most recent 100 around so the homepage has something to show)
-  total = Tables::Checkin.where(net_id: nil).count
-  count_to_delete = [0, total - 100].max
-  if count_to_delete > 0
-    Tables::Checkin.where(net_id: nil).order(:updated_at).limit(count_to_delete).delete_all
-  end
-  puts "#{count_to_delete} checkin(s) deleted"
 end
 
 # Runs every 10 minutes

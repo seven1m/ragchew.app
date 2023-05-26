@@ -1,5 +1,5 @@
 class CreateTables < ActiveRecord::Migration[7.0]
-  def up
+  def change
     create_table :nets do |t|
       t.references :server
       t.string :name
@@ -47,11 +47,14 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.float :latitude
       t.float :longitude
       t.timestamps
+
+      t.index :call_sign
     end
 
     create_table :monitors do |t|
       t.references :net
       t.string :call_sign
+      t.string :name
       t.string :version
       t.string :status
       t.string :ip_address
@@ -97,14 +100,5 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.index :call_sign
       t.index :expires_at
     end
-  end
-
-  def down
-    drop_table :nets
-    drop_table :checkins
-    drop_table :monitors
-    drop_table :messages
-    drop_table :servers
-    drop_table :stations
   end
 end

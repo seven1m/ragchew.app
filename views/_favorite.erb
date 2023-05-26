@@ -1,0 +1,5 @@
+<% if call_sign && call_sign.tr('+', '').strip.size > 0 %>
+  <img src="/images/<%= favorited ? 'star-solid.svg' : 'star-outline.svg' %>"
+       class="favorite-star"
+       onclick="favorite('<%== url_escape call_sign %>', this, <%== favorited.inspect %>)"/>
+<% end %>

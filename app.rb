@@ -11,6 +11,8 @@ set :sessions, same_site: :strict, expire_after: 365 * 24 * 60 * 60 # 1 year
 
 set :static_cache_control, [:public, max_age: 60]
 
+set :bind, '0.0.0.0'
+
 if development?
   Dir['./lib/**/*.rb'].each do |path|
     also_reload(path)
@@ -42,6 +44,8 @@ db_config = YAML.safe_load(template.result)
 env = development? ? :development : :production
 ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if development?
+
+MAX_FAVORITES = 50
 
 get '/' do
   @user = get_user
@@ -88,6 +92,7 @@ get '/net/:name' do
       coord << checkin.call_sign if coord
     end
   end.compact
+  @favorites = @user.favorites.pluck(:call_sign)
 
   if @user.monitoring_net == @net
     @user.update!(monitoring_net_last_refreshed_at: Time.now)
@@ -100,7 +105,7 @@ rescue NetInfo::NotFoundError => e
   erb :missing
 end
 
-ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/1x1.png', __dir__))
+ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__))
 
 get '/station/:call_sign/image' do
   call_sign = params[:call_sign]
@@ -141,6 +146,69 @@ get '/station/:call_sign/image' do
     status 500
     erb "qrz error: #{e.message}"
   end
+end
+
+get '/favorites' do
+  @user = get_user
+  unless @user
+    redirect '/'
+    return
+  end
+
+  @favorites = @user.favorites.order(:call_sign).to_a
+
+  erb :favorites
+end
+
+post '/favorite/:call_sign' do
+  @user = get_user
+
+  content_type 'application/json'
+
+  return { error: 'not logged in' }.to_json unless @user
+
+  if @user.favorites.count >= MAX_FAVORITES
+    return {
+      error: "ERROR: You cannot have more than #{MAX_FAVORITES} favorites."
+    }.to_json
+  end
+
+  begin
+    station = QrzAutoSession.new.lookup(params[:call_sign])
+  rescue Error
+  end
+
+  @user.favorites.create!(
+    call_sign: params[:call_sign],
+    first_name: station && station[:first_name],
+    last_name: station && station[:last_name],
+  )
+
+  {
+    html: erb(
+      :_favorite,
+      locals: { call_sign: params[:call_sign], favorited: true },
+      layout: false
+    )
+  }.to_json
+end
+
+post '/unfavorite/:call_sign' do
+  @user = get_user
+
+  content_type 'application/json'
+
+  return { error: 'not logged in' }.to_json unless @user
+
+  @user.favorites.where(call_sign: params[:call_sign]).delete_all
+
+  {
+    html: erb(
+      :_favorite,
+      locals: { call_sign: params[:call_sign], favorited: false },
+      layout: false
+    )
+  }.to_json
 end
 
 get '/login' do

@@ -147,3 +147,16 @@ document.addEventListener('readystatechange', (event) => {
     setInterval(updateCurrentTime, 1000)
   }
 })
+
+function favorite(call_sign, elm, unfavorite) {
+  func = unfavorite ? 'unfavorite' : 'favorite'
+  fetch(`/${func}/${call_sign}`, { method: 'POST' })
+    .then(data => data.json())
+    .then(json => {
+      if (json.error)
+        alert(json.error)
+      else
+        elm.outerHTML = json.html
+    })
+    .catch(console.error)
+}

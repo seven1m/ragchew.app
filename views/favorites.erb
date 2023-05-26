@@ -1,0 +1,53 @@
+<%= erb :_user %>
+
+<p><a href="/">home</a></p>
+
+<h1>Favorite Stations (<%= @favorites.size %>)</h1>
+
+<p>Favorite stations allow you to easily spot friends from the home page if they are checked in on a net. You can add up to <%== MAX_FAVORITES %> favorite stations.</p>
+
+<% checked_in_by_call_sign = Tables::Checkin.where(call_sign: @favorites.map(&:call_sign)).includes(:net).select(&:net).each_with_object({}) { |c, h| h[c.call_sign] ||= []; h[c.call_sign] << c.net } %>
+<% monitoring_by_call_sign = Tables::Monitor.where(call_sign: @favorites.map(&:call_sign)).includes(:net).select(&:net).each_with_object({}) { |c, h| h[c.call_sign] ||= []; h[c.call_sign] << c.net } %>
+
+<% if @favorites.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Call Sign</th>
+        <th>Name</th>
+        <th>Checked In</th>
+        <th>Monitoring</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @favorites.each do |favorite| %>
+        <tr>
+          <td><%= erb :_favorite, locals: { call_sign: favorite.call_sign, favorited: true } %></td>
+          <td><%== favorite.call_sign %></td>
+          <td>
+            <%== favorite.first_name %>
+            <%== favorite.last_name %>
+          </td>
+          <td>
+            <% nets = checked_in_by_call_sign[favorite.call_sign] || [] %>
+            <% nets.each_with_index do |net, index| %>
+              <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a><% if index < nets.size - 1 %>,<% end %>
+            <% end %>
+          </td>
+          <td>
+            <% nets = monitoring_by_call_sign[favorite.call_sign] || [] %>
+            <% nets.each_with_index do |net, index| %>
+              <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a><% if index < nets.size - 1 %>,<% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <p>Click the <img src="/images/star-outline.svg" style="height:15px"/> icon to add/remove favorites.</p>
+<% else %>
+  <hr/>
+  <p><em>You have no favorite stations.</em> Click the <img src="/images/star-outline.svg" style="height:15px"/> icon when viewing a net to add one.</p>
+<% end %>

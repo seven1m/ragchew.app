@@ -39,29 +39,30 @@
       <tbody>
         <% @checkins.each do |entry| %>
           <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
-            <td><%== entry[:num] %></td>
+            <td><%== entry.num %></td>
             <td style="height:64px">
-              <a href="/station/<%== url_escape entry[:call_sign] %>/image" style="text-decoration:none">
+              <a href="/station/<%== url_escape entry.call_sign %>/image" style="text-decoration:none">
                 <img
-                  src="/station/<%== url_escape entry[:call_sign] %>/image"
+                  src="/station/<%== url_escape entry.call_sign %>/image"
                   style="max-height:40px;max-width:40px"
                   onerror="this.parentNode.removeChild(this)"
                 />
               </a>
             </td>
             <td>
-              <a href="https://www.qrz.com/db/<%== url_escape(entry[:call_sign]) %>">
-                <%== entry[:call_sign] %>
+              <%= erb :_favorite, locals: { call_sign: entry.call_sign, favorited: @favorites.include?(entry.call_sign) } %>
+              <a href="https://www.qrz.com/db/<%== url_escape(entry.call_sign) %>">
+                <%== entry.call_sign %>
               </a>
             </td>
-            <td><%== entry[:name] %></td>
-            <td class="can-wrap"><%== entry[:remarks] %></td>
-            <td><%== format_time(entry[:checked_in_at]) %></td>
-            <td><%== entry[:grid_square] %></td>
-            <td><%== entry[:status] %></td>
-            <td><%== entry[:city] %></td>
-            <td><%== entry[:state] %></td>
-            <td><%== entry[:country] %></td>
+            <td><%== entry.name %></td>
+            <td class="can-wrap"><%== entry.remarks %></td>
+            <td><%== format_time(entry.checked_in_at) %></td>
+            <td><%== entry.grid_square %></td>
+            <td><%== entry.status %></td>
+            <td><%== entry.city %></td>
+            <td><%== entry.state %></td>
+            <td><%== entry.country %></td>
           </tr>
         <% end %>
       </tbody>
@@ -133,6 +134,7 @@
     <thead>
       <tr>
         <th>Call Sign</th>
+        <th>Name</th>
         <th>Version</th>
         <th>Status</th>
       </tr>
@@ -140,9 +142,10 @@
     <tbody>
       <% @monitors.each do |monitor| %>
         <tr>
-          <td><%== monitor[:call_sign] %></td>
-          <td><%== monitor[:version] %></td>
-          <td><span class="<%== monitor[:status] %>"><%== monitor[:status] %></span></td>
+          <td><%== monitor.call_sign %></td>
+          <td><%== monitor.name %></td>
+          <td><%== monitor.version %></td>
+          <td><span class="<%== monitor.status %>"><%== monitor.status %></span></td>
         </tr>
       <% end %>
     </tbody>
