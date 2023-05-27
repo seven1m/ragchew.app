@@ -218,7 +218,7 @@ class NetInfo
         # bad checkin?
         nil
       else
-        if call_sign.size > 2 && name == ' ' && grid_square == ' '
+        if call_sign.size > 2 && grid_square == ' '
           # The NetLogger operator doesn't have a QRZ account,
           # so we'll look up some info for them using ours.
           begin
@@ -226,8 +226,8 @@ class NetInfo
           rescue Qrz::Error
             # well we tried
           else
-            name = [info[:first_name], info[:last_name], '(auto)'].compact.join(' ')
             grid_square = info[:grid_square]
+            name = [info[:first_name], info[:last_name]].compact.join(' ') unless name.present?
             street = info[:street] unless street.present?
             city = info[:city] unless city.present?
             state = info[:state] unless state.present?
