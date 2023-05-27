@@ -94,13 +94,12 @@ class CreateTables < ActiveRecord::Migration[7.0]
     create_table :stations do |t|
       t.string :call_sign, null: false
       t.string :image, limit: 1000
-      t.datetime :expires_at
+      t.datetime :image_expires_at
       t.string :last_heard_on
       t.datetime :last_heard_at
       t.timestamps
 
       t.index :call_sign
-      t.index :expires_at
     end
   end
 end
