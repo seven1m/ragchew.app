@@ -82,6 +82,7 @@ get '/net/:name' do
 
   service.update!
   @net = service.net
+  @page_title = @net.name
   @checkins = @net.checkins.order(:num).to_a
   @messages = @net.messages.order(:sent_at).to_a
   @monitors = @net.monitors.order(:call_sign).to_a
@@ -144,6 +145,7 @@ get '/station/:call_sign/image' do
 end
 
 get '/favorites' do
+  @page_title = 'Favorites'
   @user = get_user
   unless @user
     redirect '/'
@@ -237,6 +239,7 @@ post '/unfavorite/:call_sign' do
 end
 
 get '/login' do
+  @page_title = 'Log in'
   erb :login
 end
 
@@ -277,6 +280,7 @@ get '/admin' do
   @user = get_user
   require_admin!
 
+  @page_title = 'Admin'
   erb :admin
 end
 
@@ -284,6 +288,7 @@ get '/admin/users' do
   @user = get_user
   require_admin!
 
+  @page_title = 'Admin'
   @users = Tables::User.order(last_signed_in_at: :desc).limit(100).to_a
   @user_count_total = Tables::User.count
   @user_count_last_24_hours = Tables::User.where('last_signed_in_at > ?', Time.now - (24 * 60 * 60)).count
