@@ -38,35 +38,41 @@
       </thead>
       <tbody>
         <% @checkins.each_with_index do |entry, index| %>
-          <tr class="details <%= index % 2 == 0 ? 'even' : 'odd' %> <%= entry.currently_operating? ? 'currently-operating' : ''%>">
-            <td><%== entry.num %></td>
-            <td style="height:64px">
-              <a href="/station/<%== url_escape entry.call_sign %>/image" style="text-decoration:none">
-                <img
-                  src="/station/<%== url_escape entry.call_sign %>/image"
-                  style="max-height:40px;max-width:40px"
-                  onerror="this.parentNode.removeChild(this)"
-                />
-              </a>
-            </td>
-            <td>
-              <%= erb :_favorite, locals: { call_sign: entry.call_sign, favorited: @favorites.include?(entry.call_sign) } %>
-              <a href="https://www.qrz.com/db/<%== url_escape(entry.call_sign) %>">
-                <%== entry.call_sign %>
-              </a>
-            </td>
-            <td><%== entry.name %></td>
-            <td><%== format_time(entry.checked_in_at) %></td>
-            <td><%== entry.grid_square %></td>
-            <td><%== entry.status %></td>
-            <td><%== entry.city %></td>
-            <td><%== entry.county %></td>
-            <td><%== entry.state %></td>
-            <td><%== entry.country %></td>
-          </tr>
+          <% if entry.call_sign.present? %>
+            <tr class="details <%= index % 2 == 0 ? 'even' : 'odd' %> <%= entry.currently_operating? ? 'currently-operating' : ''%>">
+              <td><%== entry.num %></td>
+              <td style="height:64px">
+                <a href="/station/<%== url_escape entry.call_sign %>/image" style="text-decoration:none">
+                  <img
+                    src="/station/<%== url_escape entry.call_sign %>/image"
+                    style="max-height:40px;max-width:40px"
+                    onerror="this.parentNode.removeChild(this)"
+                  />
+                </a>
+              </td>
+              <td>
+                <%= erb :_favorite, locals: { call_sign: entry.call_sign, favorited: @favorites.include?(entry.call_sign) } %>
+                <a href="https://www.qrz.com/db/<%== url_escape(entry.call_sign) %>">
+                  <%== entry.call_sign %>
+                </a>
+              </td>
+              <td><%== entry.name %></td>
+              <td><%== format_time(entry.checked_in_at) %></td>
+              <td><%== entry.grid_square %></td>
+              <td><%== entry.status %></td>
+              <td><%== entry.city %></td>
+              <td><%== entry.county %></td>
+              <td><%== entry.state %></td>
+              <td><%== entry.country %></td>
+            </tr>
+          <% end %>
           <% if entry.remarks.strip.size > 0 %>
             <tr class="remarks <%= index % 2 == 0 ? 'even' : 'odd' %><%= entry.currently_operating? ? 'currently-operating' : ''%>">
-              <td></td>
+              <% if entry.call_sign.present? %>
+                <td></td>
+              <% else %>
+                <td><%== entry.num %></td>
+              <% end %>
               <td></td>
               <td colspan="9" class="can-wrap"><%== entry.remarks %></td>
             </tr>
