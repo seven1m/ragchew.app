@@ -29,19 +29,8 @@ class Qrz
       else
         raise Error, message
       end
-    elsif result =~ /<call>(.*?)<\/call>/i
-      actual_call_sign = $1.strip
-      first_name = (result.match(/<fname>(.*?)<\/fname>/) || [])[1]
-      last_name = (result.match(/<name>(.*?)<\/name>/) || [])[1]
-      image = (result.match(/<image>(.*?)<\/image>/) || [])[1]
-      {
-        call_sign: actual_call_sign,
-        first_name:,
-        last_name:,
-        image:,
-      }
     else
-      raise Error, "unknown error occurred: #{result}"
+      parse_result(result)
     end
   end
 
@@ -67,5 +56,28 @@ class Qrz
     url = "#{BASE_URL}?#{params_string}"
     puts "GET #{url}"
     Net::HTTP.get(URI(url))
+  end
+
+  private
+
+  def parse_result(result)
+    station = Nokogiri::XML(result).at_css('Callsign')
+    call_sign = station&.at_css('call')&.content
+
+    raise Error, "unknown error occurred: #{result}" unless call_sign
+
+    {
+      call_sign:,
+      first_name: station.at_css('fname')&.content,
+      last_name: station.at_css('name')&.content,
+      image: station.at_css('image')&.content,
+      grid_square: station.at_css('grid')&.content,
+      street: station.at_css('addr1')&.content,
+      city: station.at_css('addr2')&.content,
+      state: station.at_css('state')&.content,
+      zip: station.at_css('zip')&.content,
+      county: station.at_css('county')&.content,
+      country: station.at_css('country')&.content,
+    }
   end
 end
