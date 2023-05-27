@@ -206,34 +206,7 @@ class NetInfo
   end
 
   def fetch
-    log_last_updated_at = @record.checkins.maximum(:checked_in_at)
-    im_last_serial = @record.messages.maximum(:log_id)
-
-    fetcher = Fetcher.new(@record.host)
-    # LastExtDataSerial=570630
-
-    params = {
-      'ProtocolVersion' => '2.3',
-      'NetName' => CGI.escape(@record.name)
-    }
-
-    if (log_last_updated_at)
-      params.merge!(
-        'DeltaUpdateTime' => log_last_updated_at.strftime('%Y-%m-%d %H:%M:%S')
-      )
-    end
-
-    if (im_last_serial)
-      params.merge!(
-        'IMSerial' => im_last_serial
-      )
-    end
-
-    begin
-      data = fetcher.get('GetUpdates3.php', params)
-    rescue Fetcher::NotFoundError => e
-      raise NotFoundError, "Net is closed (#{e.message})"
-    end
+    data = fetch_raw
 
     checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, nickname|
       next if call_sign == 'future use 2'
@@ -344,6 +317,39 @@ class NetInfo
       info:,
       currently_operating:
     }
+  end
+
+  def fetch_raw(force_full: false)
+    unless force_full
+      log_last_updated_at = @record.checkins.maximum(:checked_in_at)
+      im_last_serial = @record.messages.maximum(:log_id)
+    end
+
+    fetcher = Fetcher.new(@record.host)
+    # LastExtDataSerial=570630
+
+    params = {
+      'ProtocolVersion' => '2.3',
+      'NetName' => CGI.escape(@record.name)
+    }
+
+    if (log_last_updated_at)
+      params.merge!(
+        'DeltaUpdateTime' => log_last_updated_at.strftime('%Y-%m-%d %H:%M:%S')
+      )
+    end
+
+    if (im_last_serial)
+      params.merge!(
+        'IMSerial' => im_last_serial
+      )
+    end
+
+    begin
+      fetcher.get('GetUpdates3.php', params)
+    rescue Fetcher::NotFoundError => e
+      raise NotFoundError, "Net is closed (#{e.message})"
+    end
   end
 
   def name_for_monitoring(user)

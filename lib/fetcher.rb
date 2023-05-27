@@ -13,6 +13,11 @@ class Fetcher
     html = Net::HTTP.get(uri).force_encoding('ISO-8859-1')
     raise NotFoundError, $1 if html =~ /\*error - (.*?)\*/m
 
+    # to debug the raw server HTML...
+    # ENV['DEBUG_HTML'] = true
+    # NetInfo.new(name: 'foo').send(:fetch_raw, force_full: true)
+    puts html if ENV['DEBUG_HTML']
+
     {}.tap do |result|
       html.scan(/<!--(.*?)-->(.*?)<!--.*?-->/m).each do |section, data|
         data.gsub!(/:~:/, '') # line-continuation ??
