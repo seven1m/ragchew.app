@@ -1,0 +1,52 @@
+<p><a href="/">home</a></p>
+
+<h2>Stats</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Table</th>
+      <th>Record Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>checkins</td>
+      <td><%= Tables::Checkin.count %></td>
+    </tr>
+    <tr>
+      <td>favorites</td>
+      <td><%= Tables::Favorite.count %></td>
+    </tr>
+    <tr>
+      <td>monitors</td>
+      <td><%= Tables::Monitor.count %></td>
+    </tr>
+    <tr>
+      <td>messages</td>
+      <td><%= Tables::Message.count %></td>
+    </tr>
+    <tr>
+      <td>nets</td>
+      <td><%= Tables::Net.count %></td>
+    </tr>
+    <tr>
+      <td>servers</td>
+      <td><%= Tables::Server.count %></td>
+    </tr>
+    <tr>
+      <td>stations</td>
+      <td><%= Tables::Station.count %></td>
+    </tr>
+    <tr>
+      <td>users</td>
+      <td><%= Tables::User.count %></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Details</h2>
+
+<ul>
+  <li><a href="/admin/users">users</a></li>
+</ul>

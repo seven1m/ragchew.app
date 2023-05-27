@@ -1,3 +1,5 @@
+<% admins = ENV.fetch('ADMIN_CALL_SIGNS').split(',') %>
+
 <div class="user-nav">
   <% if @user %>
     <% if @user.image %>
@@ -5,6 +7,9 @@
     <% end %>
     <a href="https://www.qrz.com/db/<%== url_escape(@user.call_sign) %>"><%== @user.call_sign %></a> |
     <a href="/favorites">favorites</a> |
+    <% if admins.include?(@user.call_sign) %>
+      <a href="/admin">admin</a> |
+    <% end %>
     <a href="/logout">log out</a>
   <% else %>
     <a href="/login">log in</a>

@@ -273,6 +273,13 @@ get '/admin/stats' do
   redirect '/admin/users'
 end
 
+get '/admin' do
+  @user = get_user
+  require_admin!
+
+  erb :admin
+end
+
 get '/admin/users' do
   @user = get_user
   require_admin!
