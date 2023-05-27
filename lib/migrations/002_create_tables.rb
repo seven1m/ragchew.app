@@ -42,7 +42,7 @@ class CreateTables < ActiveRecord::Migration[7.0]
       t.string :county
       t.string :country
       t.string :status
-      t.string :dscc
+      t.string :dxcc
       t.boolean :currently_operating, default: false, null: false
       t.float :latitude
       t.float :longitude

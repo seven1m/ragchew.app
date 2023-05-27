@@ -238,12 +238,32 @@ class NetInfo
     checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, nickname|
       next if call_sign == 'future use 2'
       (latitude, longitude) = GridSquare.new(grid_square).to_a
+
       begin
         checked_in_at = Time.parse(checked_in_at)
       rescue ArgumentError, TypeError
         # bad checkin?
         nil
       else
+        if call_sign.size > 2 && name == ' ' && grid_square == ' '
+          # The NetLogger operator doesn't have a QRZ account,
+          # so we'll look up some info for them using ours.
+          begin
+            info = qrz.lookup(call_sign)
+          rescue Qrz::Error
+            # well we tried
+          else
+            name = [info[:first_name], info[:last_name], '(auto)'].compact.join(' ')
+            grid_square = info[:grid_square]
+            street = info[:street] unless street.present?
+            city = info[:city] unless city.present?
+            state = info[:state] unless state.present?
+            zip = info[:zip] unless zip.present?
+            county = info[:county] unless county.present?
+            country = info[:country] unless country.present?
+          end
+        end
+
         {
           num: num.to_i,
           call_sign:,
@@ -366,5 +386,9 @@ class NetInfo
     c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
     d = EARTH_RADIUS_IN_KM * c
     d * 1000
+  end
+
+  def qrz
+    @qrz ||= QrzAutoSession.new
   end
 end
