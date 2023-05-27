@@ -27,18 +27,18 @@
           <th>Image</th>
           <th>Call Sign</th>
           <th>Name</th>
-          <th>Remarks</th>
           <th>Time</th>
           <th>Grid Square</th>
           <th>Status</th>
           <th>City</th>
+          <th>County</th>
           <th>State</th>
           <th>Country</th>
         </tr>
       </thead>
       <tbody>
-        <% @checkins.each do |entry| %>
-          <tr class="<%= entry.currently_operating? ? 'currently-operating' : ''%>">
+        <% @checkins.each_with_index do |entry, index| %>
+          <tr class="details <%= index % 2 == 0 ? 'even' : 'odd' %> <%= entry.currently_operating? ? 'currently-operating' : ''%>">
             <td><%== entry.num %></td>
             <td style="height:64px">
               <a href="/station/<%== url_escape entry.call_sign %>/image" style="text-decoration:none">
@@ -56,14 +56,21 @@
               </a>
             </td>
             <td><%== entry.name %></td>
-            <td class="can-wrap"><%== entry.remarks %></td>
             <td><%== format_time(entry.checked_in_at) %></td>
             <td><%== entry.grid_square %></td>
             <td><%== entry.status %></td>
             <td><%== entry.city %></td>
+            <td><%== entry.county %></td>
             <td><%== entry.state %></td>
             <td><%== entry.country %></td>
           </tr>
+          <% if entry.remarks.strip.size > 0 %>
+            <tr class="remarks <%= index % 2 == 0 ? 'even' : 'odd' %><%= entry.currently_operating? ? 'currently-operating' : ''%>">
+              <td></td>
+              <td></td>
+              <td colspan="9" class="can-wrap"><%== entry.remarks %></td>
+            </tr>
+          <% end %>
         <% end %>
       </tbody>
     </table>
