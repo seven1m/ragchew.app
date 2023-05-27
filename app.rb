@@ -113,13 +113,13 @@ get '/station/:call_sign/image' do
 
   expires Tables::Station::EXPIRATION_IN_SECONDS, :public, :must_revalidate
 
-  if station && !station.expired?
-    if station.image
-      redirect station.image
-      return
-    else
+  if station && station.image && !station.expired?
+    if station.image == 'none'
       content_type 'image/png'
       return ONE_PIXEL_IMAGE
+    else
+      redirect station.image
+      return
     end
   end
 
@@ -129,12 +129,12 @@ get '/station/:call_sign/image' do
       Tables::Station.find_or_initialize_by(call_sign:).update!(image:)
       redirect image
     else
-      Tables::Station.find_or_initialize_by(call_sign:).update!(image: nil)
+      Tables::Station.find_or_initialize_by(call_sign:).update!(image: 'none')
       content_type 'image/png'
       return ONE_PIXEL_IMAGE
     end
   rescue Qrz::NotFound
-    Tables::Station.find_or_initialize_by(call_sign:).update!(image: nil)
+    Tables::Station.find_or_initialize_by(call_sign:).update!(image: 'none')
     content_type 'image/png'
     return ONE_PIXEL_IMAGE
   rescue Qrz::Error => e
