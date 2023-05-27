@@ -111,14 +111,9 @@ get '/station/:call_sign/image' do
   call_sign = params[:call_sign]
   station = Tables::Station.find_by(call_sign:)
 
-  if station&.expired?
-    station.destroy!
-    station = nil
-  end
-
   expires Tables::Station::EXPIRATION_IN_SECONDS, :public, :must_revalidate
 
-  if station
+  if station && !station.expired?
     if station.image
       redirect station.image
       return
@@ -131,15 +126,15 @@ get '/station/:call_sign/image' do
   qrz = QrzAutoSession.new
   begin
     if (image = qrz.lookup(call_sign)[:image])
-      Tables::Station.create!(call_sign:, image:)
+      Tables::Station.find_or_initialize_by(call_sign:).update!(image:)
       redirect image
     else
-      Tables::Station.create!(call_sign:, image: nil)
+      Tables::Station.find_or_initialize_by(call_sign:).update!(image: nil)
       content_type 'image/png'
       return ONE_PIXEL_IMAGE
     end
   rescue Qrz::NotFound
-    Tables::Station.create!(call_sign:, image: nil)
+    Tables::Station.find_or_initialize_by(call_sign:).update!(image: nil)
     content_type 'image/png'
     return ONE_PIXEL_IMAGE
   rescue Qrz::Error => e
