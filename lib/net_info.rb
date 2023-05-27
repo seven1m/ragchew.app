@@ -168,6 +168,10 @@ class NetInfo
       else
         @record.checkins.create!(checkin)
       end
+      Tables::Station.find_or_initialize_by(call_sign: checkin[:call_sign]).update!(
+        last_heard_on: @record.name,
+        last_heard_at: checkin[:checked_in_at],
+      )
     end
 
     if currently_operating && records.detect { |r| r.currently_operating? }&.num != currently_operating

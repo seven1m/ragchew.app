@@ -6,7 +6,7 @@
 
 <p>Favorite stations allow you to easily spot friends from the home page if they are checked in on a net. You can add up to <%== MAX_FAVORITES %> favorite stations.</p>
 
-<% checked_in_by_call_sign = Tables::Checkin.where(call_sign: @favorites.map(&:call_sign)).includes(:net).select(&:net).each_with_object({}) { |c, h| h[c.call_sign] ||= []; h[c.call_sign] << c.net } %>
+<% nets_by_name = Tables::Net.all.index_by(&:name) %>
 <% monitoring_by_call_sign = Tables::Monitor.where(call_sign: @favorites.map(&:call_sign)).includes(:net).select(&:net).each_with_object({}) { |c, h| h[c.call_sign] ||= []; h[c.call_sign] << c.net } %>
 
 <% if @favorites.any? %>
@@ -30,9 +30,16 @@
             <%== favorite.last_name %>
           </td>
           <td>
-            <% nets = checked_in_by_call_sign[favorite.call_sign] || [] %>
-            <% nets.each_with_index do |net, index| %>
-              <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a><% if index < nets.size - 1 %>,<% end %>
+            <% station = Tables::Station.find_by(call_sign: favorite.call_sign) %>
+            <% if station&.last_heard_on %>
+              <% if nets_by_name.key?(station.last_heard_on) %>
+                <a href="/net/<%== url_escape(station.last_heard_on) %>"><%== station.last_heard_on %></a>
+              <% else %>
+                <%== station.last_heard_on %> [closed]
+              <% end %>
+              <% if station.last_heard_at %>
+                <em><%= distance_of_time_in_words(station.last_heard_at, Time.now) %> ago</em>
+              <% end %>
             <% end %>
           </td>
           <td>
