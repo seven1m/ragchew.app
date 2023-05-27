@@ -160,6 +160,36 @@ get '/favorites' do
   erb :favorites
 end
 
+# from form
+post '/favorite' do
+  @user = get_user
+  unless @user
+    redirect '/'
+    return
+  end
+
+  if @user.favorites.count >= MAX_FAVORITES
+    return {
+      error: "ERROR: You cannot have more than #{MAX_FAVORITES} favorites."
+    }.to_json
+  end
+
+  station = QrzAutoSession.new.lookup(params[:call_sign])
+
+  @user.favorites.create!(
+    call_sign: station[:call_sign],
+    first_name: station && station[:first_name],
+    last_name: station && station[:last_name],
+  )
+
+  redirect '/favorites'
+rescue ActiveRecord::RecordNotUnique
+  redirect '/favorites'
+rescue Qrz::NotFound
+  erb "<p><em>That call sign was not found in QRZ.</em></p>"
+end
+
+# from JS
 post '/favorite/:call_sign' do
   @user = get_user
 
@@ -179,7 +209,7 @@ post '/favorite/:call_sign' do
   end
 
   @user.favorites.create!(
-    call_sign: params[:call_sign],
+    call_sign: station[:call_sign],
     first_name: station && station[:first_name],
     last_name: station && station[:last_name],
   )

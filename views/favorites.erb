@@ -51,3 +51,7 @@
   <hr/>
   <p><em>You have no favorite stations.</em> Click the <img src="/images/star-outline.svg" style="height:15px"/> icon when viewing a net to add one.</p>
 <% end %>
+
+<form action="/favorite" method="post">
+  <p>Or you can add a favorite by call sign here: <input name="call_sign" size="7"/> <button>Add</button></p>
+</form>
