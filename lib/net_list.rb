@@ -97,7 +97,7 @@ class NetList
 
     blocked_net_names = Tables::BlockedNet.pluck(:name)
     data.reject! do |net_info|
-      blocked_net_names.include?(net_info[:name])
+      Tables::BlockedNet.blocked?(net_info[:name], names: blocked_net_names)
     end
 
     # update existing and create new
