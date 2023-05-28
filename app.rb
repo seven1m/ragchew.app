@@ -252,7 +252,7 @@ post '/login' do
 
   @user = Tables::User.find_or_initialize_by(call_sign: result[:call_sign])
   @user.last_signed_in_at = Time.now
-  @user.update!(result)
+  @user.update!(result.slice(:call_sign, :first_name, :last_name, :image))
 
   session.clear
   session[:user_id] = @user.id
