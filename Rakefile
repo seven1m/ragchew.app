@@ -63,7 +63,11 @@ task :populate do
   ActiveRecord::Base.logger = Logger.new($stdout)
   nets = NetList.new.list
   nets.each do |net|
-    NetInfo.new(id: net.id).update!
+    begin
+      NetInfo.new(id: net.id).update!
+    rescue NetInfo::NotFoundError
+      # it closed while we were looping
+    end
     sleep 5
   end
 end
