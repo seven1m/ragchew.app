@@ -1,0 +1,65 @@
+<p><a href="/">home</a></p>
+
+<% if @closed_net %>
+
+  <h1><%== @closed_net.name %></h1>
+
+  <p>
+    <strong>This net is closed.</strong> Please check back later,
+    <% if @net_count > 0 %>
+      or visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
+      are ongoing.
+    <% else %>
+      or visit the <a href="/">home page</a>.
+    <% end %>
+  </p>
+
+  <p>
+    <%== @closed_net.frequency %>
+    <%== @closed_net.mode %>
+    <%== @closed_net.band %>
+    <%== @closed_net.host %>
+  </p>
+
+  <% if @closed_net.show_circle? %>
+    <div id="net-map"
+         data-centers='<%= [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }].to_json %>'></div>
+  <% end %>
+
+  <dl>
+    <dt>Started at:</dt>
+    <dd><%= format_time(@closed_net.started_at) %></dd>
+    <dt>Ended at:</dt>
+    <dd><%= format_time(@closed_net.ended_at) %></dd>
+    <dt>Length:</dt>
+    <dd><%= distance_of_time_in_words(@closed_net.started_at, @closed_net.ended_at) %> long</dd>
+    <dt>Checkins:</dt>
+    <dd><%= @closed_net.checkin_count %></dd>
+    <dt>Messages:</dt>
+    <dd><%= @closed_net.message_count %></dd>
+    <dt>Monitors:</dt>
+    <dd><%= @closed_net.monitor_count %></dd>
+  </p>
+
+  <script id="map-script">
+    const elm = document.getElementById('net-map')
+    const centers = JSON.parse(elm.getAttribute('data-centers'))
+    buildNetMap()
+    updateNetMapCenters(centers)
+  </script>
+
+<% else %>
+
+  <h1>Net not found</h1>
+
+  <p>
+    We could not find a net with the name "<%== params[:name] %>".
+    <% if @net_count > 0 %>
+      You can visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
+      are ongoing.
+    <% else %>
+      You can visit the <a href="/">home page</a>.
+    <% end %>
+  </p>
+
+<% end %>

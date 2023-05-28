@@ -72,7 +72,7 @@ get '/' do
 end
 
 get '/net/:name' do
-  service = NetInfo.new(name: CGI.unescape(params[:name]))
+  service = NetInfo.new(name: params[:name])
 
   @user = get_user
   unless @user
@@ -100,11 +100,11 @@ get '/net/:name' do
   end
 
   erb :net
-rescue NetInfo::NotFoundError => e
-  @message = e.message
+rescue NetInfo::NotFoundError
+  @closed_net = Tables::ClosedNet.where(name: params[:name]).order(started_at: :desc).first
   @net_count = Tables::Net.count
-  status 404
-  erb :missing
+  status 404 unless @closed_net
+  erb :closed_net
 end
 
 ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__))

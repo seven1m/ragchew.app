@@ -1,4 +1,5 @@
 require_relative './tables/checkin'
+require_relative './tables/closed_net'
 require_relative './tables/favorite'
 require_relative './tables/message'
 require_relative './tables/monitor'

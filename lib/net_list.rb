@@ -104,8 +104,31 @@ class NetList
       end
     end
 
-    # delete existing no longer active
-    cached.values.each(&:destroy)
+    # archive closed nets
+    cached.values.each do |net|
+      closed_net = Tables::ClosedNet.new(
+        net.attributes.slice(
+          'name',
+          'frequency',
+          'mode',
+          'net_control',
+          'net_logger',
+          'band',
+          'started_at',
+          'subscribers',
+          'host',
+          'center_latitude',
+          'center_longitude',
+          'center_radius',
+        )
+      )
+      closed_net.ended_at = Time.now
+      closed_net.checkin_count = net.checkins.count
+      closed_net.message_count = net.messages.count
+      closed_net.monitor_count = net.monitors.count
+      closed_net.save!
+      net.destroy
+    end
 
     # update all the timestamps at once
     now = Time.now
