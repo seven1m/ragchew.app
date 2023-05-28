@@ -10,6 +10,7 @@ class NetInfo
   MIN_LATITUDES_FOR_MAJORITY = 3
   MIN_LONGITUDES_FOR_MAJORITY = 3
   MIN_CENTER_RADIUS_IN_METERS = 50000
+  MAX_CENTER_RADIUS_TO_SHOW = 3000000
 
   class NotFoundError < StandardError; end
 
@@ -155,7 +156,8 @@ class NetInfo
         majority_latitudes.last,
         majority_longitudes.last,
       )
-      @record.center_radius = [distance / 2, MIN_CENTER_RADIUS_IN_METERS].max
+      radius = [distance / 2, MIN_CENTER_RADIUS_IN_METERS].max
+      @record.center_radius = radius <= MAX_CENTER_RADIUS_TO_SHOW ? radius : nil
     end
   end
 
