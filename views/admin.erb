@@ -63,6 +63,7 @@
       <th>Name</th>
       <th>Reason</th>
       <th>Blocked</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -70,6 +71,7 @@
       <tr>
         <td><%== blocked_net.name %></td>
         <td><%== blocked_net.reason %></td>
+        <td><%== format_time(blocked_net.created_at) %></td>
         <td>
           <form action="/admin/unblock_net" method="post" onsubmit="if (!confirm('Sure?')) return false">
             <input type="hidden" name="name" value="<%== url_escape(blocked_net.name) %>"/>
