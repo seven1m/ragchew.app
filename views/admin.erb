@@ -54,3 +54,20 @@
 <ul>
   <li><a href="/admin/users">users</a></li>
 </ul>
+
+<h2>Blocked Nets</h2>
+
+<ul>
+  <% Tables::BlockedNet.order(:name).each do |blocked_net| %>
+    <li>
+      <%== blocked_net.name %>
+      <em><%== blocked_net.reason %></em>
+    </li>
+  <% end %>
+</ul>
+
+<form action="/admin/block_net" method="post">
+  <input name="name" placeholder="name"/>
+  <input name="reason" placeholder="reason"/>
+  <input type="submit" value="Block net"/>
+</form>

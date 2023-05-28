@@ -103,6 +103,11 @@ get '/net/:name' do
   erb :net
 rescue NetInfo::NotFoundError
   @closed_net = Tables::ClosedNet.where(name: params[:name]).order(started_at: :desc).first
+  @name = @closed_net.name
+  if Tables::BlockedNet.where(name: @closed_net.name).any?
+    @closed_net = nil
+    @name = nil
+  end
   @net_count = Tables::Net.count
   status 404 unless @closed_net
   erb :closed_net
@@ -385,6 +390,14 @@ post '/message/:net_id' do
   session[:message_sent] = { net_id: @net.id, count_before: @net.messages.count, message: }
 
   redirect "/net/#{url_escape @net.name}"
+end
+
+post '/admin/block_net' do
+  @user = get_user
+  require_admin!
+
+  Tables::BlockedNet.create!(name: CGI.unescape(params[:name]), reason: params[:reason])
+  redirect '/admin'
 end
 
 def get_user

@@ -53,7 +53,11 @@
   <h1>Net not found</h1>
 
   <p>
-    We could not find a net with the name "<%== params[:name] %>".
+    <% if @name %>
+      We could not find a net with the name "<%== @name %>".
+    <% else %>
+      We could not find a net with that name.
+    <% end %>
     <% if @net_count > 0 %>
       You can visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
       are ongoing.

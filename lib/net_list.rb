@@ -95,6 +95,11 @@ class NetList
     data = fetch
     cached = Tables::Net.all_by_name
 
+    blocked_net_names = Tables::BlockedNet.pluck(:name)
+    data.reject! do |net_info|
+      blocked_net_names.include?(net_info[:name])
+    end
+
     # update existing and create new
     data.each do |net_info|
       if (net = cached.delete(net_info[:name]))

@@ -1,3 +1,4 @@
+require_relative './tables/blocked_net'
 require_relative './tables/checkin'
 require_relative './tables/closed_net'
 require_relative './tables/favorite'
