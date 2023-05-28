@@ -10,7 +10,8 @@
     <% if admins.include?(@user.call_sign) %>
       <a href="/admin">admin</a> |
     <% end %>
-    <a href="/logout">log out</a>
+    <a href="/logout" onclick="document.getElementById('logout-form').submit(); return false">log out</a>
+    <form id="logout-form" style="display:none;" action="/logout" method="post"><input type="submit"/></form>
   <% else %>
     <a href="/login">log in</a>
   <% end %>

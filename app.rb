@@ -165,6 +165,8 @@ post '/favorite' do
     return
   end
 
+  content_type 'application/json'
+
   if @user.favorites.count >= MAX_FAVORITES
     return {
       error: "ERROR: You cannot have more than #{MAX_FAVORITES} favorites."
@@ -265,6 +267,10 @@ rescue Qrz::Error => e
 end
 
 get '/logout' do
+  erb :logout
+end
+
+post '/logout' do
   session.clear
   redirect '/'
 end
