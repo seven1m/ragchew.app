@@ -1,0 +1,9 @@
+<% admins = ENV.fetch('ADMIN_CALL_SIGNS').split(',') %>
+
+<% if admins.include?(@user.call_sign) %>
+  <form action="/admin/block_net" method="post" onsubmit="if (!confirm('Sure?')) return false">
+    <input type="hidden" name="name" value="<%== url_escape(@net.name) %>"/>
+    <input name="reason" placeholder="reason"/>
+    <input type="submit" value="Block net"/>
+  </form>
+<% end %>

@@ -55,16 +55,31 @@
   <li><a href="/admin/users">users</a></li>
 </ul>
 
-<h2>Blocked Nets</h2>
+<h2 id="blocked-nets">Blocked Nets</h2>
 
-<ul>
-  <% Tables::BlockedNet.order(:name).each do |blocked_net| %>
-    <li>
-      <%== blocked_net.name %>
-      <em><%== blocked_net.reason %></em>
-    </li>
-  <% end %>
-</ul>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Reason</th>
+      <th>Blocked</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% Tables::BlockedNet.order(:name).each do |blocked_net| %>
+      <tr>
+        <td><%== blocked_net.name %></td>
+        <td><%== blocked_net.reason %></td>
+        <td>
+          <form action="/admin/unblock_net" method="post" onsubmit="if (!confirm('Sure?')) return false">
+            <input type="hidden" name="name" value="<%== url_escape(blocked_net.name) %>"/>
+            <input type="submit" value="Remove"/>
+          </form>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
 
 <form action="/admin/block_net" method="post">
   <input name="name" placeholder="name"/>

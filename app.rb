@@ -397,7 +397,15 @@ post '/admin/block_net' do
   require_admin!
 
   Tables::BlockedNet.create!(name: CGI.unescape(params[:name]), reason: params[:reason])
-  redirect '/admin'
+  redirect '/admin#blocked-nets'
+end
+
+post '/admin/unblock_net' do
+  @user = get_user
+  require_admin!
+
+  Tables::BlockedNet.where(name: CGI.unescape(params[:name])).delete_all
+  redirect '/admin#blocked-nets'
 end
 
 def get_user
