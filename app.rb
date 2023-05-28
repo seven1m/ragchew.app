@@ -165,12 +165,9 @@ post '/favorite' do
     return
   end
 
-  content_type 'application/json'
-
   if @user.favorites.count >= MAX_FAVORITES
-    return {
-      error: "ERROR: You cannot have more than #{MAX_FAVORITES} favorites."
-    }.to_json
+    status 400
+    erb "<p><em>You cannot have more than #{MAX_FAVORITES} favorites.</em></p>"
   end
 
   station = QrzAutoSession.new.lookup(params[:call_sign])
@@ -185,6 +182,7 @@ post '/favorite' do
 rescue ActiveRecord::RecordNotUnique
   redirect '/favorites'
 rescue Qrz::NotFound
+  status 400
   erb "<p><em>That call sign was not found in QRZ.</em></p>"
 end
 
