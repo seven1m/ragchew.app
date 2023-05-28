@@ -72,6 +72,7 @@ get '/' do
 end
 
 get '/net/:name' do
+  params[:name] = CGI.unescape(params[:name])
   service = NetInfo.new(name: params[:name])
 
   @user = get_user
