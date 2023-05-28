@@ -67,7 +67,7 @@
             </tr>
           <% end %>
           <% if entry.remarks.strip.size > 0 %>
-            <tr class="remarks <%= index % 2 == 0 ? 'even' : 'odd' %><%= entry.currently_operating? ? 'currently-operating' : ''%>">
+            <tr class="remarks <%= index % 2 == 0 ? 'even' : 'odd' %> <%= entry.currently_operating? ? 'currently-operating' : ''%>">
               <% if entry.call_sign.present? %>
                 <td></td>
               <% else %>
