@@ -4,8 +4,8 @@ module Tables
 
     scope :is_public, -> { where(is_public: true) }
 
-    def self.public_by_host
-      is_public.each_with_object({}) do |server, hash|
+    def self.by_host
+      all.each_with_object({}) do |server, hash|
         hash[server.host] = server
       end
     end

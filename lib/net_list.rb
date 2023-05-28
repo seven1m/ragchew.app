@@ -44,7 +44,7 @@ class NetList
       hash[header] = data.strip.split(/\r?\n/)
     end
 
-    cached = Tables::Server.public_by_host
+    cached = Tables::Server.by_host
 
     # add new and update existing
     sections['ServerList'].each do |line|
