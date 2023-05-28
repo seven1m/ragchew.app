@@ -103,8 +103,8 @@ get '/net/:name' do
   erb :net
 rescue NetInfo::NotFoundError
   @closed_net = Tables::ClosedNet.where(name: params[:name]).order(started_at: :desc).first
-  @name = @closed_net.name
-  if Tables::BlockedNet.blocked?(@closed_net.name)
+  @name = @closed_net&.name
+  if @closed_net && Tables::BlockedNet.blocked?(@closed_net.name)
     @closed_net = nil
     @name = nil
   end
