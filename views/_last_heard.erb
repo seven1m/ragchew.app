@@ -1,10 +1,6 @@
 <% station = Tables::Station.find_by(call_sign:) %>
 <% if station&.last_heard_on %>
-  <% if nets_by_name.key?(station.last_heard_on) %>
-    <a href="/net/<%== url_escape(station.last_heard_on) %>"><%== station.last_heard_on %></a>
-  <% else %>
-    <%== station.last_heard_on %> (closed)
-  <% end %>
+  <a href="/net/<%== url_escape(station.last_heard_on) %>"><%== station.last_heard_on %></a>
   <% if station.last_heard_at %>
     <em><%= distance_of_time_in_words(station.last_heard_at, Time.now) %> ago</em>
   <% end %>

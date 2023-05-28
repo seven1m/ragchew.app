@@ -6,7 +6,6 @@
 
 <p>Favorite stations allow you to easily spot friends if they have checked in on a net. You can add up to <%== MAX_FAVORITES %> favorite stations.</p>
 
-<% nets_by_name = Tables::Net.all.index_by(&:name) %>
 <% monitoring_by_call_sign = Tables::Monitor.where(call_sign: @favorites.map(&:call_sign)).includes(:net).select(&:net).each_with_object({}) { |c, h| h[c.call_sign] ||= []; h[c.call_sign] << c.net } %>
 
 <% if @favorites.any? %>
@@ -31,7 +30,7 @@
               <%== favorite.last_name %>
             </td>
             <td>
-              <%= erb :_last_heard, locals: { call_sign: favorite.call_sign, nets_by_name: } %>
+              <%= erb :_last_heard, locals: { call_sign: favorite.call_sign } %>
             </td>
             <td>
               <% nets = monitoring_by_call_sign[favorite.call_sign] || [] %>

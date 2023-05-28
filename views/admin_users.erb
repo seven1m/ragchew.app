@@ -1,5 +1,3 @@
-<% nets_by_name = Tables::Net.all.index_by(&:name) %>
-
 <p><a href="/">home</a></p>
 
 <dl>
@@ -36,7 +34,7 @@
           <td><%== format_time(user.last_signed_in_at) %></td>
           <td><%== format_time(user.created_at) %></td>
           <td>
-            <%= erb :_last_heard, locals: { call_sign: user.call_sign, nets_by_name: } %>
+            <%= erb :_last_heard, locals: { call_sign: user.call_sign } %>
           </td>
           <td>
             <% if user.monitoring_net %>
