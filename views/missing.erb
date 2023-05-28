@@ -3,3 +3,11 @@
 <h1>404 - Page not found</h1>
 
 <%== @message %>
+
+<% if @net_count > 0 %>
+  <p>
+    There are
+    <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
+    happening right now though.
+  </p>
+<% end %>

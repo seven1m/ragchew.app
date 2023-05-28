@@ -102,6 +102,7 @@ get '/net/:name' do
   erb :net
 rescue NetInfo::NotFoundError => e
   @message = e.message
+  @net_count = Tables::Net.count
   status 404
   erb :missing
 end
