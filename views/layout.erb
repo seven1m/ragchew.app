@@ -54,7 +54,7 @@
         .columns .column { flex-grow: 0; }
       }
     </style>
-    <% if @last_updated_at %>
+    <% if @last_updated_at && params[:autoupdate] != 'false' %>
       <script>
         let secondsToWaitBetweenUpdates = <%= @update_interval || 30 %>
         const updateBackoff = <%= @update_backoff || 0 %>
