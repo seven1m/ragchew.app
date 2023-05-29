@@ -432,7 +432,7 @@ get '/sitemap.txt' do
   names.reject! do |name|
     Tables::BlockedNet.blocked?(name, names: blocked_net_names)
   end
-  "/\n" + names.map { |name| "/net/#{url_escape(name)}" }.join("\n")
+  "/\n" + names.map { |name| "https://ragchew.app/net/#{url_escape(name)}" }.join("\n")
 end
 
 def get_user
