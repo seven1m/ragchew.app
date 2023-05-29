@@ -89,25 +89,28 @@ get '/net/:name' do
   service.update!
   @net = service.net
   @page_title = @net.name
-  @checkins = @net.checkins.order(:num).to_a
-  @messages = @net.messages.order(:sent_at).to_a
-  @monitors = @net.monitors.order(:call_sign).to_a
-  @last_updated_at = @net.fully_updated_at
-  @update_interval = @net.update_interval_in_seconds + 1
-  @coords = @checkins.map do |checkin|
-    GridSquare.new(checkin.grid_square).to_a.tap do |coord|
-      coord << checkin.call_sign if coord
-    end
-  end.compact
-  @favorites = @user ? @user.favorites.pluck(:call_sign) : []
 
   if @user&.monitoring_net == @net
     @user.update!(monitoring_net_last_refreshed_at: Time.now)
   end
 
   if @user
+    @checkins = @net.checkins.order(:num).to_a
+    @messages = @net.messages.order(:sent_at).to_a
+    @monitors = @net.monitors.order(:call_sign).to_a
+    @coords = @checkins.map do |checkin|
+      GridSquare.new(checkin.grid_square).to_a.tap do |coord|
+        coord << checkin.call_sign if coord
+      end
+    end.compact
+    @favorites = @user.favorites.pluck(:call_sign)
+    @last_updated_at = @net.fully_updated_at
+    @update_interval = @net.update_interval_in_seconds + 1
     erb :net
   else
+    @checkin_count = @net.checkins.count
+    @message_count = @net.messages.count
+    @monitor_count = @net.monitors.count
     erb :net_limited
   end
 rescue NetInfo::NotFoundError
@@ -118,6 +121,11 @@ rescue NetInfo::NotFoundError
     @name = nil
   end
   @net_count = Tables::Net.count
+  if @closed_net
+    @checkin_count = @closed_net.checkin_count
+    @message_count = @closed_net.message_count
+    @monitor_count = @closed_net.monitor_count
+  end
   status 404 unless @closed_net
   erb :closed_net
 end

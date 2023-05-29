@@ -1,0 +1,32 @@
+<div class="columns">
+  <dl class="column">
+    <dt>Frequency:</dt>
+    <dd><%== net.frequency %></dd>
+    <dt>Mode:</dt>
+    <dd><%== net.mode %></dd>
+    <dt>Band:</dt>
+    <dd><%== net.band %></dd>
+    <dt>Host:</dt>
+    <dd><%== net.host %></dd>
+    <dt>Subscribers:</dt>
+    <dd><%== net.subscribers %></dd>
+  </dl>
+  <dl class="column">
+    <dt>Started at:</dt>
+    <dd><%== format_time(net.started_at) %></dd>
+    <% if net.respond_to?(:ended_at) && net.ended_at %>
+      <dt>Ended at:</dt>
+      <dd>
+        <%= format_time(net.ended_at) %>
+        (<%= distance_of_time_in_words(net.started_at, net.ended_at) %> long)
+      </dd>
+    <% end %>
+    <dt>Check-ins:</dt>
+    <dd><%== @checkin_count %></dd>
+    <dt>Messages:</dt>
+    <dd><%== @message_count %></dd>
+    <dt>Monitors:</dt>
+    <dd><%== @monitor_count %></dd>
+  </dl>
+</div>
+

@@ -26,20 +26,7 @@
          data-centers='<%= [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }].to_json %>'></div>
   <% end %>
 
-  <dl>
-    <dt>Started at:</dt>
-    <dd><%= format_time(@closed_net.started_at) %></dd>
-    <dt>Ended at:</dt>
-    <dd><%= format_time(@closed_net.ended_at) %></dd>
-    <dt>Length:</dt>
-    <dd><%= distance_of_time_in_words(@closed_net.started_at, @closed_net.ended_at) %> long</dd>
-    <dt>Check-ins:</dt>
-    <dd><%= @closed_net.checkin_count %></dd>
-    <dt>Messages:</dt>
-    <dd><%= @closed_net.message_count %></dd>
-    <dt>Monitors:</dt>
-    <dd><%= @closed_net.monitor_count %></dd>
-  </dl>
+  <%= erb :_net_info, locals: { net: @closed_net } %>
 
   <script id="map-script">
     const elm = document.getElementById('net-map')
