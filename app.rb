@@ -428,6 +428,10 @@ end
 get '/sitemap.txt' do
   content_type 'text/plain'
   names = (Tables::Net.pluck(:name) + Tables::ClosedNet.distinct(:name).pluck(:name)).uniq
+  blocked_net_names = Tables::BlockedNet.pluck(:name)
+  names.reject! do |name|
+    Tables::BlockedNet.blocked?(name, names: blocked_net_names)
+  end
   "/\n" + names.map { |name| "/net/#{url_escape(name)}" }.join("\n")
 end
 
