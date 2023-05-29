@@ -2,7 +2,7 @@
 
 <% if @closed_net %>
 
-  <h1><%== @closed_net.name %></h1>
+  <h1><%== @closed_net.name %> (closed)</h1>
 
   <p>
     <strong>This net is closed.</strong> Please check back later,
@@ -14,19 +14,12 @@
     <% end %>
   </p>
 
-  <p>
-    <%== @closed_net.frequency %>
-    <%== @closed_net.mode %>
-    <%== @closed_net.band %>
-    <%== @closed_net.host %>
-  </p>
+  <%= erb :_net_info, locals: { net: @closed_net } %>
 
   <% if @closed_net.show_circle? %>
     <div id="net-map"
          data-centers='<%= [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }].to_json %>'></div>
   <% end %>
-
-  <%= erb :_net_info, locals: { net: @closed_net } %>
 
   <script id="map-script">
     const elm = document.getElementById('net-map')
