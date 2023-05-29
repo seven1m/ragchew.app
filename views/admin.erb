@@ -78,7 +78,7 @@
         <td>
           <form action="/admin/unblock_net" method="post" onsubmit="if (!confirm('Sure?')) return false">
             <input type="hidden" name="name" value="<%== url_escape(blocked_net.name) %>"/>
-            <input type="submit" value="Remove"/>
+            <button>remove</button>
           </form>
         </td>
       </tr>

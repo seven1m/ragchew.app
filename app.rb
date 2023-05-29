@@ -329,6 +329,7 @@ get '/admin/closed-nets' do
   per_page = 20
   scope = Tables::ClosedNet.order(started_at: :desc)
   scope.where!('started_at < ?', params[:started_at]) if params[:started_at]
+  scope.where!('name like ?', '%' + params[:name] + '%') if params[:name]
   @more_pages = scope.count - per_page > 0
   @closed_nets = scope.limit(per_page)
 

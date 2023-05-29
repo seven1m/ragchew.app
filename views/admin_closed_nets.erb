@@ -5,6 +5,14 @@
 
 <h1>Closed Nets</h1>
 
+<form action="/admin/closed-nets">
+  <input name="name" placeholder="name" value="<%== params[:name] %>"/>
+  <input type="submit" value="search"/>
+  <% if params[:name] %>
+    <a href="/admin/closed-nets">clear</a>
+  <% end %>
+</form>
+
 <div class="table-wrapper">
   <table>
     <thead>
