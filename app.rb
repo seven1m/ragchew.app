@@ -417,6 +417,12 @@ post '/admin/unblock_net' do
   redirect '/admin#blocked-nets'
 end
 
+get '/sitemap.txt' do
+  content_type 'text/plain'
+  names = (Tables::Net.pluck(:name) + Tables::ClosedNet.distinct(:name).pluck(:name)).uniq
+  "/\n" + names.map { |name| "/net/#{url_escape(name)}" }.join("\n")
+end
+
 def get_user
   if !session[:user_id] || !(user = Tables::User.find_by(id: session[:user_id]))
     return

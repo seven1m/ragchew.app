@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: 
+
+User-agent: googlebot-image
+Disallow: /
+
+Crawl-delay: 120
+Sitemap: https://ragchew.app/sitemap.txt
