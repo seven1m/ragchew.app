@@ -328,12 +328,26 @@ get '/admin/closed-nets' do
 
   per_page = 20
   scope = Tables::ClosedNet.order(started_at: :desc)
-  scope.where!('started_at < ?', params[:started_at]) if params[:started_at]
   scope.where!('name like ?', '%' + params[:name] + '%') if params[:name]
+  @total_count = scope.count
+  scope.where!('started_at < ?', params[:started_at]) if params[:started_at]
   @more_pages = scope.count - per_page > 0
   @closed_nets = scope.limit(per_page)
 
   erb :admin_closed_nets
+end
+
+get '/admin/closed-net/:id' do
+  @user = get_user
+  require_admin!
+
+  @net_count = Tables::Net.count
+  @closed_net = Tables::ClosedNet.find(params[:id])
+  @name = @closed_net&.name
+  @checkin_count = @closed_net.checkin_count
+  @message_count = @closed_net.message_count
+  @monitor_count = @closed_net.monitor_count
+  erb :closed_net
 end
 
 delete '/admin/closed-net/:id' do

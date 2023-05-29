@@ -2,6 +2,14 @@
 
 <h1><%== @closed_net.name %> (closed)</h1>
 
+<% if params[:id] %>
+  <p>
+    <em>You are viewing a closed net from the archive.
+    <a href="/admin/closed-nets?name=<%== url_escape(@closed_net.name) %>">name search</a> |
+    <a href="/net/<%== url_escape(@closed_net.name) %>">public page</a>
+  </p>
+<% end %>
+
 <p>
   <strong>This net is closed.</strong> Please check back later,
   <% if @net_count > 0 %>

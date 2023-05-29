@@ -3,7 +3,7 @@
   <a href="/admin">admin</a>
 </p>
 
-<h1>Closed Nets</h1>
+<h1>Closed Nets (<%== @total_count %>)</h1>
 
 <form action="/admin/closed-nets">
   <input name="name" placeholder="name" value="<%== params[:name] %>"/>
@@ -28,7 +28,7 @@
     <tbody>
       <% @closed_nets.each do |closed_net| %>
         <tr>
-          <td><a href="/net/<%== url_escape(closed_net.name) %>"><%== closed_net.name %></a></td>
+          <td><a href="/admin/closed-net/<%== closed_net.id %>"><%== closed_net.name %></a></td>
           <td>
             <%== format_time(closed_net.started_at) %><br/>
             (<%== time_ago_in_words(closed_net.started_at) %> ago)</em>
@@ -54,10 +54,10 @@
 
 <p>
   <% if params[:started_at] %>
-    <a href="/admin/closed-nets">start</a>
+    <a href="/admin/closed-nets<%== params[:name] ? "?name=#{url_escape(params[:name])}" : '' %>">start</a>
   <% end %>
   <% if params[:started_at] && @more_pages %>|<% end %>
   <% if @more_pages %>
-    <a href="/admin/closed-nets?started_at=<%== @closed_nets.last.started_at.rfc3339 %>">more</a>
+    <a href="/admin/closed-nets?started_at=<%== @closed_nets.last.started_at.rfc3339 %><%== params[:name] ? "&name=#{url_escape(params[:name])}" : '' %>">more</a>
   <% end %>
 </p>
