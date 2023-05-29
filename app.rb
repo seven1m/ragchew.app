@@ -270,6 +270,8 @@ get '/login' do
 end
 
 post '/login' do
+  params[:net] = CGI.unescape(params[:net]) if params[:net]
+
   qrz = Qrz.login(
     username: params[:call_sign],
     password: params[:password],
@@ -284,7 +286,7 @@ post '/login' do
   session[:user_id] = @user.id
   session[:qrz_session] = qrz.session
 
-  redirect params[:net] ? "/net/#{params[:net]}" : '/'
+  redirect params[:net] ? "/net/#{url_escape params[:net]}" : '/'
 rescue Qrz::Error => e
   @error = e.message
   erb :login
