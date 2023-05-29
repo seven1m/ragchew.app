@@ -1,0 +1,52 @@
+<p><a href="/">home</a></p>
+
+<h1><%== @net.name %></h1>
+
+<form action="/login">
+  <input type="hidden" name="net" value="<%== url_escape(@net.name) %>"/>
+  <p>
+    <% if @checkins.size > 0 %>
+      <strong>This net is ongoing with <%== @checkins.size %> <%== pluralize('check-in', @checkins.size) %>.</strong>
+    <% else %>
+      <strong>This net is ongoing.</strong>
+    <% end %>
+    Please
+    <button>log in</button>
+    to see who has checked in.
+  </p>
+</form>
+
+<div class="columns">
+  <dl class="column">
+    <dt>Frequency:</dt>
+    <dd><%== @net.frequency %></dd>
+    <dt>Mode:</dt>
+    <dd><%== @net.mode %></dd>
+    <dt>Band:</dt>
+    <dd><%== @net.band %></dd>
+    <dt>Host:</dt>
+    <dd><%== @net.host %></dd>
+  </dl>
+  <dl class="column">
+    <dt>Started at:</dt>
+    <dd><%== format_time(@net.started_at) %></dd>
+    <dt>Check-ins:</dt>
+    <dd><%== @checkins.size %></dd>
+    <dt>Messages:</dt>
+    <dd><%== @messages.size %></dd>
+    <dt>Monitors:</dt>
+    <dd><%== @monitors.size %></dd>
+  </dl>
+</div>
+
+<% if @net.show_circle? %>
+  <div id="net-map"
+       data-centers='<%= [{ latitude: @net.center_latitude, longitude: @net.center_longitude, radius: @net.center_radius }].to_json %>'></div>
+<% end %>
+
+<script id="map-script">
+  const elm = document.getElementById('net-map')
+  const centers = JSON.parse(elm.getAttribute('data-centers'))
+  buildNetMap()
+  updateNetMapCenters(centers)
+</script>

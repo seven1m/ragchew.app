@@ -34,6 +34,14 @@ helpers do
   def development?
     ENV['RACK_ENV'] == 'development'
   end
+
+  def pluralize(word, count)
+    if count == 1
+      word
+    else
+      "#{word}s"
+    end
+  end
 end
 
 include DOTIW::Methods
@@ -77,10 +85,6 @@ get '/net/:name' do
   service = NetInfo.new(name: params[:name])
 
   @user = get_user
-  unless @user
-    redirect "/login?net=#{params[:name]}"
-    return
-  end
 
   service.update!
   @net = service.net
@@ -95,13 +99,17 @@ get '/net/:name' do
       coord << checkin.call_sign if coord
     end
   end.compact
-  @favorites = @user.favorites.pluck(:call_sign)
+  @favorites = @user ? @user.favorites.pluck(:call_sign) : []
 
-  if @user.monitoring_net == @net
+  if @user&.monitoring_net == @net
     @user.update!(monitoring_net_last_refreshed_at: Time.now)
   end
 
-  erb :net
+  if @user
+    erb :net
+  else
+    erb :net_limited
+  end
 rescue NetInfo::NotFoundError
   @closed_net = Tables::ClosedNet.where(name: params[:name]).order(started_at: :desc).first
   @name = @closed_net&.name

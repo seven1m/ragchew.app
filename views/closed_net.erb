@@ -33,13 +33,13 @@
     <dd><%= format_time(@closed_net.ended_at) %></dd>
     <dt>Length:</dt>
     <dd><%= distance_of_time_in_words(@closed_net.started_at, @closed_net.ended_at) %> long</dd>
-    <dt>Checkins:</dt>
+    <dt>Check-ins:</dt>
     <dd><%= @closed_net.checkin_count %></dd>
     <dt>Messages:</dt>
     <dd><%= @closed_net.message_count %></dd>
     <dt>Monitors:</dt>
     <dd><%= @closed_net.monitor_count %></dd>
-  </p>
+  </dl>
 
   <script id="map-script">
     const elm = document.getElementById('net-map')

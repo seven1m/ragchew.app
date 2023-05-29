@@ -41,6 +41,8 @@
       .disclaimer a, .disclaimer a:visited { color: #999; }
       form.inline { display: inline; }
       ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
+      .columns { display: flex; justify-content: space-between; }
+      .columns .column { flex-grow: 1; }
       #net-map { height: 500px; }
       @media only screen and (max-height: 800px) {
         #net-map { height: 300px; }
@@ -48,6 +50,8 @@
       @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
         .table-wrapper { overflow-x: auto; }
         #net-map { height: 300px; }
+        .columns { display: block; }
+        .columns .column { flex-grow: 0; }
       }
     </style>
     <% if @last_updated_at %>
