@@ -114,20 +114,22 @@ get '/net/:name' do
     erb :net_limited
   end
 rescue NetInfo::NotFoundError
-  @closed_net = Tables::ClosedNet.where(name: params[:name]).order(started_at: :desc).first
-  @name = @closed_net&.name
-  if @closed_net && Tables::BlockedNet.blocked?(@closed_net.name)
-    @closed_net = nil
-    @name = nil
-  end
   @net_count = Tables::Net.count
+  if Tables::BlockedNet.blocked?(params[:name])
+    @name = nil
+  else
+    @closed_net = Tables::ClosedNet.where(name: params[:name]).order(started_at: :desc).first
+    @name = @closed_net&.name
+  end
   if @closed_net
     @checkin_count = @closed_net.checkin_count
     @message_count = @closed_net.message_count
     @monitor_count = @closed_net.monitor_count
+    erb :closed_net
+  else
+    status 404
+    erb :missing_net
   end
-  status 404 unless @closed_net
-  erb :closed_net
 end
 
 ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__))

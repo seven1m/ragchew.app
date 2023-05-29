@@ -1,49 +1,27 @@
 <p><a href="/">home</a></p>
 
-<% if @closed_net %>
+<h1><%== @closed_net.name %> (closed)</h1>
 
-  <h1><%== @closed_net.name %> (closed)</h1>
-
-  <p>
-    <strong>This net is closed.</strong> Please check back later,
-    <% if @net_count > 0 %>
-      or visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
-      are ongoing.
-    <% else %>
-      or visit the <a href="/">home page</a>.
-    <% end %>
-  </p>
-
-  <%= erb :_net_info, locals: { net: @closed_net } %>
-
-  <% if @closed_net.show_circle? %>
-    <div id="net-map"
-         data-centers='<%= [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }].to_json %>'></div>
+<p>
+  <strong>This net is closed.</strong> Please check back later,
+  <% if @net_count > 0 %>
+    or visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
+    are ongoing.
+  <% else %>
+    or visit the <a href="/">home page</a>.
   <% end %>
+</p>
 
-  <script id="map-script">
-    const elm = document.getElementById('net-map')
-    const centers = JSON.parse(elm.getAttribute('data-centers'))
-    buildNetMap()
-    updateNetMapCenters(centers)
-  </script>
+<%= erb :_net_info, locals: { net: @closed_net } %>
 
-<% else %>
-
-  <h1>Net not found</h1>
-
-  <p>
-    <% if @name %>
-      We could not find a net with the name "<%== @name %>".
-    <% else %>
-      We could not find a net with that name.
-    <% end %>
-    <% if @net_count > 0 %>
-      You can visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
-      are ongoing.
-    <% else %>
-      You can visit the <a href="/">home page</a>.
-    <% end %>
-  </p>
-
+<% if @closed_net.show_circle? %>
+  <div id="net-map"
+       data-centers='<%= [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }].to_json %>'></div>
 <% end %>
+
+<script id="map-script">
+  const elm = document.getElementById('net-map')
+  const centers = JSON.parse(elm.getAttribute('data-centers'))
+  buildNetMap()
+  updateNetMapCenters(centers)
+</script>
