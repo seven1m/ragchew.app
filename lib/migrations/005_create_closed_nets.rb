@@ -19,6 +19,7 @@ class CreateClosedNets < ActiveRecord::Migration[7.0]
       t.integer :monitor_count, null: false
       t.timestamps
 
+      t.index :started_at
       t.index %i[name started_at]
     end
   end

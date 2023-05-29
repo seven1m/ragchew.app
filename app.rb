@@ -301,13 +301,6 @@ post '/logout' do
   redirect '/'
 end
 
-get '/admin/stats' do
-  @user = get_user
-  require_admin!
-
-  redirect '/admin/users'
-end
-
 get '/admin' do
   @user = get_user
   require_admin!
@@ -325,7 +318,30 @@ get '/admin/users' do
   @user_count_total = Tables::User.count
   @user_count_last_24_hours = Tables::User.where('last_signed_in_at > ?', Time.now - (24 * 60 * 60)).count
   @user_count_last_1_hour = Tables::User.where('last_signed_in_at > ?', Time.now - (1 * 60 * 60)).count
+
   erb :admin_users
+end
+
+get '/admin/closed-nets' do
+  @user = get_user
+  require_admin!
+
+  per_page = 20
+  scope = Tables::ClosedNet.order(started_at: :desc)
+  scope.where!('started_at < ?', params[:started_at]) if params[:started_at]
+  @more_pages = scope.count - per_page > 0
+  @closed_nets = scope.limit(per_page)
+
+  erb :admin_closed_nets
+end
+
+delete '/admin/closed-net/:id' do
+  @user = get_user
+  require_admin!
+
+  Tables::ClosedNet.where(id: params[:id]).delete_all
+
+  redirect '/admin/closed-nets'
 end
 
 post '/monitor/:net_id' do
