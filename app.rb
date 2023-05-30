@@ -8,7 +8,7 @@ require_relative './boot'
 enable :sessions
 set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
 set :sessions, same_site: :strict, expire_after: 365 * 24 * 60 * 60 # 1 year
-set :protection, except: [:session_hijacking] # see if this fixes our logout issue on mobile
+disable :protection
 
 set :static_cache_control, [:public, max_age: 60]
 
