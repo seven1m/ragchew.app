@@ -23,7 +23,7 @@ class NetInfo
       raise 'must supply either id or name to NetInfo.new'
     end
   rescue ActiveRecord::RecordNotFound
-    raise NotFoundError, "Net is closed"
+    raise NotFoundError, 'Net is closed'
   end
 
   def net
@@ -350,7 +350,9 @@ class NetInfo
     begin
       fetcher.get('GetUpdates3.php', params)
     rescue Fetcher::NotFoundError => e
-      raise NotFoundError, "Net is closed (#{e.message})"
+      Tables::ClosedNet.from_net(@record).save!
+      @record.destroy
+      raise NotFoundError, 'Net is closed'
     end
   end
 

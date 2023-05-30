@@ -1,5 +1,9 @@
 function updatePage() {
-  fetch(location.href)
+  fetch(location.href, {
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
     .then((resp) => {
       if (resp.redirected)
         location.href = '/'
@@ -15,11 +19,11 @@ function updatePage() {
           existingElm.parentNode.replaceChild(newElm, existingElm)
         }
       })
-      const netNetMap = newDocument.getElementById('net-map')
+      const netMapElm = newDocument.getElementById('net-map')
 
-      if (netNetMap) {
+      if (netMapElm) {
         // find new coords
-        const coordsAttribute = netNetMap.getAttribute('data-coords')
+        const coordsAttribute = netMapElm.getAttribute('data-coords')
         let newCoords = []
         if (coordsAttribute) {
           const existingCoords = new Set(
@@ -35,7 +39,7 @@ function updatePage() {
         }
 
         // redraw all centers
-        const centersAttribute = netNetMap.getAttribute('data-centers')
+        const centersAttribute = netMapElm.getAttribute('data-centers')
         if (centersAttribute) {
           const centers = JSON.parse(centersAttribute)
           updateNetMapCenters(centers)
@@ -51,7 +55,8 @@ function sendMessage(form) {
     {
       method: form.getAttribute('method'),
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=ISO-8859-1'
+        'Content-Type': 'application/x-www-form-urlencoded;charset=ISO-8859-1',
+        'X-Requested-With': 'XMLHttpRequest'
       },
       body: 'message=' + encodeURIComponent(input.value)
     }
@@ -150,7 +155,12 @@ document.addEventListener('readystatechange', (event) => {
 
 function favorite(call_sign, elm, unfavorite) {
   func = unfavorite ? 'unfavorite' : 'favorite'
-  fetch(`/${func}/${call_sign}`, { method: 'POST' })
+  fetch(`/${func}/${call_sign}`, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
     .then(data => data.json())
     .then(json => {
       if (json.error)

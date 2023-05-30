@@ -125,7 +125,13 @@ rescue NetInfo::NotFoundError
     @checkin_count = @closed_net.checkin_count
     @message_count = @closed_net.message_count
     @monitor_count = @closed_net.monitor_count
-    erb :closed_net
+    if request.xhr?
+      # force JS to reload page
+      status 404
+      'net is closed'
+    else
+      erb :closed_net
+    end
   else
     status 404
     erb :missing_net

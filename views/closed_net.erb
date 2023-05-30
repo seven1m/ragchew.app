@@ -4,7 +4,7 @@
 
 <% if params[:id] %>
   <p>
-    <em>You are viewing a closed net from the archive.
+    Admin only: You are viewing a closed net from the archive.
     <a href="/admin/closed-nets?name=<%== url_escape(@closed_net.name) %>">name search</a> |
     <a href="/net/<%== url_escape(@closed_net.name) %>">public page</a>
   </p>
