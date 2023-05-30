@@ -54,6 +54,8 @@ ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if development?
 
 MAX_FAVORITES = 50
+BASE_URL = 'https://ragchew.app'
+ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__))
 
 get '/' do
   @user = get_user
@@ -136,8 +138,6 @@ rescue NetInfo::NotFoundError
     erb :missing_net
   end
 end
-
-ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__))
 
 get '/station/:call_sign/image' do
   call_sign = params[:call_sign]
@@ -472,7 +472,7 @@ get '/sitemap.txt' do
   names.reject! do |name|
     Tables::BlockedNet.blocked?(name, names: blocked_net_names)
   end
-  "/\n" + names.map { |name| "https://ragchew.app/net/#{url_escape(name)}" }.join("\n")
+  "#{BASE_URL}/\n" + names.map { |name| "#{BASE_URL}/net/#{url_escape(name)}" }.join("\n")
 end
 
 def get_user
