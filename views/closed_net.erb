@@ -1,6 +1,13 @@
 <p><a href="/">home</a></p>
 
-<h1><%== @closed_net.name %> (closed)</h1>
+<h1>
+  <%= club_logo_image_tag(@closed_net.club) %>
+  <%== @closed_net.name %> (closed)
+</h1>
+
+<% if (club = @closed_net.club) && club.about_url.present? %>
+  <p><a href="<%== make_url_safe_for_html_attribute(club.about_url) %>"><%= pretty_url(club.about_url) %></a></p>
+<% end %>
 
 <% if params[:id] %>
   <p>

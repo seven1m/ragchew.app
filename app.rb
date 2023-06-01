@@ -30,6 +30,18 @@ helpers do
     CGI.escape(s)
   end
 
+  def make_url_safe_for_html_attribute(s)
+    s.to_s.gsub('"', '%22')
+  end
+
+  def make_value_safe_html_attribute(s)
+    s.to_s.gsub('"', '&#34;')
+  end
+
+  def pretty_url(url)
+    url.sub(/^https?:\/\//, '')
+  end
+
   def development?
     ENV['RACK_ENV'] == 'development'
   end
@@ -40,6 +52,13 @@ helpers do
     else
       "#{word}s"
     end
+  end
+
+  def club_logo_image_tag(club)
+    return unless club&.logo_url.present?
+
+    "<img class='net-logo'" \
+      "src=\"#{make_url_safe_for_html_attribute(club.logo_url)}\"/>"
   end
 end
 
@@ -364,6 +383,78 @@ delete '/admin/closed-net/:id' do
   redirect '/admin/closed-nets'
 end
 
+get '/admin/clubs' do
+  @user = get_user
+  require_admin!
+
+  @clubs = Tables::Club.order(:name).to_a
+
+  erb :admin_clubs
+end
+
+get '/admin/clubs/new' do
+  @user = get_user
+  require_admin!
+
+  @club = Tables::Club.new
+  @url = "/admin/clubs"
+
+  erb :admin_club_edit
+end
+
+get '/admin/clubs/:id/edit' do
+  @user = get_user
+  require_admin!
+
+  @club = Tables::Club.find(params[:id])
+  @url = "/admin/clubs/#{@club.id}"
+
+  erb :admin_club_edit
+end
+
+post '/admin/clubs' do
+  @user = get_user
+  require_admin!
+
+  fix_club_params(params)
+  @club = Tables::Club.create!(params[:club])
+
+  @club.update!(params[:club])
+
+  AssociateClubWithNets.new(@club).call
+
+  redirect "/admin/clubs/#{@club.id}/edit"
+rescue JSON::ParserError
+  status 400
+  'error parsing JSON'
+end
+
+patch '/admin/clubs/:id' do
+  @user = get_user
+  require_admin!
+
+  fix_club_params(params)
+  @club = Tables::Club.find(params[:id])
+  @club.update!(params[:club])
+
+  AssociateClubWithNets.new(@club).call
+
+  redirect "/admin/clubs/#{@club.id}/edit"
+rescue JSON::ParserError
+  status 400
+  'error parsing JSON'
+end
+
+delete '/admin/clubs/:id' do
+  @user = get_user
+  require_admin!
+
+  @club = Tables::Club.find(params[:id])
+  @club.destroy
+
+  redirect '/admin/clubs'
+end
+
 post '/monitor/:net_id' do
   @user = get_user
   unless @user
@@ -493,4 +584,13 @@ def require_admin!
   return if @user && admins.include?(@user.call_sign)
 
   redirect '/'
+end
+
+def fix_club_params(params)
+  %i[full_name description logo_url].each do |param|
+    params[:club][param] = params[:club][param].presence
+  end
+  %i[net_patterns net_list].each do |param|
+    params[:club][param] = JSON.parse(params[:club][param]) if params[:club][param]
+  end
 end

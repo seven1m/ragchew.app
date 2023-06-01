@@ -2,9 +2,16 @@
 
 <p><a href="/">home</a></p>
 
-<h1><%== @net.name %></h1>
+<h1>
+  <%= club_logo_image_tag(@net.club) %>
+  <%== @net.name %>
+</h1>
 
 <p>
+  <% if (club = @net.club) && club.about_url.present? %>
+    <a href="<%== make_url_safe_for_html_attribute(club.about_url) %>"><%= pretty_url(club.about_url) %></a>
+  <% end %>
+
   <%== @net.frequency %>
   <%== @net.mode %>
   <%== @net.band %>

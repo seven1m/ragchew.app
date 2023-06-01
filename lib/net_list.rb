@@ -76,6 +76,7 @@ class NetList
         delta_updates: details['DeltaUpdates'].downcase == 'true',
         ext_data: details['ExtData'].downcase == 'true',
         timestamp_utc_offset: details['NetLoggerTimeStampUTCOffset'],
+        club_info_list_url: details['ClubInfoListURL'],
         updated_at: Time.now,
       )
     end

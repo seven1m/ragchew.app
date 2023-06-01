@@ -7,6 +7,14 @@
     {
       "command": "bundle exec rake populate",
       "schedule": "3,13,23,33,43,53 * * * *"
+    },
+    {
+      "command": "bundle exec rake associate_clubs_with_new_nets",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "command": "bundle exec rake update_club_list",
+      "schedule": "9 0 * * *"
     }
   ]
 }
