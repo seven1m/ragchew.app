@@ -6,6 +6,25 @@ class Fetcher
     @host = host
   end
 
+  # in order to get more precise start/stop times for closed nets...
+  #
+  # GetPastNets.php
+  #
+  #
+  # in order to fetch Net URLS...
+  #
+  # GetServerInfo.pl
+  # (note ClubInfoListURL)
+  #
+  # fetch [ClubInfoListURL] from above
+  # (get cli URLs from this file)
+  #
+  # fetch all cli files from above list
+  # - note AboutURL and LogoURL
+  # - note [Nets] patterns that match net names
+  # - maybe note [NetList] names of specific nets
+  #
+
   def get(endpoint, params = {})
     params_string = params.map { |k, v| "#{k}=#{v}" }.join('&')
     uri = URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")

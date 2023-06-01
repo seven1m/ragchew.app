@@ -71,3 +71,35 @@ task :populate do
     sleep 5
   end
 end
+
+# Runs nightly
+task :update_club_list do
+  ActiveRecord::Base.logger = Logger.new($stdout)
+  UpdateClubList.new.call
+  Tables::Club.find_each do |club|
+    AssociateClubWithNets.new(
+      club,
+      only_blank: true,
+    ).call
+  end
+end
+
+# Runs every 5 minutes
+task :associate_clubs_with_new_nets do
+  ActiveRecord::Base.logger = Logger.new($stdout)
+  Tables::Club.find_each do |club|
+    AssociateClubWithNets.new(
+      club,
+      only_blank: true,
+      created_seconds_ago: 10 * 60,
+    ).call
+  end
+end
+
+# Only run this manually to associate clubs with existing open and closed nets.
+task :associate_clubs_with_all_nets do
+  ActiveRecord::Base.logger = Logger.new($stdout)
+  Tables::Club.find_each do |club|
+    AssociateClubWithNets.new(club, only_blank: true).call
+  end
+end

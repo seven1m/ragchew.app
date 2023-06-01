@@ -1,6 +1,11 @@
+require_relative '../net_like'
+
 module Tables
   class Net < ActiveRecord::Base
+    include NetLike
+
     belongs_to :server
+    belongs_to :club, optional: true
     has_many :checkins, dependent: :delete_all
     has_many :monitors, dependent: :delete_all
     has_many :messages, dependent: :delete_all
@@ -17,10 +22,6 @@ module Tables
       else
         20
       end
-    end
-
-    def show_circle?
-      center_latitude && center_longitude && center_radius
     end
   end
 end

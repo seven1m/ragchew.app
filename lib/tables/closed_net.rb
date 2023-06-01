@@ -1,10 +1,12 @@
+require_relative '../net_like'
+
 module Tables
   class ClosedNet < ActiveRecord::Base
-    validates :name, presence: true
+    include NetLike
 
-    def show_circle?
-      center_latitude && center_longitude && center_radius
-    end
+    belongs_to :club, optional: true
+
+    validates :name, presence: true
 
     def self.from_net(net)
       closed_net = ClosedNet.new(

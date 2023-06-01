@@ -1,0 +1,51 @@
+<p>
+  <a href="/">home</a> |
+  <a href="/admin">admin</a>
+</p>
+
+<h1>Clubs (<%== @clubs.size %>)</h1>
+
+<form action="/admin/clubs">
+  <input name="name" placeholder="name" value="<%== params[:name] %>"/>
+  <input type="submit" value="search"/>
+  <% if params[:name] %>
+    <a href="/admin/clubs">clear</a>
+  <% end %>
+</form>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Logo</th>
+        <th>Name</th>
+        <th>Full Name</th>
+        <th>Profile URL</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @clubs.each do |club| %>
+        <tr>
+          <td><%= club_logo_image_tag(club) %></td>
+          <td><a href="/admin/clubs/<%== club.id %>/edit"><%== club.name %></a></td>
+          <td><a href="/admin/clubs/<%== club.id %>/edit"><%== club.full_name %></a></td>
+          <td><a href="<%== make_url_safe_for_html_attribute(club.profile_url) %>"><%== club.profile_url %></a></td>
+          <td>
+            <form class="inline" action="/admin/clubs/<%== club.id %>/edit">
+              <button>edit</button>
+            </form>
+            <form class="inline" action="/admin/clubs/<%== club.id %>" method="post" onsubmit="if (!confirm('Sure?')) return false">
+              <input type="hidden" name="_method" value="delete"/>
+              <button>delete</button>
+            </form>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<form action="/admin/clubs/new">
+  <button>new club</button>
+</form>
