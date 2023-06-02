@@ -7,6 +7,7 @@ class AssociateClubWithNets
 
   def call
     patterns = @club.all_patterns
+    return if patterns.empty?
 
     net_scope = Tables::Net.all
     limit_scope(net_scope)
