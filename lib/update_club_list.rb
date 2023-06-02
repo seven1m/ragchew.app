@@ -1,5 +1,6 @@
 require_relative './fetcher'
 require_relative './tables'
+require 'open-uri'
 
 class UpdateClubList
   def call
@@ -14,10 +15,11 @@ class UpdateClubList
           name, value = line.split(/\s*=\s*/, 2)
           hash[name] = value
         end
-        Tables::Club.find_or_initialize_by(name: club_name).update!(
+        club = Tables::Club.find_or_initialize_by(name: club_name)
+        club.update!(
           profile_url: url,
           about_url: variables['AboutURL'],
-          logo_url: variables['LogoURL'],
+          logo_url: download_logo_url(club, variables['LogoURL']),
           logo_updated_at: variables['LogoTimeStamp'],
           expiration_time: variables['ExpirationTime'],
           current_net_expiration_time: variables['CurrentNetExpirationTime'],
@@ -72,5 +74,27 @@ class UpdateClubList
       end
     end
     sections
+  end
+
+  def download_logo_url(club, url)
+    self.class.download_logo_url(club, url)
+  end
+
+  def self.download_logo_url(club, url)
+    return unless url.present?
+
+    uri = URI(url)
+    return url if uri.host.nil?
+
+    safe_name = club.name.gsub(/[^a-z0-9]/i, '_')
+    extension = uri.path.split('.').last
+    public_path = "/images/clubs/#{safe_name}.#{club.id}.#{extension}"
+    path = File.expand_path("../public#{public_path}", __dir__)
+
+    URI.open(uri, 'rb') do |file|
+      File.write(path, file.read)
+    end
+
+    public_path
   end
 end

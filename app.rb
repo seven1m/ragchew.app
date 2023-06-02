@@ -416,9 +416,8 @@ post '/admin/clubs' do
   @user = get_user
   require_admin!
 
+  @club = Tables::Club.create!(name: params[:club][:name])
   fix_club_params(params)
-  @club = Tables::Club.create!(params[:club])
-
   @club.update!(params[:club])
 
   AssociateClubWithNets.new(@club).call
@@ -433,8 +432,8 @@ patch '/admin/clubs/:id' do
   @user = get_user
   require_admin!
 
-  fix_club_params(params)
   @club = Tables::Club.find(params[:id])
+  fix_club_params(params)
   @club.update!(params[:club])
 
   AssociateClubWithNets.new(@club).call
@@ -593,4 +592,5 @@ def fix_club_params(params)
   %i[net_patterns net_list].each do |param|
     params[:club][param] = JSON.parse(params[:club][param]) if params[:club][param]
   end
+  params[:club][:logo_url] = UpdateClubList.download_logo_url(@club, params[:club][:logo_url])
 end
