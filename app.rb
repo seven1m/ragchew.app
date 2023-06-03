@@ -57,8 +57,10 @@ helpers do
   def club_logo_image_tag(club)
     return unless club&.logo_url.present?
 
-    "<img class='net-logo'" \
-      "src=\"#{make_url_safe_for_html_attribute(club.logo_url)}\"/>"
+    "<a href=\"#{make_url_safe_for_html_attribute(club.about_url)}\">" \
+      "<img class='net-logo'" \
+      "src=\"#{make_url_safe_for_html_attribute(club.logo_url)}\"/>" \
+      "</a>"
   end
 end
 
