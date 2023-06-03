@@ -91,8 +91,12 @@ class UpdateClubList
     public_path = "/images/clubs/#{safe_name}.#{club.id}.#{extension}"
     path = File.expand_path("../public#{public_path}", __dir__)
 
-    URI.open(uri, 'rb') do |file|
-      File.write(path, file.read)
+    begin
+      URI.open(uri, 'rb') do |file|
+        File.write(path, file.read)
+      end
+    rescue OpenURI::HTTPError
+      return nil
     end
 
     public_path
