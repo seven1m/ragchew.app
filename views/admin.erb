@@ -2,69 +2,71 @@
 
 <h1>Admin</h1>
 
-<h2>Stats</h2>
+<h2>Data</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th>Table</th>
-      <th>Record Count</th>
-      <th>Last Updated</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>checkins</td>
-      <td><%= Tables::Checkin.count %></td>
-    </tr>
-    <tr>
-      <td>closed nets</td>
-      <td><%= Tables::ClosedNet.count %></td>
-    </tr>
-    <tr>
-      <td>clubs</td>
-      <td><%= Tables::Club.count %></td>
-      <td><%= format_time Tables::Club.maximum(:updated_at) %></td>
-    </tr>
-    <tr>
-      <td>favorites</td>
-      <td><%= Tables::Favorite.count %></td>
-    </tr>
-    <tr>
-      <td>monitors</td>
-      <td><%= Tables::Monitor.count %></td>
-    </tr>
-    <tr>
-      <td>messages</td>
-      <td><%= Tables::Message.count %></td>
-    </tr>
-    <tr>
-      <td>nets</td>
-      <td><%= Tables::Net.count %></td>
-    </tr>
-    <tr>
-      <td>servers</td>
-      <td><%= Tables::Server.count %></td>
-      <td><%= format_time Tables::Server.maximum(:updated_at) %></td>
-    </tr>
-    <tr>
-      <td>stations</td>
-      <td><%= Tables::Station.count %></td>
-    </tr>
-    <tr>
-      <td>users</td>
-      <td><%= Tables::User.count %></td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>Details</h2>
-
-<ul>
-  <li><a href="/admin/closed-nets">closed nets</a></li>
-  <li><a href="/admin/clubs">clubs</a></li>
-  <li><a href="/admin/users">users</a></li>
-</ul>
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Table</th>
+        <th>Record Count</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="/admin/table/checkins">checkins</a></td>
+        <td><%= Tables::Checkin.count %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/closed-nets">closed nets</a></td>
+        <td><%= Tables::ClosedNet.count %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/clubs">clubs</a></td>
+        <td><%= Tables::Club.count %></td>
+        <td><%= format_time Tables::Club.maximum(:updated_at) %></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/table/favorites">favorites</a></td>
+        <td><%= Tables::Favorite.count %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/table/monitors">monitors</a></td>
+        <td><%= Tables::Monitor.count %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/table/messages">messages</a></td>
+        <td><%= Tables::Message.count %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/table/nets">nets</a></td>
+        <td><%= Tables::Net.count %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/table/servers">servers</a></td>
+        <td><%= Tables::Server.count %></td>
+        <td><%= format_time Tables::Server.maximum(:updated_at) %></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/table/stations">stations</a></td>
+        <td><%= Tables::Station.count %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/users">users</a></td>
+        <td><%= Tables::User.count %></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <h2 id="blocked-nets">Blocked Nets</h2>
 

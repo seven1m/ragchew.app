@@ -389,7 +389,9 @@ get '/admin/clubs' do
   @user = get_user
   require_admin!
 
-  @clubs = Tables::Club.order(:name).to_a
+  scope = Tables::Club.order(:name)
+  scope.where!('name like ?', '%' + params[:name] + '%') if params[:name]
+  @clubs = scope.to_a
 
   erb :admin_clubs
 end
@@ -454,6 +456,22 @@ delete '/admin/clubs/:id' do
   @club.destroy
 
   redirect '/admin/clubs'
+end
+
+get '/admin/table/:table' do
+  @user = get_user
+  require_admin!
+
+  per_page = 100
+  klass = Tables.const_get(params[:table].classify)
+  scope = klass.order(:id)
+  scope.where!('id > ?', params[:after]) if params[:after]
+  @more_pages = scope.count > per_page
+  scope.limit!(per_page)
+  @records = scope.to_a
+  @columns = klass.columns
+
+  erb :admin_table
 end
 
 post '/monitor/:net_id' do

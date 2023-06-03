@@ -5,6 +5,10 @@
 
 <h1>Clubs (<%== @clubs.size %>)</h1>
 
+<form action="/admin/clubs/new" class="right">
+  <input type="submit" value="new club"/>
+</form>
+
 <form action="/admin/clubs">
   <input name="name" placeholder="name" value="<%== params[:name] %>"/>
   <input type="submit" value="search"/>
@@ -45,7 +49,3 @@
     </tbody>
   </table>
 </div>
-
-<form action="/admin/clubs/new">
-  <button>new club</button>
-</form>

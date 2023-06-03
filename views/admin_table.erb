@@ -1,0 +1,43 @@
+<p>
+  <a href="/">home</a> |
+  <a href="/admin">admin</a>
+</p>
+
+<h1><%== params[:table] %></h1>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <% @columns.each do |column| %>
+          <th><%== column.name %></p>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @records.each do |record| %>
+        <tr>
+          <% @columns.each do |column| %>
+            <td>
+              <% if (val = record[column.name]).nil? %>
+                <em>nil</em>
+              <% else %>
+                <%== val %>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  <% if params[:after] %>
+     <a href="/admin/table/<%== params[:table] %>">start</a>
+  <% end %>
+  <% if params[:after] && @more_pages %>|<% end %>
+  <% if @more_pages %>
+    <a href="/admin/table/<%== params[:table] %>?after=<%== @records.last.id %>">more</a>
+  <% end %>
+</p>
