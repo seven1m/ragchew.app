@@ -44,13 +44,17 @@
   </label><br/>
 
   <label>
-    net_patterns:<br/>
+    net patterns:<br/>
     <textarea name="club[net_patterns]" rows="10"><%== JSON.pretty_generate(@club.net_patterns || []) %></textarea>
   </label><br/>
 
   <label>
-    net_list:<br/>
+    net list:<br/>
     <textarea name="club[net_list]" rows="10"><%== JSON.pretty_generate(@club.net_list || []) %></textarea>
+  </label><br/>
+
+  <label>
+    <input type="checkbox" name="force_update_existing_nets" value="true"> force update existing nets
   </label><br/>
 
   <input type="submit" value="save"/>

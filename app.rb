@@ -424,7 +424,8 @@ post '/admin/clubs' do
   fix_club_params(params)
   @club.update!(params[:club])
 
-  AssociateClubWithNets.new(@club).call
+  only_blank = params[:force_update_existing_nets] != 'true'
+  AssociateClubWithNets.new(@club, only_blank:).call
 
   redirect "/admin/clubs/#{@club.id}/edit"
 rescue JSON::ParserError
@@ -440,7 +441,8 @@ patch '/admin/clubs/:id' do
   fix_club_params(params)
   @club.update!(params[:club])
 
-  AssociateClubWithNets.new(@club).call
+  only_blank = params[:force_update_existing_nets] != 'true'
+  AssociateClubWithNets.new(@club, only_blank:).call
 
   redirect "/admin/clubs/#{@club.id}/edit"
 rescue JSON::ParserError
