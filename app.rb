@@ -564,6 +564,7 @@ end
 get '/groups/:slug' do
   @user = get_user
 
+  params[:slug] = CGI.unescape(params[:slug])
   @club = Tables::Club.find_by!(name: params[:slug])
   if @club.about_url.nil?
     status 404
@@ -607,7 +608,7 @@ get '/sitemap.txt' do
   [
     "#{BASE_URL}/",
     names.map { |name| "#{BASE_URL}/net/#{url_escape(name)}" },
-    Tables::Club.where.not(about_url: nil).pluck(:name).map { |name| "#{BASE_URL}/group/#{url_escape(name)}" },
+    Tables::Club.where.not(about_url: nil).pluck(:name).map { |name| "#{BASE_URL}/groups/#{url_escape(name)}" },
   ].flatten.join("\n")
 end
 
