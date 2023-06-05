@@ -75,7 +75,8 @@ ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if development?
 
 MAX_FAVORITES = 50
-BASE_URL = 'https://ragchew.app'
+BASE_URL = ENV['BASE_URL'] || 'https://ragchew.app'
+SUPPORT_EMAIL = ENV['SUPPORT_EMAIL'] || 'tim@timmorgan.org'
 ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__))
 
 get '/' do
