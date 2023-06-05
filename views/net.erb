@@ -12,10 +12,10 @@
     <a href="<%== make_url_safe_for_html_attribute(club.about_url) %>"><%= pretty_url(club.about_url) %></a>
   <% end %>
 
-  <%== @net.frequency %>
-  <%== @net.mode %>
-  <%== @net.band %>
-  started at <%== format_time(@net.started_at) %>
+  <%== @net.frequency %> |
+  <%== @net.mode %> |
+  <%== @net.band %> |
+  started at <%== format_time(@net.started_at) %> |
   <%== @net.host %>
 </p>
 
