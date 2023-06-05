@@ -574,7 +574,7 @@ get '/group/:slug' do
   @net_names = (
     @club.nets.order(:name).pluck(:name) +
     @club.closed_nets.order(:name, :started_at).pluck(:name)
-  ).sort.uniq
+  ).sort.uniq(&:downcase)
 
   erb :club
 rescue ActiveRecord::RecordNotFound
