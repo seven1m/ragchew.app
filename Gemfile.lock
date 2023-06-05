@@ -35,6 +35,7 @@ GEM
     rack-protection (3.0.5)
       rack
     rake (13.0.6)
+    redcarpet (3.6.0)
     ruby2_keywords (0.0.5)
     sinatra (3.0.5)
       mustermann (~> 3.0)
@@ -66,6 +67,7 @@ DEPENDENCIES
   nokogiri
   puma
   rake
+  redcarpet
   sinatra
   sinatra-contrib
   with_advisory_lock

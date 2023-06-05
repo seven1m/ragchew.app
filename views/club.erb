@@ -11,8 +11,8 @@
   <p>website: <a href="<%== make_url_safe_for_html_attribute(@club.about_url) %>"><%== pretty_url(@club.about_url) %></a></p>
 <% end %>
 
-<% @club.description.to_s.split(/\r?\n\r?\n/).each do |paragraph| %>
-  <p><%== paragraph %></p>
+<% if @club.description %>
+  <%= Redcarpet::Markdown.new(Redcarpet::Render::HTML, autolink: true).render(@club.description) %>
 <% end %>
 
 <% if @net_names.any? %>
