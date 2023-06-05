@@ -11,20 +11,11 @@ ActiveRecord::Base.establish_connection(db_config[env])
 
 namespace :db do
   task :migrate do
-    [
-      CreateUsers,
-      CreateTables,
-      AddMonitoringNetIdToUsers,
-      CreateFavorites,
-    ].each { |m| m.new.migrate(:up) }
-  end
-
-  namespace :migrate do
-    desc 'Delete and recreate the cache tables'
-    task :redo_cache do
-      CreateTables.new.migrate(:down)
-      CreateTables.new.migrate(:up)
-    end
+    context = ActiveRecord::MigrationContext.new(
+      File.expand_path('lib/migrations', __dir__),
+      ActiveRecord::SchemaMigration
+    )
+    context.migrate
   end
 end
 
