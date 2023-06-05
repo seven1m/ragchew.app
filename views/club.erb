@@ -1,0 +1,30 @@
+<%= erb :_user %>
+
+<p><a href="/">home</a></p>
+
+<h1>
+  <%= club_logo_image_tag(@club) %>
+  <%== @club.full_name.presence || @club.name %>
+</h1>
+
+<% if @club.about_url.present? %>
+  <p>website: <a href="<%== make_url_safe_for_html_attribute(@club.about_url) %>"><%== pretty_url(@club.about_url) %></a></p>
+<% end %>
+
+<% @club.description.to_s.split(/\r?\n\r?\n/).each do |paragraph| %>
+  <p><%== paragraph %></p>
+<% end %>
+
+<% if @net_names.any? %>
+  <h2>Nets</h2>
+
+  <ul>
+    <% @net_names.each do |name| %>
+      <li>
+        <a href="/net/<%== url_escape(name) %>"><%== name %></a>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
+
+<p class="disclaimer">If you see a mistake with the information above, please <a href="mailto:tim@timmorgan.org">email Tim</a>.</p>

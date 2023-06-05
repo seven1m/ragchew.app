@@ -39,7 +39,7 @@ helpers do
   end
 
   def pretty_url(url)
-    url.sub(/^https?:\/\//, '')
+    url.sub(/^https?:\/\//, '').sub(/\/$/, '')
   end
 
   def development?
@@ -57,7 +57,7 @@ helpers do
   def club_logo_image_tag(club)
     return unless club&.logo_url.present?
 
-    "<a href=\"#{make_url_safe_for_html_attribute(club.about_url)}\">" \
+    "<a href=\"/groups/#{url_escape(club.name)}\">" \
       "<img class='net-logo'" \
       "src=\"#{make_url_safe_for_html_attribute(club.logo_url)}\"/>" \
       "</a>"
@@ -553,12 +553,30 @@ post '/message/:net_id' do
     status 401
     return 'not monitoring this net'
   end
-
   @net_info.send_message!(user: @user, message: message_with_silly_encoding)
+
 
   session[:message_sent] = { net_id: @net.id, count_before: @net.messages.count, message: }
 
   redirect "/net/#{url_escape @net.name}"
+end
+
+get '/groups/:slug' do
+  @club = Tables::Club.find_by!(name: params[:slug])
+  if @club.about_url.nil?
+    status 404
+    return erb :missing_club
+  end
+  
+  @net_names = (
+    @club.nets.order(:name).pluck(:name) +
+    @club.closed_nets.order(:name, :started_at).pluck(:name)
+  ).sort.uniq
+
+  erb :club
+rescue ActiveRecord::RecordNotFound
+  status 404
+  erb :missing_club
 end
 
 post '/admin/block_net' do
@@ -584,7 +602,11 @@ get '/sitemap.txt' do
   names.reject! do |name|
     Tables::BlockedNet.blocked?(name, names: blocked_net_names)
   end
-  "#{BASE_URL}/\n" + names.map { |name| "#{BASE_URL}/net/#{url_escape(name)}" }.join("\n")
+  [
+    "#{BASE_URL}/",
+    names.map { |name| "#{BASE_URL}/net/#{url_escape(name)}" },
+    Tables::Club.where.not(about_url: nil).pluck(:name).map { |name| "#{BASE_URL}/group/#{url_escape(name)}" },
+  ].flatten.join("\n")
 end
 
 def get_user
@@ -608,7 +630,7 @@ def require_admin!
 end
 
 def fix_club_params(params)
-  %i[full_name description logo_url].each do |param|
+  %i[full_name description logo_url about_url].each do |param|
     params[:club][param] = params[:club][param].presence
   end
   %i[net_patterns net_list].each do |param|
