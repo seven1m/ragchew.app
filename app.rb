@@ -562,6 +562,8 @@ post '/message/:net_id' do
 end
 
 get '/groups/:slug' do
+  @user = get_user
+
   @club = Tables::Club.find_by!(name: params[:slug])
   if @club.about_url.nil?
     status 404
