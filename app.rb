@@ -103,10 +103,10 @@ get '/' do
 end
 
 get '/net/:name' do
+  @user = get_user
+
   params[:name] = CGI.unescape(params[:name])
   service = NetInfo.new(name: params[:name])
-
-  @user = get_user
 
   service.update!
   @net = service.net
@@ -141,7 +141,7 @@ rescue NetInfo::NotFoundError
     @name = nil
   else
     @closed_net = Tables::ClosedNet.where(name: params[:name]).order(started_at: :desc).first
-    @name = @closed_net&.name
+    @page_title = @name = @closed_net&.name
   end
   if @closed_net
     @checkin_count = @closed_net.checkin_count
