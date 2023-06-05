@@ -1,4 +1,6 @@
 <p class="timestamps update-in-place" id="timestamps">
   Current time: <span class="current-time"><%= Time.now.strftime('%Y-%m-%d %H:%M:%S UTC') %></span>
-  (Last updated <%= @last_updated_at.strftime('%H:%M:%S') %>)
+  <% if @last_updated_at %>
+    (Last updated <%= @last_updated_at.strftime('%H:%M:%S') %>)
+  <% end %>
 </p>

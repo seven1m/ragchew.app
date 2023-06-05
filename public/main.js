@@ -78,15 +78,24 @@ function buildNetMap(coords, centers) {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(netMap)
+
+  window.netMapOms = new OverlappingMarkerSpiderfier(netMap)
+  const popup = new L.Popup({offset: [0, -30]})
+  netMapOms.addListener('click', (marker) => {
+    popup.setContent(marker.desc)
+    popup.setLatLng(marker.getLatLng())
+    netMap.openPopup(popup)
+  })
 }
 
 function updateNetMapCoords(coords) {
   window.netMapCoords = (window.netMapCoords || []).concat(coords)
   coords.forEach(([lat, lon, callSign]) => {
     const marker = L.marker([lat, lon])
-      .addTo(netMap)
     if (callSign)
-      marker.bindPopup(callSign)
+      marker.desc = callSign
+    netMap.addLayer(marker)
+    netMapOms.addMarker(marker)
   })
   if (netMapCoords.length > 0)
     netMap.fitBounds(netMapCoords, { maxZoom: 15, padding: [50, 50] })
