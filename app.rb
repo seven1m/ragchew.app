@@ -57,7 +57,7 @@ helpers do
   def club_logo_image_tag(club)
     return unless club&.logo_url.present?
 
-    "<a href=\"/groups/#{url_escape(club.name)}\">" \
+    "<a href=\"/group/#{url_escape(club.name)}\">" \
       "<img class='net-logo'" \
       "src=\"#{make_url_safe_for_html_attribute(club.logo_url)}\"/>" \
       "</a>"
@@ -561,7 +561,7 @@ post '/message/:net_id' do
   redirect "/net/#{url_escape @net.name}"
 end
 
-get '/groups/:slug' do
+get '/group/:slug' do
   @user = get_user
 
   params[:slug] = CGI.unescape(params[:slug])
@@ -608,7 +608,7 @@ get '/sitemap.txt' do
   [
     "#{BASE_URL}/",
     names.map { |name| "#{BASE_URL}/net/#{url_escape(name)}" },
-    Tables::Club.where.not(about_url: nil).pluck(:name).map { |name| "#{BASE_URL}/groups/#{url_escape(name)}" },
+    Tables::Club.where.not(about_url: nil).pluck(:name).map { |name| "#{BASE_URL}/group/#{url_escape(name)}" },
   ].flatten.join("\n")
 end
 

@@ -7,7 +7,7 @@
 <h1><%== @club.full_name.presence || @club.name %></h1>
 
 <% if @club.persisted? && @club.about_url %>
-  <p><a href="/groups/<%== make_value_safe_html_attribute(@club.name) %>">public page</a></p>
+  <p><a href="/group/<%== make_value_safe_html_attribute(@club.name) %>">public page</a></p>
 <% end %>
 
 <form action="<%== @url %>" method="post" class="wide">
