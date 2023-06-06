@@ -10,7 +10,7 @@
     },
     {
       "command": "bundle exec rake associate_clubs_with_new_nets",
-      "schedule": "*/5 * * * *"
+      "schedule": "2,7,12,17,22,27,32,37,42,47,52,57 * * * *"
     },
     {
       "command": "bundle exec rake update_club_list",
