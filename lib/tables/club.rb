@@ -6,6 +6,10 @@ module Tables
     serialize :net_patterns, JSON
     serialize :net_list, JSON
 
+    def best_name
+      full_name.presence || name
+    end
+
     def all_patterns
       net_patterns_as_strings + net_list_as_strings
     end

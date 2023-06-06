@@ -1,0 +1,5 @@
+<% if (club = net.club) && club.about_url.present? %>
+  <div class="breadcrumbs">
+    <a href="/group/<%== url_escape(club.name) %>"><%== club.best_name %></a> →
+  </div>
+<% end %>

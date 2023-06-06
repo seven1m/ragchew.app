@@ -2,14 +2,17 @@
 
 <p><a href="/">home</a></p>
 
-<h1>
-  <%= club_logo_image_tag(@closed_net.club) %>
-  <%== @closed_net.name %> (closed)
-</h1>
+<header>
+  <div class="header-col-grow">
+    <%= erb :_club_breadcrumb, locals: { net: @closed_net } %>
 
-<% if (club = @closed_net.club) && club.about_url.present? %>
-  <p><a href="<%== make_url_safe_for_html_attribute(club.about_url) %>"><%= pretty_url(club.about_url) %></a></p>
-<% end %>
+    <h1><%== @closed_net.name %> (closed)</h1>
+  </div>
+
+  <div class="header-col">
+    <%= club_logo_image_tag(@closed_net.club) %>
+  </div>
+</header>
 
 <% if params[:id] %>
   <p>

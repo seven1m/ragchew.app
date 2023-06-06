@@ -2,22 +2,25 @@
 
 <p><a href="/">home</a></p>
 
-<h1>
-  <%= club_logo_image_tag(@net.club) %>
-  <%== @net.name %>
-</h1>
+<header>
+  <div class="header-col-grow">
+    <%= erb :_club_breadcrumb, locals: { net: @net } %>
 
-<p>
-  <% if (club = @net.club) && club.about_url.present? %>
-    <a href="<%== make_url_safe_for_html_attribute(club.about_url) %>"><%= pretty_url(club.about_url) %></a>
-  <% end %>
+    <h1><%== @net.name %></h1>
 
-  <%== @net.frequency %> |
-  <%== @net.mode %> |
-  <%== @net.band %> |
-  started at <%== format_time(@net.started_at) %> |
-  <%== @net.host %>
-</p>
+    <p>
+      <%== @net.frequency %> |
+      <%== @net.mode %> |
+      <%== @net.band %> |
+      started at <%== format_time(@net.started_at) %> |
+      <%== @net.host %>
+    </p>
+  </div>
+
+  <div class="header-col">
+    <%= club_logo_image_tag(@net.club) %>
+  </div>
+</header>
 
 <div id="net-map" data-coords='<%= @coords.to_json %>'></div>
 

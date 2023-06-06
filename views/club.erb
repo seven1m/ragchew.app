@@ -2,10 +2,11 @@
 
 <p><a href="/">home</a></p>
 
-<h1>
+<div style="margin-top:35px;">
   <%= club_logo_image_tag(@club) %>
-  <%== @club.full_name.presence || @club.name %>
-</h1>
+</div>
+
+<h1><%== @club.full_name.presence || @club.name %></h1>
 
 <% if @club.about_url.present? %>
   <p>website: <a href="<%== make_url_safe_for_html_attribute(@club.about_url) %>"><%== pretty_url(@club.about_url) %></a></p>

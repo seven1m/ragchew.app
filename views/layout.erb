@@ -19,6 +19,7 @@
     <style>
       span.Offline { color: #ccc; }
       em.highlight { font-style: normal; background-color: #ffc; }
+      h1 { margin-top: 10px; }
       h2 { border-bottom: 3px double #999; }
       body { max-width: 100%; }
       .timestamps { float: right; font-size: smaller; font-style: italic; }
@@ -44,9 +45,12 @@
       ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
       .columns { display: flex; justify-content: space-between; }
       .columns .column { flex-grow: 1; }
-      .net-logo { max-height: 50px; }
+      .net-logo { max-height: 125px; }
       form.wide input[type="text"] { width: 800px; max-width: 100%; }
       form.wide textarea { width: 800px; max-width: 100%; }
+      .breadcrumbs { }
+      header { display: flex; justify-content: space-between; clear: both; margin-top: 50px; }
+      header .header-col-grow { flex-grow: 1; }
       #net-map { height: 500px; }
       @media only screen and (max-height: 800px) {
         #net-map { height: 300px; }
@@ -56,6 +60,7 @@
         #net-map { height: 300px; }
         .columns { display: block; }
         .columns .column { flex-grow: 0; }
+        header { display: block; }
       }
     </style>
     <% if @last_updated_at && params[:autoupdate] != 'false' %>
