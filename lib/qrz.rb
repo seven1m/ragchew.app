@@ -54,7 +54,6 @@ class Qrz
     params.merge!(agent: AGENT)
     params_string = params.map { |k, v| "#{k}=#{CGI.escape(v)}" }.join(';')
     url = "#{BASE_URL}?#{params_string}"
-    puts "GET #{url}"
     Net::HTTP.get(URI(url))
   end
 
