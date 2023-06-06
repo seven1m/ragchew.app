@@ -49,8 +49,9 @@
       form.wide input[type="text"] { width: 800px; max-width: 100%; }
       form.wide textarea { width: 800px; max-width: 100%; }
       .breadcrumbs { }
-      header { display: flex; justify-content: space-between; clear: both; margin-top: 50px; }
-      header .header-col-grow { flex-grow: 1; }
+      header { clear: both; margin-top: 50px; }
+      header.flex { display: flex; justify-content: space-between; }
+      header.flex .header-col-grow { flex-grow: 1; }
       #net-map { height: 500px; }
       @media only screen and (max-height: 800px) {
         #net-map { height: 300px; }
@@ -60,8 +61,8 @@
         #net-map { height: 300px; }
         .columns { display: block; }
         .columns .column { flex-grow: 0; }
-        header { flex-direction: column-reverse; }
-        header img { margin: 20px 0; }
+        header.flex { flex-direction: column-reverse; }
+        header.flex img { margin: 20px 0; }
       }
     </style>
     <% if @last_updated_at && params[:autoupdate] != 'false' %>
