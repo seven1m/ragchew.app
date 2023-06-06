@@ -599,6 +599,16 @@ post '/admin/unblock_net' do
   redirect '/admin#blocked-nets'
 end
 
+post '/admin/remove_closed_net_from_club' do
+  @user = get_user
+  require_admin!
+
+  closed_net = Tables::ClosedNet.find(params[:id])
+  closed_net.update!(club: nil)
+
+  redirect "/admin/closed-net/#{closed_net.id}"
+end
+
 get '/sitemap.txt' do
   content_type 'text/plain'
   names = (Tables::Net.pluck(:name) + Tables::ClosedNet.distinct(:name).pluck(:name)).uniq
@@ -637,7 +647,7 @@ def fix_club_params(params)
   %i[full_name description logo_url about_url].each do |param|
     params[:club][param] = params[:club][param].presence
   end
-  %i[net_patterns net_list].each do |param|
+  %i[net_patterns net_list additional_net_patterns].each do |param|
     params[:club][param] = JSON.parse(params[:club][param]) if params[:club][param]
   end
   params[:club][:logo_url] = UpdateClubList.download_logo_url(@club, params[:club][:logo_url])

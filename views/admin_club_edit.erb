@@ -40,8 +40,6 @@
     <%= club_logo_image_tag(@club) %>
   </label><br/>
 
-  </label><br/>
-
   <label>
     description (<a href="https://www.markdownguide.org/cheat-sheet/" target="_new">Markdown</a> enabled):<br/>
     <textarea name="club[description]" rows="10"><%== @club.description %></textarea>
@@ -50,6 +48,11 @@
   <label>
     net patterns:<br/>
     <textarea name="club[net_patterns]" rows="10"><%== JSON.pretty_generate(@club.net_patterns || []) %></textarea>
+  </label><br/>
+
+  <label>
+    additional net patterns (not overwritten by NetLogger data nightly):<br/>
+    <textarea name="club[additional_net_patterns]" rows="10"><%== JSON.pretty_generate(@club.additional_net_patterns || []) %></textarea>
   </label><br/>
 
   <label>

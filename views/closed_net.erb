@@ -17,11 +17,17 @@
 </header>
 
 <% if params[:id] %>
-  <p>
+  <div class="admin-only">
     Admin only: You are viewing a closed net from the archive.
     <a href="/admin/closed-nets?name=<%== url_escape(@closed_net.name) %>">name search</a> |
     <a href="/net/<%== url_escape(@closed_net.name) %>">public page</a>
-  </p>
+    <% if @closed_net.club %>
+      <form action="/admin/remove_closed_net_from_club" method="post" onsubmit="if (!confirm('Sure?')) return false">
+        <input type="hidden" name="id" value="<%== @closed_net.id %>"/>
+        <button>remove club</button>
+      </form>
+    <% end %>
+  </div>
 <% end %>
 
 <p>

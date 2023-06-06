@@ -4,6 +4,7 @@ module Tables
     has_many :closed_nets
 
     serialize :net_patterns, JSON
+    serialize :additional_net_patterns, JSON
     serialize :net_list, JSON
 
     def best_name
@@ -11,7 +12,9 @@ module Tables
     end
 
     def all_patterns
-      net_patterns_as_strings + net_list_as_strings
+      net_patterns_as_strings +
+        additional_net_patterns_as_strings +
+        net_list_as_strings
     end
 
     private
@@ -19,6 +22,14 @@ module Tables
     def net_patterns_as_strings
       if net_patterns.is_a?(Array)
         net_patterns.map { |n| n.is_a?(String) ? n : nil }.compact
+      else
+        []
+      end
+    end
+
+    def additional_net_patterns_as_strings
+      if additional_net_patterns.is_a?(Array)
+        additional_net_patterns.map { |n| n.is_a?(String) ? n : nil }.compact
       else
         []
       end
