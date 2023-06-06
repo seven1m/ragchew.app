@@ -27,6 +27,10 @@
         <button>remove club</button>
       </form>
     <% end %>
+    <form action="/admin/closed-net/<%== @closed_net.id %>" method="post" onsubmit="if (!confirm('Sure?')) return false">
+      <input type="hidden" name="_method" value="delete"/>
+      <button>delete net</button>
+    </form>
   </div>
 <% end %>
 
