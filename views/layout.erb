@@ -60,7 +60,7 @@
         #net-map { height: 300px; }
         .columns { display: block; }
         .columns .column { flex-grow: 0; }
-        header { display: block; }
+        header { flex-direction: column-reverse; }
       }
     </style>
     <% if @last_updated_at && params[:autoupdate] != 'false' %>

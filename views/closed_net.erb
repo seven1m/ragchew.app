@@ -7,6 +7,8 @@
     <%= erb :_club_breadcrumb, locals: { net: @closed_net } %>
 
     <h1><%== @closed_net.name %> (closed)</h1>
+
+    <p><em>ended <%== time_ago_in_words(@closed_net.ended_at) %> ago</em></p>
   </div>
 
   <div class="header-col">
