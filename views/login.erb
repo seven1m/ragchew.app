@@ -15,14 +15,28 @@
   <input type="submit" value="Log in"/>
 </form>
 
+<h2>A note about passwords.</h2>
+
 <p>
   This server does <strong>not</strong> store your password. We only use it briefly
-  to obtain a QRZ session identifier to use for lookups of call signs and photos.
+  to obtain a QRZ session identifier so this system knows who you are. (If you are
+  a software person, you can check out
+  <a href="https://github.com/seven1m/ragchew.app/blob/master/lib/qrz.rb#L37">the open source code</a>
+  where we send your credentials to QRZ and then discard them from memory.)
 </p>
 
 <p>
-  We recommend you enable <em>Two Factor Authentication</em> at the top of
-  your Account page on <a href="https://www.qrz.com/">QRZ.com</a> for added
-  security. Read more
+  But you don't have to just trust us! Protect yourself from any of the dozens of
+  amateur radio applications that request your QRZ credentials by enabling
+  <strong>Two Factor Authentication</strong> at the top of your Account page on
+  <a href="https://www.qrz.com/">QRZ.com</a>. You can read more
   <a href="https://forums.qrz.com/index.php?threads/qrz-security-update-2fa-and-verified-users.661895/">about 2FA here</a>.
 </p>
+
+<p>
+  And just because I care a lot about this... you can help by gently encouraging and politely asking QRZ to implement
+  <a href="https://en.wikipedia.org/wiki/OAuth">OAuth</a> so your QRZ credentials are never shared
+  with another amateur radio software application or website.
+</p>
+
+<p>73. <a href="https://www.qrz.com/db/KI5ZDF">KI5ZDF</a>.</p>
