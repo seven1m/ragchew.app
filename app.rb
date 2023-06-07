@@ -341,7 +341,18 @@ get '/admin/users' do
   require_admin!
 
   @page_title = 'Admin'
-  @users = Tables::User.order(last_signed_in_at: :desc).limit(100).to_a
+
+  order = case params[:order]
+          when 'call_sign'
+            { call_sign: :asc }
+          when 'first_name,last_name'
+            { first_name: :asc, last_name: :asc }
+          when 'created_at'
+            { created_at: :desc }
+          when 'last_signed_in_at', nil
+            { last_signed_in_at: :desc }
+          end
+  @users = Tables::User.order(order).limit(100).to_a
   @user_count_total = Tables::User.count
   @user_count_last_24_hours = Tables::User.where('last_signed_in_at > ?', Time.now - (24 * 60 * 60)).count
   @user_count_last_1_hour = Tables::User.where('last_signed_in_at > ?', Time.now - (1 * 60 * 60)).count
