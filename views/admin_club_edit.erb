@@ -17,52 +17,67 @@
   <label>
     name:<br/>
     <input type="text" name="club[name]" value="<%== make_value_safe_html_attribute(@club.name) %>"/>
-  </label><br/>
+  </label>
 
   <label>
     profile URL:<br/>
     <input type="text" disabled value="<%== make_value_safe_html_attribute(@club.profile_url) %>"/>
-  </label><br/>
+  </label>
 
   <label>
     full name:<br/>
     <input type="text" name="club[full_name]" value="<%== make_value_safe_html_attribute(@club.full_name) %>"/>
-  </label><br/>
+  </label>
 
   <label>
     about URL:<br/>
     <input type="text" name="club[about_url]" value="<%== make_value_safe_html_attribute(@club.about_url) %>"/>
-  </label><br/>
+  </label>
+
+  <label class="sub">
+    <input type="checkbox" name="club[override_about_url]" value="true" <%= @club.override_about_url? && 'checked' %>> override (don't allow updating from profile URL)
+  </label>
 
   <label>
     logo URL:<br/>
     <input type="text" name="club[logo_url]" value="<%== make_value_safe_html_attribute(@club.logo_url) %>"/>
+  </label>
+
+  <label class="sub">
+    <input type="checkbox" name="club[override_logo_url]" value="true" <%= @club.override_logo_url? && 'checked' %>> override (don't allow updating from profile URL)
+  </label>
+
+  <% if @club.logo_url.present? %>
     <%= club_logo_image_tag(@club) %>
-  </label><br/>
+    <br/>
+    <br/>
+  <% end %>
 
   <label>
     description (<a href="https://www.markdownguide.org/cheat-sheet/" target="_new">Markdown</a> enabled):<br/>
     <textarea name="club[description]" rows="10"><%== @club.description %></textarea>
-  </label><br/>
+  </label>
 
   <label>
     net patterns:<br/>
     <textarea name="club[net_patterns]" rows="10"><%== JSON.pretty_generate(@club.net_patterns || []) %></textarea>
-  </label><br/>
+  </label>
 
   <label>
     additional net patterns (not overwritten by NetLogger data nightly):<br/>
     <textarea name="club[additional_net_patterns]" rows="10"><%== JSON.pretty_generate(@club.additional_net_patterns || []) %></textarea>
-  </label><br/>
+  </label>
 
   <label>
     net list:<br/>
     <textarea name="club[net_list]" rows="10"><%== JSON.pretty_generate(@club.net_list || []) %></textarea>
-  </label><br/>
+  </label>
 
   <label>
     <input type="checkbox" name="force_update_existing_nets" value="true"> force update existing nets
-  </label><br/>
+  </label>
+
+  <br/>
 
   <input type="submit" value="save"/>
 </form>

@@ -658,6 +658,9 @@ def fix_club_params(params)
   %i[full_name description logo_url about_url].each do |param|
     params[:club][param] = params[:club][param].presence
   end
+  %i[override_about_url override_logo_url].each do |param|
+    params[:club][param] = params[:club][param] == 'true'
+  end
   %i[net_patterns net_list additional_net_patterns].each do |param|
     params[:club][param] = JSON.parse(params[:club][param]) if params[:club][param]
   end

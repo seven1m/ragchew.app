@@ -15,11 +15,24 @@ class UpdateClubList
           name, value = line.split(/\s*=\s*/, 2)
           hash[name] = value
         end
+
         club = Tables::Club.find_or_initialize_by(name: club_name)
+
+        about_url = if club.override_about_url?
+                      club.about_url
+                    else
+                      variables['AboutURL']
+                    end
+        logo_url = if club.override_logo_url?
+                     club.logo_url
+                   else
+                     download_logo_url(club, variables['LogoURL'])
+                   end
+
         club.update!(
           profile_url: url,
-          about_url: variables['AboutURL'],
-          logo_url: download_logo_url(club, variables['LogoURL']),
+          about_url:,
+          logo_url:,
           logo_updated_at: variables['LogoTimeStamp'],
           expiration_time: variables['ExpirationTime'],
           current_net_expiration_time: variables['CurrentNetExpirationTime'],
