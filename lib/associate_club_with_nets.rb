@@ -6,18 +6,18 @@ class AssociateClubWithNets
   end
 
   def call
-    patterns = @club.all_patterns
-    return if patterns.empty?
+    conditions = @club.all_net_conditions
+    return if conditions.empty?
 
     net_scope = Tables::Net.all
     limit_scope(net_scope)
-    net_scope.matching_patterns(patterns).each do |net|
+    net_scope.matching_conditions(conditions).each do |net|
       net.update!(club: @club)
     end
 
     closed_net_scope = Tables::ClosedNet.all
     limit_scope(closed_net_scope)
-    closed_net_scope.matching_patterns(patterns).each do |closed_net|
+    closed_net_scope.matching_conditions(conditions).each do |closed_net|
       closed_net.update!(club: @club)
     end
   end

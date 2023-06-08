@@ -11,36 +11,51 @@ module Tables
       full_name.presence || name
     end
 
-    def all_patterns
-      net_patterns_as_strings +
-        additional_net_patterns_as_strings +
-        net_list_as_strings
+    # returns an array of hashes, like this:
+    #
+    #     [
+    #       { name: 'YL*' },
+    #       { name: 'YL System 15m Session', frequency: '21.373' },
+    #       ...
+    #     ]
+    #
+    def all_net_conditions
+      net_pattern_conditions +
+        additional_net_pattern_conditions +
+        net_list_conditions
     end
 
     private
 
-    def net_patterns_as_strings
-      if net_patterns.is_a?(Array)
-        net_patterns.map { |n| n.is_a?(String) ? n : nil }.compact
+    def net_pattern_conditions
+      strings_to_conditions(net_patterns)
+    end
+
+    def additional_net_pattern_conditions
+      strings_to_conditions(additional_net_patterns)
+    end
+
+    def strings_to_conditions(strings)
+      if strings.is_a?(Array)
+        strings.map do |name|
+          if name.is_a?(String)
+            { name: }
+          end
+        end.compact
       else
         []
       end
     end
 
-    def additional_net_patterns_as_strings
-      if additional_net_patterns.is_a?(Array)
-        additional_net_patterns.map { |n| n.is_a?(String) ? n : nil }.compact
-      else
-        []
-      end
-    end
-
-    def net_list_as_strings
+    def net_list_conditions
       if net_list.is_a?(Array)
         net_list.map do |net|
           if net.is_a?(Hash)
             if net['name'].is_a?(String)
-              net['name']
+              {
+                name: net['name'],
+                frequency: net['frequency'],
+              }
             end
           end
         end.compact
