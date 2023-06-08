@@ -15,7 +15,8 @@ namespace :db do
       File.expand_path('lib/migrations', __dir__),
       ActiveRecord::SchemaMigration
     )
-    context.migrate
+    version = ENV['TO_VERSION']&.to_i
+    context.migrate(version)
   end
 end
 
