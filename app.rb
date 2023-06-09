@@ -582,6 +582,8 @@ get '/group/:slug' do
     status 404
     return erb :missing_club
   end
+
+  @page_title = @club.name
   
   @net_names = (
     @club.nets.order(:name).pluck(:name) +
