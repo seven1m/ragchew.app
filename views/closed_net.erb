@@ -49,11 +49,11 @@
 <% if @closed_net.show_circle? %>
   <div id="net-map"
        data-centers='<%= [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }].to_json %>'></div>
-<% end %>
 
-<script id="map-script">
-  const elm = document.getElementById('net-map')
-  const centers = JSON.parse(elm.getAttribute('data-centers'))
-  buildNetMap()
-  updateNetMapCenters(centers)
-</script>
+  <script id="map-script">
+    const elm = document.getElementById('net-map')
+    const centers = JSON.parse(elm.getAttribute('data-centers'))
+    buildNetMap()
+    updateNetMapCenters(centers)
+  </script>
+<% end %>

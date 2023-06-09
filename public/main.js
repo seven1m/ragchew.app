@@ -98,7 +98,7 @@ function updateNetMapCoords(coords) {
     netMapOms.addMarker(marker)
   })
   if (netMapCoords.length > 0)
-    netMap.fitBounds(netMapCoords, { maxZoom: 15, padding: [50, 50] })
+    netMap.fitBounds(netMapCoords, { maxZoom: 6, padding: [50, 50] })
 }
 
 function updateNetMapCenters(centers) {
@@ -126,14 +126,14 @@ function updateNetMapCenters(centers) {
       netMapCenters.push(circle)
     }
   })
-  if (centers.length >= 2) {
+  if (centers.length > 0) {
     const bounds = L.latLngBounds(centers.map((c) => L.latLng(c.latitude, c.longitude)))
     centers.forEach((center) => {
       if (center.latitude && center.longitude && center.radius) {
         bounds.extend(L.latLng(center.latitude, center.longitude).toBounds(center.radius))
       }
     })
-    netMap.fitBounds(bounds)
+    netMap.fitBounds(bounds, { maxZoom: 5, padding: [50, 50] })
   }
 }
 
