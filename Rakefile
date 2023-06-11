@@ -83,7 +83,7 @@ task :associate_clubs_with_new_nets do
     AssociateClubWithNets.new(
       club,
       only_blank: true,
-      created_seconds_ago: 10 * 60,
+      created_seconds_ago: 15 * 60,
     ).call
   end
 end
