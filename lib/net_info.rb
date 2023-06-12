@@ -261,7 +261,8 @@ class NetInfo
       end
     end.compact
 
-    if data['NetLogger Start Data'].last[0] =~ /^`(\d+)/
+    last_record = data['NetLogger Start Data'].last
+    if last_record && last_record[0] =~ /^`(\d+)/
       currently_operating = $1.to_i
     end
 
@@ -296,7 +297,7 @@ class NetInfo
       end
     end.compact
 
-    raw_info = data['Net Info Start'].first.each_with_object({}) do |param, hash|
+    raw_info = (data['Net Info Start'].first || []).each_with_object({}) do |param, hash|
       (key, value) = param.split('=')
       hash[key.downcase] = value
     end
