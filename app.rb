@@ -669,6 +669,60 @@ post '/admin/remove_closed_net_from_club' do
   redirect "/admin/closed-net/#{closed_net.id}"
 end
 
+get '/admin/clubs.json' do
+  @user = get_user
+  require_admin!
+
+  content_type 'application/json'
+  attachment 'clubs.json'
+
+  {
+    clubs: Tables::Club.order(:name).map do |record|
+      if record.logo_url.present?
+        path = File.join(__dir__, 'public', record.logo_url)
+        if File.exist?(path)
+          logo = Base64.encode64(File.read(path))
+        end
+      end
+      record.as_json.except('id', 'created_at', 'updated_at').merge(logo:)
+    end
+  }.to_json
+end
+
+patch '/admin/clubs.json' do
+  @user = get_user
+  require_admin!
+
+  existing = Tables::Club.all.each_with_object({}) { |c, h| h[c.name] = c }
+  orig_count = existing.size
+  created = 0
+  updated = 0
+  data = params[:file]['tempfile'].read
+  JSON.parse(data)['clubs'].each do |row|
+    raise 'bad' unless row['name'].present?
+    if (logo = row.delete('logo'))
+      path = File.join(__dir__, 'public', row['logo_url'])
+      File.write(path, Base64.decode64(logo))
+    end
+    if (found = existing.delete(row['name']))
+      found.attributes = row
+      updated += 1 if found.changed?
+      found.save!
+    else
+      Tables::Club.create!(row)
+      created += 1
+    end
+  end
+  if existing.size > orig_count * 0.5
+    status 400
+    erb 'deleting more than half!'
+  else
+    deleted = existing.size
+    existing.values.each(&:destroy)
+    erb "#{created} created, #{updated} updated, #{deleted} deleted"
+  end
+end
+
 get '/sitemap.txt' do
   content_type 'text/plain'
   names = (Tables::Net.pluck(:name) + Tables::ClosedNet.distinct(:name).pluck(:name)).uniq

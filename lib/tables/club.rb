@@ -1,7 +1,7 @@
 module Tables
   class Club < ActiveRecord::Base
-    has_many :nets
-    has_many :closed_nets
+    has_many :nets, dependent: :nullify
+    has_many :closed_nets, dependent: :nullify
 
     serialize :net_patterns, JSON
     serialize :additional_net_patterns, JSON

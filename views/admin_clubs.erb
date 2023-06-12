@@ -49,3 +49,13 @@
     </tbody>
   </table>
 </div>
+
+<h2>Import/Export Clubs</h2>
+
+<p>You can <a href="/admin/clubs.json">export</a> or import below:</p>
+
+<form action="/admin/clubs.json" method="post" enctype="multipart/form-data">
+  <input type="hidden" name="_method" value="patch"/>
+  <input type="file" name="file"/><br/>
+  <input type="submit" value="import clubs json"/>
+</form>
