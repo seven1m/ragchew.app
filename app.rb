@@ -693,7 +693,7 @@ patch '/admin/clubs.json' do
   @user = get_user
   require_admin!
 
-  existing = Tables::Club.all.each_with_object({}) { |c, h| h[c.name] = c }
+  existing = Tables::Club.all.each_with_object({}) { |c, h| h[c.name.downcase] = c }
   orig_count = existing.size
   created = 0
   updated = 0
@@ -704,7 +704,7 @@ patch '/admin/clubs.json' do
       path = File.join(__dir__, 'public', row['logo_url'])
       File.write(path, Base64.decode64(logo))
     end
-    if (found = existing.delete(row['name']))
+    if (found = existing.delete(row['name'].downcase))
       found.attributes = row
       updated += 1 if found.changed?
       found.save!
