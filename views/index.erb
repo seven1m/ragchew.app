@@ -30,7 +30,6 @@
           <th>Mode</th>
           <th>Band</th>
           <th>Started At</th>
-          <th>Subscribers</th>
           <th>Host</th>
         </tr>
       </thead>
@@ -42,7 +41,6 @@
             <td><%== net[:mode] %></td>
             <td><%== net[:band] %></td>
             <td><%== format_time(net[:started_at]) %></td>
-            <td><%== net[:subscribers] %></td>
             <td><%== net[:host] %></td>
           </tr>
         <% end %>

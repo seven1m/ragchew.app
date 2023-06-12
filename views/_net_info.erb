@@ -8,12 +8,13 @@
     <dd><%== net.band %></dd>
     <dt>Host:</dt>
     <dd><%== net.host %></dd>
-    <dt>Subscribers:</dt>
-    <dd><%== net.subscribers %></dd>
   </dl>
   <dl class="column">
     <dt>Started at:</dt>
-    <dd><%== format_time(net.started_at) %></dd>
+    <dd>
+      <%== format_time(net.started_at) %>
+      (<%= distance_of_time_in_words(net.started_at, Time.now) %> ago)
+    </dd>
     <% if net.respond_to?(:ended_at) && net.ended_at %>
       <dt>Ended at:</dt>
       <dd>
