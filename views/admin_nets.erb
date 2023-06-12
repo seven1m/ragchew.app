@@ -14,6 +14,7 @@
         <th>Frequency</th>
         <th>Mode</th>
         <th>Band</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -30,6 +31,12 @@
           <td><%== net.frequency %></td>
           <td><%== net.mode %></td>
           <td><%== net.band %></td>
+          <td>
+            <form action="/admin/nets/<%== net.id %>" method="post" onsubmit="if (!confirm('Sure?')) return false">
+              <input type="hidden" name="_method" value="delete"/>
+              <button>delete</button>
+            </form>
+          </td>
         </tr>
       <% end %>
     </tbody>

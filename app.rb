@@ -486,6 +486,15 @@ get '/admin/nets' do
   erb :admin_nets
 end
 
+delete '/admin/nets/:id' do
+  @user = get_user
+  require_admin!
+
+  Tables::Net.find(params[:id]).destroy
+
+  redirect '/admin/nets'
+end
+
 post '/admin/refresh-net-list' do
   @user = get_user
   require_admin!
