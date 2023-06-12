@@ -16,7 +16,7 @@
   </div>
 </header>
 
-<% if params[:id] %>
+<% if is_admin? && params[:id] %>
   <div class="admin-only">
     Admin only: You are viewing a closed net from the archive.
     <a href="/admin/closed-nets?name=<%== url_escape(@closed_net.name) %>">name search</a> |

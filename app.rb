@@ -62,6 +62,11 @@ helpers do
       "src=\"#{make_url_safe_for_html_attribute(club.logo_url)}\"/>" \
       "</a>"
   end
+
+  def is_admin?
+    admins = ENV.fetch('ADMIN_CALL_SIGNS').split(',')
+    @user && admins.include?(@user.call_sign)
+  end
 end
 
 include DOTIW::Methods
@@ -472,6 +477,39 @@ delete '/admin/clubs/:id' do
   redirect '/admin/clubs'
 end
 
+get '/admin/nets' do
+  @user = get_user
+  require_admin!
+
+  @nets = Tables::Net.includes(:club).order(:name).to_a
+
+  erb :admin_nets
+end
+
+post '/admin/refresh-net-list' do
+  @user = get_user
+  require_admin!
+
+  NetList.new.list
+
+  redirect '/admin/nets'
+end
+
+post '/admin/associate-clubs' do
+  @user = get_user
+  require_admin!
+
+  Tables::Club.find_each do |club|
+    AssociateClubWithNets.new(
+      club,
+      only_blank: true,
+      created_seconds_ago: 60 * 60,
+    ).call
+  end
+
+  redirect '/admin/nets'
+end
+
 get '/admin/table/:table' do
   @user = get_user
   require_admin!
@@ -650,8 +688,7 @@ def get_user
 end
 
 def require_admin!
-  admins = ENV.fetch('ADMIN_CALL_SIGNS').split(',')
-  return if @user && admins.include?(@user.call_sign)
+  return if is_admin?
 
   redirect '/'
 end

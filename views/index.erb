@@ -36,12 +36,12 @@
       <tbody>
         <% @nets.each do |net| %>
           <tr>
-            <td><a href="/net/<%== url_escape(net[:name]) %>"><%== net[:name] %></a></td>
-            <td><%== net[:frequency] %></td>
-            <td><%== net[:mode] %></td>
-            <td><%== net[:band] %></td>
-            <td><%== format_time(net[:started_at]) %></td>
-            <td><%== net[:host] %></td>
+            <td><a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a></td>
+            <td><%== net.frequency %></td>
+            <td><%== net.mode %></td>
+            <td><%== net.band %></td>
+            <td><%== format_time(net.started_at) %></td>
+            <td><%== net.host %></td>
           </tr>
         <% end %>
       </tbody>

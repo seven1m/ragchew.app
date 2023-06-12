@@ -29,3 +29,9 @@
 <% end %>
 
 <p class="disclaimer">If you see a mistake with the information above, please <a href="mailto:<%= SUPPORT_EMAIL %>">email Tim</a>.</p>
+
+<% if is_admin? %>
+  <div class="admin-only">
+    Admin only: <a href="/admin/clubs/<%== @club.id %>/edit">edit</a>
+  </div>
+<% end %>
