@@ -407,7 +407,7 @@ get '/admin/clubs' do
   require_admin!
 
   scope = Tables::Club.order(:name)
-  scope.where!('name like ?', '%' + params[:name] + '%') if params[:name]
+  scope.where!('name like :query or full_name like :query', query: '%' + params[:name] + '%') if params[:name]
   @clubs = scope.to_a
 
   erb :admin_clubs
