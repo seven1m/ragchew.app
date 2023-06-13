@@ -1,20 +1,30 @@
 <p><a href="/">home</a></p>
 
-<h1><%== @net.name %></h1>
+<header class="flex">
+  <div class="header-col-grow">
+    <%= erb :_club_breadcrumb, locals: { net: @net } %>
 
-<form action="/login">
-  <input type="hidden" name="net" value="<%== url_escape(@net.name) %>"/>
-  <p>
-    <% if @checkin_count > 0 %>
-      <strong>This net is ongoing with <%== @checkin_count %> <%== pluralize('check-in', @checkin_count) %>.</strong>
-    <% else %>
-      <strong>This net is ongoing.</strong>
-    <% end %>
-    Please
-    <button>log in</button>
-    to see who has checked in.
-  </p>
-</form>
+    <h1><%== @net.name %></h1>
+
+    <form action="/login">
+      <input type="hidden" name="net" value="<%== url_escape(@net.name) %>"/>
+      <p>
+      <% if @checkin_count > 0 %>
+        <strong>This net is ongoing with <%== @checkin_count %> <%== pluralize('check-in', @checkin_count) %>.</strong>
+      <% else %>
+        <strong>This net is ongoing.</strong>
+      <% end %>
+      Please
+      <button>log in</button>
+      to see who has checked in and to chat.
+      </p>
+    </form>
+  </div>
+
+  <div class="header-col">
+    <%= club_logo_image_tag(@net.club) %>
+  </div>
+</header>
 
 <%= erb :_net_info, locals: { net: @net } %>
 
