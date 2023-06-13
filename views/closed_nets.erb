@@ -1,0 +1,11 @@
+<p>
+  <a href="/">home</a>
+</p>
+
+<h1>Closed Nets</h1>
+
+<ul>
+  <% @closed_nets.each do |name| %>
+    <li><a href="/net/<%== url_escape(name) %>"><%== name %></a></li>
+  <% end %>
+</ul>

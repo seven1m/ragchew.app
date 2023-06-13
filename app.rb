@@ -166,6 +166,18 @@ rescue NetInfo::NotFoundError
   end
 end
 
+get '/closed-nets' do
+  @closed_nets = Tables::ClosedNet.order(:name).distinct(:name).pluck(:name)
+
+  erb :closed_nets
+end
+
+get '/groups' do
+  @clubs = Tables::Club.order(:full_name, :name).pluck(:name, :full_name)
+
+  erb :clubs
+end
+
 get '/station/:call_sign/image' do
   call_sign = params[:call_sign]
   station = Tables::Station.find_by(call_sign:)

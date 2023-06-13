@@ -1,0 +1,11 @@
+<p>
+  <a href="/">home</a>
+</p>
+
+<h1>Groups and Clubs</h1>
+
+<ul>
+  <% @clubs.each do |name, full_name| %>
+    <li><a href="/group/<%== url_escape(name) %>"><%== full_name.presence || name %></a></li>
+  <% end %>
+</ul>
