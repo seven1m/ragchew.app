@@ -455,6 +455,7 @@ post '/admin/clubs' do
 
   only_blank = params[:force_update_existing_nets] != 'true'
   AssociateClubWithNets.new(@club, only_blank:).call
+  AssociateNetWithClub.clear_clubs_cache
 
   redirect "/admin/clubs/#{@club.id}/edit"
 rescue JSON::ParserError
@@ -472,6 +473,7 @@ patch '/admin/clubs/:id' do
 
   only_blank = params[:force_update_existing_nets] != 'true'
   AssociateClubWithNets.new(@club, only_blank:).call
+  AssociateNetWithClub.clear_clubs_cache
 
   redirect "/admin/clubs/#{@club.id}/edit"
 rescue JSON::ParserError

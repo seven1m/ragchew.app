@@ -16,6 +16,7 @@ require 'yaml'
 require 'with_advisory_lock'
 
 require_relative './lib/associate_club_with_nets'
+require_relative './lib/associate_net_with_club'
 require_relative './lib/extensions'
 require_relative './lib/fetcher'
 require_relative './lib/grid_square'

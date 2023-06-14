@@ -25,6 +25,17 @@ module Tables
         net_list_conditions
     end
 
+    def matches_net?(net)
+      all_net_conditions.any? do |condition|
+        name_matches = name_to_regexp(condition[:name]).match?(net.name)
+        if (frequency = condition[:frequency])
+          name_matches && frequency == net.frequency
+        else
+          name_matches
+        end
+      end
+    end
+
     private
 
     def net_pattern_conditions
@@ -45,6 +56,10 @@ module Tables
       else
         []
       end
+    end
+
+    def name_to_regexp(name)
+      Regexp.new(Regexp.escape(name).gsub(/\\\*/, '.*'))
     end
 
     def net_list_conditions

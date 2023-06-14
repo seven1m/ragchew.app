@@ -39,8 +39,11 @@ class UpdateClubList
           net_patterns: config['Nets'],
           net_list: net_list(config['NetList']),
         )
+        AssociateClubWithNets.new(club, only_blank: true).call
       end
     end
+
+    AssociateNetWithClub.clear_clubs_cache
   end
 
   private

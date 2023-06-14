@@ -10,7 +10,7 @@ class NetList
 
   def list
     update_cache
-    Tables::Net.order(:name).to_a
+    Tables::Net.order(:name).includes(:club).to_a
   end
 
   private
@@ -106,7 +106,9 @@ class NetList
       if (net = cached.delete(net_info[:name]))
         net.update!(net_info)
       else
-        Tables::Net.create!(net_info)
+        net = Tables::Net.new(net_info)
+        AssociateNetWithClub.new(net).call
+        net.save!
       end
     end
 
