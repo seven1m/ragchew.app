@@ -29,7 +29,7 @@ module Tables
       all_net_conditions.any? do |condition|
         name_matches = name_to_regexp(condition[:name]).match?(net.name)
         if (frequency = condition[:frequency])
-          name_matches && frequency == net.frequency
+          name_matches && frequency.downcase == net.frequency.to_s.downcase
         else
           name_matches
         end
