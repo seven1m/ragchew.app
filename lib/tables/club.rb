@@ -59,7 +59,7 @@ module Tables
     end
 
     def name_to_regexp(name)
-      Regexp.new(Regexp.escape(name).gsub(/\\\*/, '.*'))
+      Regexp.new(Regexp.escape(name).gsub(/\\\*/, '.*'), 'i')
     end
 
     def net_list_conditions
