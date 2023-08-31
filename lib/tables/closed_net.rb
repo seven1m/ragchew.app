@@ -23,6 +23,7 @@ module Tables
           'center_latitude',
           'center_longitude',
           'center_radius',
+          'club_id',
         )
       )
       closed_net.ended_at = Time.now
