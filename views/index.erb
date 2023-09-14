@@ -47,10 +47,6 @@
       </tbody>
     </table>
   </div>
-
-  <p class="disclaimer">
-    If you see something above that shouldn't be there, please <a href="mailto:<%= SUPPORT_EMAIL %>">contact Tim</a>.
-  </p>
 <% else %>
   <p class="update-in-place" id="index-table"><em>no active nets</em></p>
 <% end %>
@@ -60,6 +56,18 @@
   <a href="/closed-nets">closed nets</a> |
   <a href="/groups">groups and clubs</a>
 </p>
+
+<h2>Recent Changes</h2>
+
+<p>
+  I work hard on this site to make it useful for hams everywhere. Please let me know if you think it could be made better!
+  Also, if you see something wrong or weird, please <a href="mailto:<%= SUPPORT_EMAIL %>">contact me</a>.
+</p>
+
+<dl>
+  <dt>2023-09-07</dt>
+  <dd>Grayed out stations that are checked out, i.e. have status of "(c/o)" to make it clear who is yet to be heard.</dd>
+</dl>
 
 <script id="map-script">
   const elm = document.getElementById('net-map')

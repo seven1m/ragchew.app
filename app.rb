@@ -60,7 +60,18 @@ helpers do
     "<a href=\"/group/#{url_escape(club.name)}\">" \
       "<img class='net-logo'" \
       "src=\"#{make_url_safe_for_html_attribute(club.logo_url)}\"/>" \
-      "</a>"
+      '</a>'
+  end
+
+  def checkin_css_class(checkin, index)
+    classes = []
+    classes << index.even? ? 'even' : 'odd'
+    if checkin.currently_operating?
+      classes << 'currently-operating'
+    elsif checkin.checked_out?
+      classes << 'checked-out'
+    end
+    classes.join(' ')
   end
 
   def is_admin?
