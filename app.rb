@@ -5,6 +5,7 @@ require 'sinatra/reloader' if development?
 
 require_relative './boot'
 
+disable :protection
 enable :sessions
 set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
 set :sessions, same_site: :lax, expire_after: 365 * 24 * 60 * 60 # 1 year
