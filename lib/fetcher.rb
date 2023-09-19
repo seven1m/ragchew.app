@@ -2,6 +2,8 @@ class Fetcher
   class Error < StandardError; end
   class NotFoundError < Error; end
 
+  USER_AGENT = nil # must be removed or NetLogger servers will not respond properly :-(
+
   def initialize(host)
     @host = host
   end
@@ -29,8 +31,19 @@ class Fetcher
     params_string = params.map { |k, v| "#{k}=#{v}" }.join('&')
     uri = URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")
     puts "GET #{uri}"
-    html = Net::HTTP.get(uri).force_encoding('ISO-8859-1')
-    raise NotFoundError, $1 if html =~ /\*error - (.*?)\*/m
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = uri.scheme == 'https'
+
+    request = Net::HTTP::Get.new(uri.request_uri)
+
+    request['user-agent'] = USER_AGENT
+    response = http.request(request)
+
+    raise Error, response.body unless response.is_a?(Net::HTTPOK)
+    raise NotFoundError, $1 if response.body =~ /\*error - (.*?)\*/m
+
+    html = response.body.force_encoding('ISO-8859-1')
 
     # to debug the raw server HTML...
     # ENV['DEBUG_HTML'] = true
@@ -55,9 +68,7 @@ class Fetcher
     request = Net::HTTP::Post.new(uri.request_uri)
     request.set_form(params)
 
-    # Having any user-agent header causes the netlogger server to drop the message :-(
-    request['user-agent'] = nil
-
+    request['user-agent'] = USER_AGENT
     response = http.request(request)
 
     raise Error, response.body unless response.is_a?(Net::HTTPOK)
