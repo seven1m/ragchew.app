@@ -181,6 +181,10 @@ end
 get '/closed-nets' do
   @closed_nets = Tables::ClosedNet.order(:name).distinct(:name).pluck(:name)
 
+  @closed_nets.reject! do |name|
+    Tables::BlockedNet.blocked?(name)
+  end
+
   erb :closed_nets
 end
 
