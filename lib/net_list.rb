@@ -8,9 +8,9 @@ class NetList
   CACHE_LENGTH_IN_SECONDS = 30
   SERVER_CACHE_LENGTH_IN_SECONDS = 3600
 
-  def list
+  def list(order: :name)
     update_cache
-    Tables::Net.order(:name).includes(:club).to_a
+    Tables::Net.order(order).includes(:club).to_a
   end
 
   private

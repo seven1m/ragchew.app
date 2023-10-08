@@ -98,8 +98,22 @@ ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__)
 
 get '/' do
   @user = get_user
+  frequency_order_cast = Arel.sql('CAST(frequency AS DOUBLE)')
+  band_order_cast = Arel.sql("CAST(REPLACE(band, 'm', '') AS UNSIGNED)")
+  order = case params[:order]
+          when 'name', nil
+            { name: :asc }
+          when 'frequency'
+            { frequency_order_cast => :asc }
+          when 'mode'
+            { mode: :asc }
+          when 'band,frequency'
+            { band_order_cast => :asc, frequency_order_cast => :asc }
+          when 'started_at'
+            { started_at: :desc }
+          end
   service = NetList.new
-  @nets = service.list
+  @nets = service.list(order:)
   @last_updated_at = Tables::Server.maximum(:net_list_fetched_at)
   @update_interval = 30
   @update_backoff = 5
