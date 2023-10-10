@@ -99,7 +99,7 @@ ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__)
 get '/' do
   @user = get_user
   frequency_order_cast = Arel.sql('CAST(frequency AS DOUBLE)')
-  band_order_cast = Arel.sql("CAST(REPLACE(band, 'm', '') AS UNSIGNED)")
+  band_order_cast = Arel.sql("CAST(REPLACE(REPLACE(band, '70cm', '0'), 'm', '') AS UNSIGNED)")
   order = case params[:order]
           when 'name', nil
             { name: :asc }
