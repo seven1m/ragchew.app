@@ -105,8 +105,8 @@ get '/' do
             { name: :asc }
           when 'frequency'
             { frequency_order_cast => :asc }
-          when 'mode'
-            { mode: :asc }
+          when 'mode,frequency'
+            { mode: :asc, frequency_order_cast => :asc }
           when 'band,frequency'
             { band_order_cast => :asc, frequency_order_cast => :asc }
           when 'started_at'
