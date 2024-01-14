@@ -18,6 +18,7 @@ GEM
       activesupport
       i18n
     erubis (2.7.0)
+    honeybadger (5.4.1)
     i18n (1.13.0)
       concurrent-ruby (~> 1.0)
     minitest (5.18.0)
@@ -63,6 +64,7 @@ DEPENDENCIES
   dotenv
   dotiw
   erubis
+  honeybadger
   mysql2
   nokogiri
   puma
