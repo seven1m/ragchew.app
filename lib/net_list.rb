@@ -38,7 +38,7 @@ class NetList
 
     puts 'Updating server cache'
 
-    text = Net::HTTP.get(URI('http://www.netlogger.org/downloads/ServerList.txt'))
+    text = Net::HTTP.get(URI('https://www.netlogger.org/downloads/ServerList.txt'))
 
     sections = text.scan(/\[(\w+)\]([^\[\]]*)/m).each_with_object({}) do |(header, data), hash|
       hash[header] = data.strip.split(/\r?\n/)

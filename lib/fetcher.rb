@@ -29,7 +29,7 @@ class Fetcher
 
   def get(endpoint, params = {})
     params_string = params.map { |k, v| "#{k}=#{v}" }.join('&')
-    uri = URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")
+    uri = URI("https://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")
     puts "GET #{uri}"
 
     http = Net::HTTP.new(uri.host, uri.port)
@@ -59,7 +59,7 @@ class Fetcher
   end
 
   def post(endpoint, params)
-    uri = URI("http://#{@host}/cgi-bin/NetLogger/#{endpoint}")
+    uri = URI("https://#{@host}/cgi-bin/NetLogger/#{endpoint}")
     puts "POST #{uri}"
 
     http = Net::HTTP.new(uri.host, uri.port)
