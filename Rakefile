@@ -69,3 +69,16 @@ task :update_club_list do
   ActiveRecord::Base.logger = Logger.new($stdout)
   UpdateClubList.new.call
 end
+
+# Deploy to Dokku and notify Honeybadger
+task :deploy do
+  sh 'git push dokku master'
+
+  require 'honeybadger'
+  Honeybadger.track_deployment(
+    environment: 'production',
+    revision: `git rev-parse HEAD`.strip,
+    local_username: `whoami`.strip,
+    repository: "git@github.com:seven1m/ragchew.app"
+  )
+end
