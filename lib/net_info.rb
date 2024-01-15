@@ -78,11 +78,15 @@ class NetInfo
     #NetName:  Daily Check in Net
 
     fetcher = Fetcher.new(@record.host)
-    fetcher.get(
-      'UnsubscribeFromNet.php',
-      'Callsign' => CGI.escapeURIComponent(name_for_monitoring(user)),
-      'NetName' => CGI.escapeURIComponent(@record.name),
-    )
+    begin
+      fetcher.get(
+        'UnsubscribeFromNet.php',
+        'Callsign' => CGI.escapeURIComponent(name_for_monitoring(user)),
+        'NetName' => CGI.escapeURIComponent(@record.name),
+      )
+    rescue Fetcher::NotFoundError => e
+      raise NotFoundError, 'Already unsubscribed'
+    end
   end
 
   def send_message!(user:, message:)
