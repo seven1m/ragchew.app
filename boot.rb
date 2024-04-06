@@ -27,3 +27,9 @@ require_relative './lib/qrz'
 require_relative './lib/qrz_auto_session'
 require_relative './lib/tables'
 require_relative './lib/update_club_list'
+
+template = Erubis::Eruby.new(File.read('config/database.yaml'))
+db_config = YAML.safe_load(template.result) 
+env = :development
+ActiveRecord::Base.establish_connection(db_config[env.to_s])
+ActiveRecord::Base.logger = Logger.new($stderr)

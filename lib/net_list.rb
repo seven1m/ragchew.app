@@ -13,6 +13,12 @@ class NetList
     Tables::Net.order(order).includes(:club).to_a
   end
 
+  def update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
+    Tables::Net.with_advisory_lock(:update_net_list_cache, timeout_seconds: 2) do
+      update_net_cache(force: true)
+    end
+  end
+
   private
 
   def update_cache
@@ -90,8 +96,8 @@ class NetList
     !last_updated || last_updated < Time.now - SERVER_CACHE_LENGTH_IN_SECONDS
   end
 
-  def update_net_cache
-    return unless net_cache_needs_updating?
+  def update_net_cache(force: false)
+    return unless force || net_cache_needs_updating?
 
     data = fetch
     cached = Tables::Net.all_by_name

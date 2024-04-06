@@ -13,6 +13,28 @@ class NetInfo
   MAX_CENTER_RADIUS_TO_SHOW = 3000000
 
   class NotFoundError < StandardError; end
+  class CouldNotCreateNetError < StandardError; end
+  class CouldNotCloseNetError < StandardError; end
+
+  class UserPresenter
+    def initialize(user)
+      @user = user
+    end
+
+    def name_for_monitoring
+      name = name_for_chat
+      # NOTE: must use a real version here or UnsubscribeFromNet won't work :-(
+      name + " - #{NET_LOGGER_FAKE_VERSION}"
+    end
+
+    alias name_for_logging name_for_monitoring
+
+    def name_for_chat
+      name = @user.call_sign
+      name += '-' + @user.first_name unless @user.first_name.to_s.strip.empty?
+      name.upcase
+    end
+  end
 
   def initialize(name: nil, id: nil)
     if id
@@ -24,6 +46,27 @@ class NetInfo
     end
   rescue ActiveRecord::RecordNotFound
     raise NotFoundError, 'Net is closed'
+  end
+
+  def self.create_net!(name:, password:, frequency:, net_control:, user:, mode:, band:, enable_messaging: true, update_interval: 20000, misc_net_parameters: nil, host: 'www.netlogger.org')
+    user = UserPresenter.new(user)
+    fetcher = Fetcher.new(host)
+    result = fetcher.raw_get(
+      'OpenNet20.php',
+      'NetName' => CGI.escapeURIComponent(name),
+      'Token' => CGI.escapeURIComponent(password),
+      'Frequency' => CGI.escapeURIComponent(frequency),
+      'NetControl' => CGI.escapeURIComponent(net_control),
+      'Logger' => CGI.escapeURIComponent(user.name_for_logging),
+      'Mode' => CGI.escapeURIComponent(mode),
+      'Band' => CGI.escapeURIComponent(band),
+      'EnableMessaging' => enable_messaging ? 'Y' : 'N',
+      'UpdateInterval' => update_interval.to_s,
+      'MiscNetParameters' => misc_net_parameters.to_s,
+    )
+    unless result =~ /\*success\*/
+      raise CouldNotCreateNetError, result
+    end
   end
 
   def net
@@ -109,6 +152,18 @@ class NetInfo
       'Callsign' => name_for_chat(user),
       'Message' => message,
     )
+  end
+
+  def close_net!(password:)
+    fetcher = Fetcher.new(@record.host)
+    result = fetcher.raw_get(
+      'CloseNet.php',
+      'NetName' => CGI.escapeURIComponent(@record.name),
+      'Token' => CGI.escapeURIComponent(password),
+    )
+    unless result =~ /\*success\*/
+      raise CouldNotCloseNetError, result
+    end
   end
 
   private
@@ -362,15 +417,11 @@ class NetInfo
   end
 
   def name_for_monitoring(user)
-    name = name_for_chat(user)
-    # NOTE: must use a real version here or UnsubscribeFromNet won't work :-(
-    name + " - #{NET_LOGGER_FAKE_VERSION}"
+    UserPresenter.new(user).name_for_monitoring
   end
 
   def name_for_chat(user)
-    name = user.call_sign
-    name += '-' + user.first_name unless user.first_name.to_s.strip.empty?
-    name.upcase
+    UserPresenter.new(user).name_for_chat
   end
 
   def median(ary)

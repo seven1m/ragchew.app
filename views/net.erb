@@ -8,6 +8,12 @@
 
     <h1><%== @net.name %></h1>
 
+    <% if session[:started_net] == @net.name %>
+      <form action="/close-net/<%= @net.id %>" method="POST">
+        <input type="submit" value="Close net!"/>
+      </form>
+    <% end %>
+
     <p>
       <%== @net.frequency %> |
       <%== @net.mode %> |

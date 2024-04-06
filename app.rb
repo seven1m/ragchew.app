@@ -194,6 +194,60 @@ rescue NetInfo::NotFoundError
   end
 end
 
+get '/create-net' do
+  @user = get_user
+  require_logging_ability!
+
+  check_started_net!
+
+  erb :create_net
+end
+
+post '/create-net' do
+  @user = get_user
+  require_logging_ability!
+
+  missing = %i[name password frequency band mode net_control].reject do |key|
+    params[key].present?
+  end
+
+  if missing.any?
+    return erb "<p>Some required fields are missing: #{missing.join(', ')}. Go back and try again.</p>"
+  end
+
+  check_started_net!
+
+  NetInfo.create_net!(
+    name: params[:name],
+    password: params[:password],
+    frequency: params[:frequency],
+    net_control: params[:net_control],
+    user: @user,
+    mode: params[:mode],
+    band: params[:band],
+  )
+  NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
+
+  session[:started_net] = params[:name]
+  session[:started_net_password] = params[:password]
+
+  redirect "/net/#{CGI.escape(params[:name])}"
+end
+
+post '/close-net/:id' do
+  @user = get_user
+  require_logging_ability!
+
+  net = NetInfo.new(id: params[:id])
+  net.close_net!(password: session[:started_net_password])
+  NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
+
+  session.delete(:started_net)
+  session.delete(:started_net_password)
+
+  redirect '/'
+end
+
 get '/closed-nets' do
   @closed_nets = Tables::ClosedNet.order(:name).distinct(:name).pluck(:name)
 
@@ -802,6 +856,22 @@ def require_admin!
   return if is_admin?
 
   redirect '/'
+end
+
+def require_logging_ability!
+  # TODO: allow other users to log as part of beta
+  require_admin!
+end
+
+def check_started_net!
+  return unless (started_net = session[:started_net])
+
+  net = Tables::Net.find_by(name: started_net)
+  if net
+    redirect "/net/#{CGI.escape net.name}"
+  else
+    session.delete(:started_net) 
+  end
 end
 
 def fix_club_params(params)

@@ -9,6 +9,7 @@
     <a href="/favorites">favorites</a> |
     <% if admins.include?(@user.call_sign) %>
       <a href="/admin">admin</a> |
+      <a href="/create-net">create net</a> |
     <% end %>
     <a href="/logout" onclick="document.getElementById('logout-form').submit(); return false">log out</a>
     <form id="logout-form" style="display:none;" action="/logout" method="post"><input type="submit"/></form>

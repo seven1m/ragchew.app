@@ -1,0 +1,131 @@
+<%= erb :_user %>
+
+<p><a href="/">home</a></p>
+
+<h1>Create a Net</h1>
+
+<p>
+  You are about to start a net. Only do this if you absolutely know what you are doing.
+  If you are trying to participate in a net or join a net, this is not where you do that.
+  Instead, go back <a href="/">home</a> and find the net there. If it's not there, then
+  whoever is responsible for running and/or logging the net hasn't started it yet.
+</p>
+
+<p>
+  <input id="understand" type="checkbox" onclick="toggleForm()"/>
+  <label for="understand">I understand, please let me start a net.</label>
+</p>
+
+<div id="start-form" style="display:none">
+  <form action="/create-net" method="POST">
+    <label>
+      Name of Net:<br/>
+      <input name="name"/>
+    </label>
+    <label>
+      Password (share this with another person to allow handing off logging responsibility):<br/>
+      <input type="password" name="password" placeholder="something secure"/>
+    </label>
+    <label>
+      Frequency in MHz:<br/>
+      <input id="frequency" name="frequency" placeholder="146.25" onkeyup="guessBand()"/>
+    </label>
+    <label>
+      Band:<br/>
+      <select id="band" name="band" onchange="toggleCustomBand()">
+        <option value=""></option>
+        <option>70cm</option>
+        <option>1.25m</option>
+        <option>2m</option>
+        <option>6m</option>
+        <option>10m</option>
+        <option>12m</option>
+        <option>15m</option>
+        <option>17m</option>
+        <option>20m</option>
+        <option>30m</option>
+        <option>40m</option>
+        <option>60m</option>
+        <option>80m</option>
+        <option>160m</option>
+        <option>(Custom)</option>
+      </select><br/>
+      <input id="custom-band" name="band_hide" placeholder="Band" style="display:none"/>
+    </label>
+    <label>
+      Mode:<br/>
+      <select id="mode" name="mode" onchange="toggleCustomMode()">
+        <option value=""></option>
+        <option>SSB</option>
+        <option>AM</option>
+        <option>FM</option>
+        <option>CW</option>
+        <option>DIGITAL</option>
+        <option>(Custom)</option>
+      </select><br/>
+      <input id="custom-mode" name="mode_hide" placeholder="Mode" style="display:none"/>
+    </label>
+    <label>
+      Net Control:<br/>
+      <input name="net_control" placeholder="KI5ZDF" value="<%= @user.call_sign %>"/>
+    </label>
+    <input type="submit" value="START NET NOW"/>
+  </form>
+</div>
+
+<script>
+  function toggleForm() {
+    const checkbox = document.getElementById('understand')
+    document.getElementById('start-form').style.display = checkbox.checked ? '' : 'none'
+  }
+
+  function toggleCustomMode() {
+    const select = document.getElementById('mode')
+    const custom_mode = document.getElementById('custom-mode')
+    if (select.value == '(Custom)') {
+      custom_mode.style.display = ''
+      custom_mode.setAttribute('name', 'mode')
+    } else {
+      custom_mode.style.display = 'none'
+      custom_mode.setAttribute('name', 'mode_hide')
+      custom_mode.value = ''
+    }
+  }
+
+  function toggleCustomBand() {
+    const select = document.getElementById('band')
+    const custom_band = document.getElementById('custom-band')
+    if (select.value == '(Custom)') {
+      custom_band.style.display = ''
+      custom_band.setAttribute('name', 'band')
+    } else {
+      custom_band.style.display = 'none'
+      custom_band.setAttribute('name', 'band_hide')
+      custom_band.value = ''
+    }
+  }
+
+  function guessBand() {
+    const freq = parseFloat(document.getElementById('frequency').value)
+    if (freq == 0.0) return
+
+    let band = ''
+    if (freq >= 420.0 && freq <= 450.0) band = '70cm'
+    else if (freq >= 219.0 && freq <= 225.0) band = '1.25cm'
+    else if (freq >= 144.0 && freq <= 148.0) band = '2m'
+    else if (freq >= 50.0 && freq <= 54.0) band = '6m'
+    else if (freq >= 28.0 && freq <= 29.7) band = '10m'
+    else if (freq >= 24.89 && freq <= 24.99) band = '12m'
+    else if (freq >= 21.0 && freq <= 21.45) band = '15m'
+    else if (freq >= 14.0 && freq <= 14.35) band = '20m'
+    else if (freq >= 10.1 && freq <= 10.150) band = '30m'
+    else if (freq >= 7.0 && freq <= 7.3) band = '40m'
+    else if (freq >= 3.5 && freq <= 4.0) band = '80m'
+    else if (freq >= 1.8 && freq <= 2.0) band = '160m'
+    document.getElementById('band').value = band
+  }
+
+  toggleForm()
+  toggleCustomMode()
+  toggleCustomBand()
+</script>

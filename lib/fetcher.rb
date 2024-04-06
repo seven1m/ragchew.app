@@ -28,6 +28,17 @@ class Fetcher
   #
 
   def get(endpoint, params = {})
+    html = raw_get(endpoint, params)
+
+    {}.tap do |result|
+      html.scan(/<!--(.*?)-->(.*?)<!--.*?-->/m).each do |section, data|
+        data.gsub!(/:~:/, '') # line-continuation ??
+        result[section.strip] = data.split(/\|~|\n/).map { |line| line.split('|') }
+      end
+    end
+  end
+
+  def raw_get(endpoint, params = {})
     params_string = params.map { |k, v| "#{k}=#{v}" }.join('&')
     uri = URI("https://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")
     puts "GET #{uri}"
@@ -50,12 +61,7 @@ class Fetcher
     # NetInfo.new(name: 'foo').send(:fetch_raw, force_full: true)
     puts html if ENV['DEBUG_HTML']
 
-    {}.tap do |result|
-      html.scan(/<!--(.*?)-->(.*?)<!--.*?-->/m).each do |section, data|
-        data.gsub!(/:~:/, '') # line-continuation ??
-        result[section.strip] = data.split(/\|~|\n/).map { |line| line.split('|') }
-      end
-    end
+    html
   end
 
   def post(endpoint, params)
