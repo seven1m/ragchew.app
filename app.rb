@@ -30,7 +30,7 @@ helpers do
   end
 
   def url_escape(s)
-    CGI.escape(s)
+    CGI.escape(s.to_s)
   end
 
   def make_url_safe_for_html_attribute(s)
@@ -80,6 +80,15 @@ helpers do
   def is_admin?
     admins = ENV.fetch('ADMIN_CALL_SIGNS').split(',')
     @user && admins.include?(@user.call_sign)
+  end
+
+  def is_logger?
+    # @club.name == session[:started_net]
+    is_admin? # FIXME
+  end
+
+  def json_for_html_attribute(hash)
+    hash.to_json.gsub('"', '&quote;')
   end
 end
 
@@ -217,6 +226,8 @@ post '/create-net' do
 
   check_started_net!
 
+  # TODO: check that name only contains allowed characters
+
   NetInfo.create_net!(
     name: params[:name],
     password: params[:password],
@@ -232,6 +243,18 @@ post '/create-net' do
   session[:started_net_password] = params[:password]
 
   redirect "/net/#{CGI.escape(params[:name])}"
+end
+
+post '/log/:id' do
+  @user = get_user
+  require_logging_ability!
+
+  net = NetInfo.new(id: params[:id])
+  net.log!(password: session[:started_net_password], call_sign: params[:call_sign], remarks: params[:remarks])
+  NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
+
+  content_type 'application/json'
+  return { success: true }.to_json
 end
 
 post '/close-net/:id' do

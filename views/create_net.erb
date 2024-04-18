@@ -15,7 +15,7 @@
   <strong>Do not continue unless you are a person in charge of this net!</strong>
 </p>
 
-<div id="form" data-props="<%= { net_control: @user.call_sign }.to_json.gsub('"', '&quot;') %>"></div>
+<div id="form" data-props="<%= json_for_html_attribute({ net_control: @user.call_sign }) %>"></div>
 
 <script type="module">
   import { h, render, Component } from 'https://esm.sh/preact';
@@ -180,5 +180,5 @@
 
   const elm = document.getElementById('form')
   const props = JSON.parse(elm.getAttribute('data-props'))
-  render(html`<${FormTrigger} ...${props}/>`, elm);
+  render(html`<${FormTrigger} ...${props}/>`, elm)
 </script>

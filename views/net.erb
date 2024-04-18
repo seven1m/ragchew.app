@@ -9,7 +9,7 @@
     <h1><%== @net.name %></h1>
 
     <% if session[:started_net] == @net.name %>
-      <form action="/close-net/<%= @net.id %>" method="POST">
+      <form action="/close-net/<%== @net.id %>" method="POST">
         <input type="submit" value="Close net!"/>
       </form>
     <% end %>
@@ -55,9 +55,10 @@
       <tbody>
         <% @checkins.each_with_index do |entry, index| %>
           <% if entry.call_sign.present? %>
+            <!-- details -->
             <tr class="details <%= checkin_css_class(entry, index) %>">
               <td><%== entry.num %></td>
-              <td style="height:64px">
+              <td class="avatar-cell">
                 <a href="/station/<%== url_escape entry.call_sign %>/image" style="text-decoration:none">
                   <img
                     src="/station/<%== url_escape entry.call_sign %>/image"
@@ -82,6 +83,8 @@
               <td><%== entry.country %></td>
             </tr>
           <% end %>
+
+          <!-- remarks -->
           <% if entry.remarks.strip.size > 0 %>
             <tr class="remarks <%= checkin_css_class(entry, index) %>">
               <% if entry.call_sign.present? %>
@@ -99,6 +102,57 @@
   </div>
 <% else %>
   <p class="update-in-place" id="checkins-table"><em>no check-ins yet</em></p>
+<% end %>
+
+<% if is_logger? %>
+  <div id="log-form" data-props="<%== json_for_html_attribute({  }) %>"></div>
+
+  <script type="module">
+    import { h, render, Component } from 'https://esm.sh/preact';
+    import htm from 'https://esm.sh/htm';
+
+    const html = htm.bind(h);
+
+    class Form extends Component {
+      state = {
+        call_sign: '',
+        remarks: '',
+        errors: {}
+      }
+
+      handleSubmit(e) {
+        // TODO
+        e.preventDefault()
+      }
+
+      render() {
+        return html`
+          <h2>Add Log Entry</h2>
+          <form onsubmit=${(e) => this.handleSubmit(e)}>
+            <label class="${this.state.errors.call_sign ? 'error' : ''}">
+              Call Sign:<br/>
+              <input name="call_sign"
+                value=${this.state.call_sign}
+                onchange=${(e) => this.setState({ call_sign: e.target.value })}
+              />
+            </label>
+            <label class="${this.state.errors.remarks ? 'error' : ''}">
+              Remarks:<br/>
+              <input name="remarks"
+                value=${this.state.remarks}
+                onchange=${(e) => this.setState({ remarks: e.target.value })}
+              />
+            </label>
+            <input type="submit" value="Add"/>
+          </form>
+        `
+      }
+    }
+
+    const elm = document.getElementById('log-form')
+    const props = JSON.parse(elm.getAttribute('data-props'))
+    render(html`<${Form} ...${props}/>`, elm)
+  </script>
 <% end %>
 
 <h2 id="messages">Messages</h2>
@@ -142,17 +196,17 @@
   <% else %>
     <p class="update-in-place" id="messages-table"><em>no messages yet</em></p>
   <% end %>
-  <form action="/message/<%= @net.id %>" method="post" onsubmit="sendMessage(this); return false">
+  <form action="/message/<%== @net.id %>" method="post" onsubmit="sendMessage(this); return false">
     <input id="message" type="text" name="message" placeholder="type your message" style="width:calc(100% - 100px)"/>
     <input type="submit" value="Send"/>
   </form>
   <p>
-    <form action="/unmonitor/<%= @net.id %>" method="post"><button>Stop monitoring this Net</button></form>
+    <form action="/unmonitor/<%== @net.id %>" method="post"><button>Stop monitoring this Net</button></form>
   </p>
 <% else %>
   <p class="update-in-place" id="messages-table">
-    <em><%= @messages.size %> message<%= @messages.size == 1 ? '' : 's' %>.</em> Click below to participate.
-    <form action="/monitor/<%= @net.id %>" method="post"><button>Monitor this Net</button></form>
+    <em><%== @messages.size %> <%== pluralize('message', @messages.size) %>.</em> Click below to participate.
+    <form action="/monitor/<%== @net.id %>" method="post"><button>Monitor this Net</button></form>
   </p>
 <% end %>
 

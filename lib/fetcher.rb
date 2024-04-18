@@ -8,11 +8,6 @@ class Fetcher
     @host = host
   end
 
-  # in order to get more precise start/stop times for closed nets...
-  #
-  # GetPastNets.php
-  #
-  #
   # in order to fetch Net URLS...
   #
   # GetServerInfo.pl

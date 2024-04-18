@@ -3,9 +3,9 @@ module Tables
     has_many :nets, dependent: :nullify
     has_many :closed_nets, dependent: :nullify
 
-    serialize :net_patterns, JSON
-    serialize :additional_net_patterns, JSON
-    serialize :net_list, JSON
+    serialize :net_patterns, coder: JSON
+    serialize :additional_net_patterns, coder: JSON
+    serialize :net_list, coder: JSON
 
     def best_name
       full_name.presence || name

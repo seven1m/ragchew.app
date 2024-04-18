@@ -148,10 +148,61 @@ class NetInfo
     fetcher = Fetcher.new(@record.host)
     fetcher.post(
       'SendInstantMessage.php',
-      'NetName' => @record.name,
+      'NetName' => CGI.escapeURIComponent(name),
       'Callsign' => name_for_chat(user),
       'Message' => message,
     )
+  end
+
+  def log_entry!(add_password:, num:, call_sign:, remarks:, official_status:)
+    # A|1|KI5ZDF|Tulsa|OK|Tim R Morgan|      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
+    # A|2|KI5ZDG|Tulsa|OK|Kai Morgan  |      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Wesley Kai~`1|future use 2|future use 3|`^future use 4|future use 5^
+    # U|1|KI5ZDF|Tulsa|OK|Tim R Morgan|remarks| |Tulsa|EM26aa|10727 Riverside Pkwy|74137|(nc)| |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
+
+    add_or_update = 'A'
+    highlight_num = 1 # TODO
+
+    begin
+      info = qrz.lookup(call_sign)
+    rescue Qrz::Error
+      # well we tried
+      info = { call_sign: call_sign.upcase }
+    end
+
+    line1 = [
+      add_or_update,
+      num,
+      info[:call_sign],
+      info[:city],
+      info[:state],
+      [info[:first_name], info[:last_name]].compact.join(' '),
+      remarks,
+      '', # unknown
+      info[:county],
+      info[:grid_square],
+      info[:street],
+      info[:zip],
+      official_status,
+      '', # unknown
+      info[:country],
+      info[:dxcc],
+      info[:first_name],
+    ].map { |cell| cell.to_s.tr('|~`', ' ') }.join('|')
+    line2 = "`#{highlight_num}|future use 2|future use 3|`^future use 4|future use 5^"
+    data = [line1, line2].join('~')
+
+    fetcher = Fetcher.new(@record.host)
+    fetcher.post(
+      'SendUpdates3.php',
+      'ProtocolVersion' => '2.3',
+      'NetName' => CGI.escapeURIComponent(@record.name),
+      'Token' => CGI.escapeURIComponent(password),
+      'UpdatesFromNetControl' => data,
+    )
+  end
+
+  def delete_log_entry!(num:)
+    # TODO
   end
 
   def close_net!(password:)

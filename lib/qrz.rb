@@ -77,6 +77,7 @@ class Qrz
       zip: station.at_css('zip')&.content,
       county: station.at_css('county')&.content,
       country: station.at_css('country')&.content,
+      dxcc: station.at_css('dxcc')&.content,
     }
   end
 end
