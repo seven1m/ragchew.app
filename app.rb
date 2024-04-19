@@ -205,7 +205,7 @@ end
 
 get '/create-net' do
   @user = get_user
-  require_logging_ability!
+  require_logger!
 
   check_started_net!
 
@@ -214,7 +214,7 @@ end
 
 post '/create-net' do
   @user = get_user
-  require_logging_ability!
+  require_logger!
 
   missing = %i[name password frequency band mode net_control].reject do |key|
     params[key].present?
@@ -247,7 +247,7 @@ end
 
 post '/log/:id' do
   @user = get_user
-  require_logging_ability!
+  require_logger!
 
   net = NetInfo.new(id: params[:id])
   net.log!(password: session[:started_net_password], call_sign: params[:call_sign], remarks: params[:remarks])
@@ -259,7 +259,7 @@ end
 
 post '/close-net/:id' do
   @user = get_user
-  require_logging_ability!
+  require_logger!
 
   net = NetInfo.new(id: params[:id])
   net.close_net!(password: session[:started_net_password])
@@ -287,49 +287,55 @@ get '/groups' do
   erb :clubs
 end
 
+get '/station/:call_sign' do
+  @user = get_user
+  require_logger!
+
+  content_type 'application/json'
+
+  begin
+    station = StationUpdater.new(params[:call_sign]).call
+  rescue StationUpdater::NotFound
+    status 404
+    return { 'error' => 'not found' }.to_json
+  rescue Qrz::Error => e
+    status 500
+    return { 'error' => e.message }.to_json
+  end
+
+  return station.attributes.to_json
+end
+
 get '/station/:call_sign/image' do
-  call_sign = params[:call_sign]
-  station = Tables::Station.find_by(call_sign:)
+  @user = get_user
+  require_user!
 
   expires Tables::Station::EXPIRATION_IN_SECONDS, :public, :must_revalidate
 
-  if station && station.image && !station.image_expired?
-    if station.image == 'none'
-      content_type 'image/png'
-      return ONE_PIXEL_IMAGE
-    else
-      redirect station.image
-      return
-    end
-  end
-
-  qrz = QrzAutoSession.new
   begin
-    if (image = qrz.lookup(call_sign)[:image])
-      Tables::Station.find_or_initialize_by(call_sign:).expire_image.update!(image:)
-      redirect image
-    else
-      Tables::Station.find_or_initialize_by(call_sign:).expire_image.update!(image: 'none')
-      content_type 'image/png'
-      return ONE_PIXEL_IMAGE
-    end
-  rescue Qrz::NotFound
-    Tables::Station.find_or_initialize_by(call_sign:).expire_image.update!(image: 'none')
+    station = StationUpdater.new(params[:call_sign]).call
+  rescue StationUpdater::NotFound
     content_type 'image/png'
     return ONE_PIXEL_IMAGE
   rescue Qrz::Error => e
     status 500
-    erb "qrz error: #{e.message}"
+    return erb("qrz error: #{e.message}")
   end
+
+  image_url = station.image.presence
+
+  unless image_url
+    content_type 'image/png'
+    return ONE_PIXEL_IMAGE
+  end
+
+  redirect image_url
 end
 
 get '/favorites' do
   @page_title = 'Favorites'
   @user = get_user
-  unless @user
-    redirect '/'
-    return
-  end
+  require_user!
 
   @favorites = @user.favorites.order(:call_sign).to_a
 
@@ -339,10 +345,7 @@ end
 # from form
 post '/favorite' do
   @user = get_user
-  unless @user
-    redirect '/'
-    return
-  end
+  require_user!
 
   if @user.favorites.count >= MAX_FAVORITES
     status 400
@@ -662,10 +665,7 @@ end
 
 post '/monitor/:net_id' do
   @user = get_user
-  unless @user
-    redirect '/'
-    return
-  end
+  require_user!
 
   @net_info = NetInfo.new(id: params[:net_id])
   @net = @net_info.net
@@ -688,10 +688,7 @@ end
 
 post '/unmonitor/:net_id' do
   @user = get_user
-  unless @user
-    redirect '/'
-    return
-  end
+  require_user!
 
   @user.update!(
     monitoring_net: nil,
@@ -711,10 +708,7 @@ end
 
 post '/message/:net_id' do
   @user = get_user
-  unless @user
-    redirect '/'
-    return
-  end
+  require_user!
 
   message = params[:message].to_s.strip
     .tr("‘ʼ’", "'")
@@ -875,13 +869,19 @@ def get_user
   user
 end
 
+def require_user!
+  return if @user
+
+  redirect '/'
+end
+
 def require_admin!
   return if is_admin?
 
   redirect '/'
 end
 
-def require_logging_ability!
+def require_logger!
   # TODO: allow other users to log as part of beta
   require_admin!
 end

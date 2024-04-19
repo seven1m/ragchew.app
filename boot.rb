@@ -25,6 +25,7 @@ require_relative './lib/net_like'
 require_relative './lib/net_list'
 require_relative './lib/qrz'
 require_relative './lib/qrz_auto_session'
+require_relative './lib/station_updater'
 require_relative './lib/tables'
 require_relative './lib/update_club_list'
 
