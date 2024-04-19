@@ -88,7 +88,7 @@ helpers do
   end
 
   def json_for_html_attribute(hash)
-    hash.to_json.gsub('"', '&quote;')
+    hash.to_json.gsub('&', '&amp;').gsub('"', '&quot;')
   end
 end
 
