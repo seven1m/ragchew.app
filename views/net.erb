@@ -6,7 +6,7 @@
   <div class="header-col-grow">
     <%= erb :_club_breadcrumb, locals: { net: @net } %>
 
-    <h1><%== @net.name %></h1>
+    <h1><%== @net.name %> (<%== @net.id %>)</h1>
 
     <% if session[:started_net] == @net.name %>
       <form action="/close-net/<%== @net.id %>" method="POST">
@@ -34,125 +34,10 @@
 
 <h2>Log</h2>
 
-<% if @checkins.any? %>
-  <div class="table-wrapper">
-    <table class="update-in-place" id="checkins-table">
-      <thead>
-        <tr>
-          <th>Num</th>
-          <th>Image</th>
-          <th>Call Sign</th>
-          <th>Name</th>
-          <th>Time</th>
-          <th>Grid Square</th>
-          <th>Status</th>
-          <th>City</th>
-          <th>County</th>
-          <th>State</th>
-          <th>Country</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @checkins.each_with_index do |entry, index| %>
-          <% if entry.call_sign.present? %>
-            <!-- details -->
-            <tr class="details <%= checkin_css_class(entry, index) %>">
-              <td><%== entry.num %></td>
-              <td class="avatar-cell">
-                <a href="/station/<%== url_escape entry.call_sign %>/image" style="text-decoration:none">
-                  <img
-                    src="/station/<%== url_escape entry.call_sign %>/image"
-                    style="max-height:40px;max-width:40px"
-                    onerror="this.parentNode.removeChild(this)"
-                  />
-                </a>
-              </td>
-              <td>
-                <%= erb :_favorite, locals: { call_sign: entry.call_sign, favorited: @favorites.include?(entry.call_sign) } %>
-                <a href="https://www.qrz.com/db/<%== url_escape(entry.call_sign) %>">
-                  <%== entry.call_sign %>
-                </a>
-              </td>
-              <td><%== entry.name %></td>
-              <td><%== format_time(entry.checked_in_at) %></td>
-              <td><%== entry.grid_square %></td>
-              <td><%== entry.status %></td>
-              <td><%== entry.city %></td>
-              <td><%== entry.county %></td>
-              <td><%== entry.state %></td>
-              <td><%== entry.country %></td>
-            </tr>
-          <% end %>
-
-          <!-- remarks -->
-          <% if entry.remarks.strip.size > 0 %>
-            <tr class="remarks <%= checkin_css_class(entry, index) %>">
-              <% if entry.call_sign.present? %>
-                <td></td>
-              <% else %>
-                <td><%== entry.num %></td>
-              <% end %>
-              <td></td>
-              <td colspan="9" class="can-wrap"><%== entry.remarks %></td>
-            </tr>
-          <% end %>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
-<% else %>
-  <p class="update-in-place" id="checkins-table"><em>no check-ins yet</em></p>
-<% end %>
+<div id="checkins" data-props="<%= json_for_html_attribute({ netId: @net.id, updateInterval: @update_interval }) %>"></div>
 
 <% if is_logger? %>
-  <div id="log-form" data-props="<%== json_for_html_attribute({  }) %>"></div>
-
-  <script type="module">
-    import { h, render, Component } from 'https://esm.sh/preact';
-    import htm from 'https://esm.sh/htm';
-
-    const html = htm.bind(h);
-
-    class Form extends Component {
-      state = {
-        call_sign: '',
-        remarks: '',
-        errors: {}
-      }
-
-      handleSubmit(e) {
-        // TODO
-        e.preventDefault()
-      }
-
-      render() {
-        return html`
-          <h2>Add Log Entry</h2>
-          <form onsubmit=${(e) => this.handleSubmit(e)}>
-            <label class="${this.state.errors.call_sign ? 'error' : ''}">
-              Call Sign:<br/>
-              <input name="call_sign"
-                value=${this.state.call_sign}
-                onchange=${(e) => this.setState({ call_sign: e.target.value })}
-              />
-            </label>
-            <label class="${this.state.errors.remarks ? 'error' : ''}">
-              Remarks:<br/>
-              <input name="remarks"
-                value=${this.state.remarks}
-                onchange=${(e) => this.setState({ remarks: e.target.value })}
-              />
-            </label>
-            <input type="submit" value="Add"/>
-          </form>
-        `
-      }
-    }
-
-    const elm = document.getElementById('log-form')
-    const props = JSON.parse(elm.getAttribute('data-props'))
-    render(html`<${Form} ...${props}/>`, elm)
-  </script>
+  <div id="log-form" data-props="<%= json_for_html_attribute({  }) %>"></div>
 <% end %>
 
 <h2 id="messages">Messages</h2>
@@ -234,6 +119,23 @@
     </tbody>
   </table>
 </div>
+
+<script type="module">
+  import { h, render } from "https://esm.sh/preact"
+  import { Form, Checkins } from "/net.js?_ts=<%== File.stat('public/net.js').mtime.to_i %>"
+
+  const checkinsElm = document.getElementById("checkins")
+  if (checkinsElm) {
+    const props = JSON.parse(checkinsElm.getAttribute("data-props"))
+    render(h(Checkins, props), checkinsElm)
+  }
+
+  const formElm = document.getElementById("log-form")
+  if (formElm) {
+    const props = JSON.parse(formElm.getAttribute("data-props"))
+    render(h(Form, props), formElm)
+  }
+</script>
 
 <script id="map-script">
   const elm = document.getElementById('net-map')

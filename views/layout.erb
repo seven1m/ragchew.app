@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/images/logo.svg" type="image/svg">
     <link rel="stylesheet" href="/typesafe.css">
-    <script src="/main.js"></script>
+    <script src="/main.js?_ts=<%== File.stat('public/main.js').mtime.to_i %>"></script>
     <style>
       span.Offline { color: #ccc; }
       em.highlight { font-style: normal; background-color: #ffc; }

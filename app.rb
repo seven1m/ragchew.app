@@ -66,17 +66,6 @@ helpers do
       '</a>'
   end
 
-  def checkin_css_class(checkin, index)
-    classes = []
-    classes << index.even? ? 'even' : 'odd'
-    if checkin.currently_operating?
-      classes << 'currently-operating'
-    elsif checkin.checked_out?
-      classes << 'checked-out'
-    end
-    classes.join(' ')
-  end
-
   def is_admin?
     admins = ENV.fetch('ADMIN_CALL_SIGNS').split(',')
     @user && admins.include?(@user.call_sign)
@@ -160,14 +149,8 @@ get '/net/:name' do
   end
 
   if @user
-    @checkins = @net.checkins.order(:num).to_a
     @messages = @net.messages.order(:sent_at).to_a
     @monitors = @net.monitors.order(:call_sign).to_a
-    @coords = @checkins.map do |checkin|
-      GridSquare.new(checkin.grid_square).to_a.tap do |coord|
-        coord << checkin.call_sign if coord
-      end
-    end.compact
     @favorites = @user.favorites.pluck(:call_sign)
     @last_updated_at = @net.fully_updated_at
     @update_interval = @net.update_interval_in_seconds + 1
@@ -201,6 +184,26 @@ rescue NetInfo::NotFoundError
     status 404
     erb :missing_net
   end
+end
+
+get '/net/:id/checkins' do
+  @user = get_user
+  require_user!
+
+  service = NetInfo.new(id: params[:id])
+
+  service.update!
+  net = service.net
+
+  checkins = net.checkins.order(:num).to_a
+  coords = checkins.map do |checkin|
+    GridSquare.new(checkin.grid_square).to_a.tap do |coord|
+      coord << checkin.call_sign if coord
+    end
+  end.compact
+
+  content_type 'application/json'
+  return { checkins:, coords: }.to_json
 end
 
 get '/create-net' do
