@@ -71,27 +71,6 @@
         header.flex img { margin: 20px 0; }
       }
     </style>
-    <% if @last_updated_at && params[:autoupdate] != 'false' %>
-      <script>
-        let secondsToWaitBetweenUpdates = <%= @update_interval || 30 %>
-        const updateBackoff = <%= @update_backoff || 0 %>
-        const startTime = new Date()
-        const maxTimeToRefreshInSeconds = 3 * 60 * 60 // 3 hours
-        function updatePageAndScheduleNext() {
-          updatePage()
-          secondsToWaitBetweenUpdates += updateBackoff
-          if ((new Date() - startTime) < (maxTimeToRefreshInSeconds * 1000)) {
-            console.log(`waiting ${secondsToWaitBetweenUpdates} seconds till next update`)
-            setTimeout(updatePageAndScheduleNext, secondsToWaitBetweenUpdates * 1000)
-          } else {
-            console.log(`stopped refreshing after ${maxTimeToRefreshInSeconds} seconds`)
-          }
-        }
-        setTimeout(() => {
-          updatePageAndScheduleNext()
-        }, (secondsToWaitBetweenUpdates - Math.min(secondsToWaitBetweenUpdates, <%= Time.now - @last_updated_at %>)) * 1000)
-      </script>
-    <% end %>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"></script>

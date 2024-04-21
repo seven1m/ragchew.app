@@ -186,9 +186,8 @@ rescue NetInfo::NotFoundError
   end
 end
 
-get '/net/:id/checkins' do
-  @user = get_user
-  require_user!
+get '/net/:id/details' do
+  user = get_user
 
   service = NetInfo.new(id: params[:id])
 
@@ -202,8 +201,23 @@ get '/net/:id/checkins' do
     end
   end.compact
 
+  messagesCount = net.messages.count
+  if user
+    messages = net.messages.order(:sent_at).to_a
+    monitors = net.monitors.order(:call_sign).to_a
+    favorites = user.favorites.pluck(:call_sign)
+  end
+
   content_type 'application/json'
-  return { checkins:, coords: }.to_json
+  return {
+    checkins:,
+    coords:,
+    messages:,
+    messagesCount:,
+    monitors:,
+    favorites:,
+    lastUpdatedAt: net.fully_updated_at,
+  }.to_json
 end
 
 get '/create-net' do
@@ -720,7 +734,6 @@ post '/message/:net_id' do
     .gsub("…", "...")
 
   message_with_silly_encoding = message.encode('ISO-8859-1', invalid: :replace, undef: :replace)
-  message = message_with_silly_encoding.encode('UTF-8', invalid: :replace, undef: :replace)
 
   if message_with_silly_encoding.empty?
     status 400
@@ -730,16 +743,17 @@ post '/message/:net_id' do
   @net_info = NetInfo.new(id: params[:net_id])
   @net = @net_info.net
 
+  content_type 'application/json'
+
   if @user.monitoring_net != @net
     status 401
-    return 'not monitoring this net'
+    return { error: 'not monitoring this net' }.to_json
   end
+
   @net_info.send_message!(user: @user, message: message_with_silly_encoding)
 
-
-  session[:message_sent] = { net_id: @net.id, count_before: @net.messages.count, message: }
-
-  redirect "/net/#{url_escape @net.name}"
+  status 201
+  { status: 'sent' }.to_json
 end
 
 get '/group/:slug' do

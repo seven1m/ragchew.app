@@ -20,54 +20,34 @@ function updatePage() {
       const netMapElm = newDocument.getElementById("net-map")
 
       if (netMapElm) {
-        // find new coords
-        const coordsAttribute = netMapElm.getAttribute("data-coords")
-        let newCoords = []
-        if (coordsAttribute) {
-          const existingCoords = new Set(
-            window.netMapCoords.map((coord) => JSON.stringify(coord))
-          )
-          JSON.parse(coordsAttribute).forEach((coord) => {
-            if (!existingCoords.has(JSON.stringify(coord)))
-              newCoords.push(coord)
-          })
-          console.log(newCoords)
-          if (newCoords.length > 0) updateNetMapCoords(newCoords)
-        }
-
-        // redraw all centers
-        const centersAttribute = netMapElm.getAttribute("data-centers")
-        if (centersAttribute) {
-          const centers = JSON.parse(centersAttribute)
-          updateNetMapCenters(centers)
-        }
+        maybeUpdateNetMapCoords(JSON.parse(netMapElm.dataset.coords || "null"))
       }
     })
 }
 
-function sendMessage(form) {
-  const input = document.getElementById("message")
-  fetch(form.getAttribute("action"), {
-    method: form.getAttribute("method"),
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded;charset=ISO-8859-1",
-      "X-Requested-With": "XMLHttpRequest",
-    },
-    body: "message=" + encodeURIComponent(input.value),
-  })
-    .then((data) => {
-      return data.text()
+function maybeUpdateNetMapCoords(coords) {
+  // find new coords
+  let newCoords = []
+  if (coords) {
+    const existingCoords = new Set(
+      window.netMapCoords.map((coord) => JSON.stringify(coord))
+    )
+    coords.forEach((coord) => {
+      if (!existingCoords.has(JSON.stringify(coord))) newCoords.push(coord)
     })
-    .then((_html) => {
-      input.value = ""
-      updatePage()
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+    if (newCoords.length > 0) updateNetMapCoords(newCoords)
+  }
+
+  // redraw all centers
+  const netMapElm = document.getElementById("net-map")
+  const centersAttribute = netMapElm.dataset.centers
+  if (centersAttribute) {
+    const centers = JSON.parse(centersAttribute)
+    updateNetMapCenters(centers)
+  }
 }
 
-function buildNetMap(coords, centers) {
+function buildNetMap() {
   window.netMap = L.map("net-map", { zoomSnap: 0.5 }).setView(
     [38.53, -100.25],
     4
@@ -178,7 +158,7 @@ function favorite(call_sign, elm, unfavorite) {
     .then((data) => data.json())
     .then((json) => {
       if (json.error) alert(json.error)
-      else elm.outerHTML = json.html
+      else if (elm) elm.outerHTML = json.html
     })
     .catch(console.error)
 }
