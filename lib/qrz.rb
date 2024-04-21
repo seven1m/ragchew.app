@@ -52,7 +52,7 @@ class Qrz
 
   def self.call(**params)
     params.merge!(agent: AGENT)
-    params_string = params.map { |k, v| "#{k}=#{CGI.escape(v)}" }.join(';')
+    params_string = params.map { |k, v| "#{k}=#{CGI.escapeURIComponent(v)}" }.join(';')
     url = "#{BASE_URL}?#{params_string}"
     puts "GET #{url}"
     Net::HTTP.get(URI(url))

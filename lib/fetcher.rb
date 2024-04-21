@@ -34,7 +34,7 @@ class Fetcher
   end
 
   def raw_get(endpoint, params = {})
-    params_string = params.map { |k, v| "#{k}=#{v}" }.join('&')
+    params_string = params.map { |k, v| "#{k}=#{CGI.escapeURIComponent(v.to_s)}" }.join('&')
     uri = URI("https://#{@host}/cgi-bin/NetLogger/#{endpoint}?#{params_string}")
     puts "GET #{uri}"
 
@@ -61,7 +61,7 @@ class Fetcher
 
   def post(endpoint, params)
     uri = URI("https://#{@host}/cgi-bin/NetLogger/#{endpoint}")
-    puts "POST #{uri}"
+    puts "POST #{uri} with params #{params.inspect}"
 
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = uri.scheme == 'https'

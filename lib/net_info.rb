@@ -53,13 +53,13 @@ class NetInfo
     fetcher = Fetcher.new(host)
     result = fetcher.raw_get(
       'OpenNet20.php',
-      'NetName' => CGI.escapeURIComponent(name),
-      'Token' => CGI.escapeURIComponent(password),
-      'Frequency' => CGI.escapeURIComponent(frequency),
-      'NetControl' => CGI.escapeURIComponent(net_control),
-      'Logger' => CGI.escapeURIComponent(user.name_for_logging),
-      'Mode' => CGI.escapeURIComponent(mode),
-      'Band' => CGI.escapeURIComponent(band),
+      'NetName' => name,
+      'Token' => password,
+      'Frequency' => frequency,
+      'NetControl' => net_control,
+      'Logger' => user.name_for_logging,
+      'Mode' => mode,
+      'Band' => band,
       'EnableMessaging' => enable_messaging ? 'Y' : 'N',
       'UpdateInterval' => update_interval.to_s,
       'MiscNetParameters' => misc_net_parameters.to_s,
@@ -102,8 +102,8 @@ class NetInfo
     fetcher.get(
       'SubscribeToNet.php',
       'ProtocolVersion' => '2.3',
-      'NetName' => CGI.escapeURIComponent(@record.name),
-      'Callsign' => CGI.escapeURIComponent(name_for_monitoring(user)),
+      'NetName' => @record.name,
+      'Callsign' => name_for_monitoring(user),
       'IMSerial' => '0',
       'LastExtDataSerial' => '0',
     )
@@ -124,8 +124,8 @@ class NetInfo
     begin
       fetcher.get(
         'UnsubscribeFromNet.php',
-        'Callsign' => CGI.escapeURIComponent(name_for_monitoring(user)),
-        'NetName' => CGI.escapeURIComponent(@record.name),
+        'Callsign' => name_for_monitoring(user),
+        'NetName' => @record.name,
       )
     rescue Fetcher::NotFoundError => e
       raise NotFoundError, 'Already unsubscribed'
@@ -148,7 +148,7 @@ class NetInfo
     fetcher = Fetcher.new(@record.host)
     fetcher.post(
       'SendInstantMessage.php',
-      'NetName' => CGI.escapeURIComponent(name),
+      'NetName' => name,
       'Callsign' => name_for_chat(user),
       'Message' => message,
     )
@@ -195,8 +195,8 @@ class NetInfo
     fetcher.post(
       'SendUpdates3.php',
       'ProtocolVersion' => '2.3',
-      'NetName' => CGI.escapeURIComponent(@record.name),
-      'Token' => CGI.escapeURIComponent(password),
+      'NetName' => @record.name,
+      'Token' => password,
       'UpdatesFromNetControl' => data,
     )
   end
@@ -209,8 +209,8 @@ class NetInfo
     fetcher = Fetcher.new(@record.host)
     result = fetcher.raw_get(
       'CloseNet.php',
-      'NetName' => CGI.escapeURIComponent(@record.name),
-      'Token' => CGI.escapeURIComponent(password),
+      'NetName' => @record.name,
+      'Token' => password,
     )
     unless result =~ /\*success\*/
       raise CouldNotCloseNetError, result
@@ -443,7 +443,7 @@ class NetInfo
 
     params = {
       'ProtocolVersion' => '2.3',
-      'NetName' => CGI.escape(@record.name)
+      'NetName' => @record.name
     }
 
     if (log_last_updated_at)
