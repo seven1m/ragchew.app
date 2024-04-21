@@ -79,6 +79,11 @@ helpers do
   def json_for_html_attribute(hash)
     hash.to_json.gsub('&', '&amp;').gsub('"', '&quot;')
   end
+
+  def script_tag(filename)
+    ts = File.stat(File.join('public', filename)).mtime.to_i
+    "<script type=\"module\" src=\"/#{filename}?_ts=#{ts}\"></script>"
+  end
 end
 
 include DOTIW::Methods

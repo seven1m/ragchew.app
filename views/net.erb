@@ -32,6 +32,6 @@
   <p>loading...</p>
 </div>
 
-<script type="module" src="/net.js?_ts=<%== File.stat('public/net.js').mtime.to_i %>"></script>
-
 <%= erb :_admin_net_controls %>
+
+<%= script_tag 'net.js' %>
