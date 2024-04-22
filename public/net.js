@@ -20,10 +20,18 @@ class Net extends Component {
     setInterval(this.updateData.bind(this), this.props.updateInterval * 1000)
   }
 
-  updateData() {
-    fetch(`/net/${this.props.netId}/details`)
-      .then((resp) => resp.json())
-      .then((data) => this.setState(data))
+  async updateData() {
+    try {
+      const response = await fetch(`/net/${this.props.netId}/details`)
+      if (response.status === 404) {
+        location.reload() // show closed-net page
+      } else {
+        const data = await response.json()
+        this.setState(data)
+      }
+    } catch (error) {
+      console.error(`Error updating data: ${error}`)
+    }
   }
 
   render() {
@@ -42,7 +50,12 @@ class Net extends Component {
         favorites=${this.state.favorites}
       />
 
-      ${this.props.isLogger && false && h(LogForm)}
+      ${this.props.isLogger &&
+      h(LogForm, {
+        netId: this.props.netId,
+        num: this.nextNum(),
+        onAddOrUpdateEntry: this.handleAddOrUpdateEntry.bind(this),
+      })}
 
       <h2>Messages</h2>
 
@@ -58,6 +71,21 @@ class Net extends Component {
 
       <${Monitors} monitors=${this.state.monitors} />
     `
+  }
+
+  nextNum() {
+    return Math.max(...this.state.checkins.map((checkin) => checkin.num), 0) + 1
+  }
+
+  handleAddOrUpdateEntry(entry) {
+    const index = this.state.checkins.findIndex((c) => c.num === entry.num)
+    if (index === -1) {
+      this.setState({ checkins: [...this.state.checkins, entry] })
+    } else {
+      const checkins = [...this.state.checkins]
+      checkins[index] = entry
+      this.setState({ checkins })
+    }
   }
 }
 
@@ -387,20 +415,34 @@ class LogForm extends Component {
   }
 
   handleSubmit(e) {
-    // TODO
+    fetch(`/log/${this.props.netId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      body: JSON.stringify({
+        num: this.props.num,
+        call_sign: this.state.call_sign,
+        remarks: this.state.remarks,
+      }),
+    })
     e.preventDefault()
+    this.props.onAddOrUpdateEntry(this.state)
   }
 
   render() {
     return html`
-      <h2>Add Log Entry</h2>
+      <h2>Add Log Entry (${this.props.num})</h2>
       <form onsubmit=${(e) => this.handleSubmit(e)}>
         <label class="${this.state.errors.call_sign ? "error" : ""}">
           Call Sign:<br />
           <input
             name="call_sign"
             value=${this.state.call_sign}
-            onchange=${(e) => this.setState({ call_sign: e.target.value })}
+            oninput=${(e) =>
+              this.setState({ call_sign: e.target.value.toUpperCase() })}
+            autocomplete="off"
           />
         </label>
         <label class="${this.state.errors.remarks ? "error" : ""}">
@@ -408,7 +450,8 @@ class LogForm extends Component {
           <input
             name="remarks"
             value=${this.state.remarks}
-            onchange=${(e) => this.setState({ remarks: e.target.value })}
+            oninput=${(e) => this.setState({ remarks: e.target.value })}
+            autocomplete="off"
           />
         </label>
         <input type="submit" value="Add" />

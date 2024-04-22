@@ -85,6 +85,15 @@ class NetInfo
   end
 
   def monitor!(user:)
+    if user.monitoring_net && user.monitoring_net != @record
+      # already monitoring one, so stop that first
+      begin
+        NetInfo.new(id: user.monitoring_net_id).stop_monitoring!(user:)
+      rescue NetInfo::NotFoundError
+        # no biggie I guess
+      end
+    end
+
     # 2023-05-09 17:40:45 GET http://www.netlogger.org/cgi-bin/NetLogger/SubscribeToNet.php?ProtocolVersion=2.3&NetName=Daily%20Check%20in%20Net&Callsign=KI5ZDF-TIM%20MORGAN%20-%20v3.1.7L&IMSerial=0&LastExtDataSerial=0                                                                                                                                                     
     #                        ← 200 OK text/html 2.15k 150ms
     #                             Request                                                          Response                                                          Detail
@@ -107,6 +116,7 @@ class NetInfo
       'IMSerial' => '0',
       'LastExtDataSerial' => '0',
     )
+    user.update!(monitoring_net: @record)
   end
 
   def stop_monitoring!(user:)
@@ -154,10 +164,11 @@ class NetInfo
     )
   end
 
-  def log_entry!(add_password:, num:, call_sign:, remarks:, official_status:)
+  def log_entry!(password:, num:, call_sign:, remarks:, official_status: nil)
     # A|1|KI5ZDF|Tulsa|OK|Tim R Morgan|      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
     # A|2|KI5ZDG|Tulsa|OK|Kai Morgan  |      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Wesley Kai~`1|future use 2|future use 3|`^future use 4|future use 5^
     # U|1|KI5ZDF|Tulsa|OK|Tim R Morgan|remarks| |Tulsa|EM26aa|10727 Riverside Pkwy|74137|(nc)| |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
+    raise 'must specify num' unless num.present?
 
     add_or_update = 'A'
     highlight_num = 1 # TODO

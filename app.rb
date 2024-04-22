@@ -72,8 +72,7 @@ helpers do
   end
 
   def is_logger?
-    # @club.name == session[:started_net]
-    is_admin? # FIXME
+    @net && @net.name == session[:started_net] && is_admin?
   end
 
   def json_for_html_attribute(hash)
@@ -264,6 +263,8 @@ post '/create-net' do
   session[:started_net] = params[:name]
   session[:started_net_password] = params[:password]
 
+  NetInfo.new(name: params[:name]).monitor!(user: @user)
+
   redirect "/net/#{CGI.escape(params[:name])}"
 end
 
@@ -271,9 +272,15 @@ post '/log/:id' do
   @user = get_user
   require_logger!
 
+  @params = params.merge(JSON.parse(request.body.read))
+
   net = NetInfo.new(id: params[:id])
-  net.log!(password: session[:started_net_password], call_sign: params[:call_sign], remarks: params[:remarks])
-  NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
+  net.log_entry!(
+    password: session[:started_net_password],
+    num: params[:num],
+    call_sign: params[:call_sign],
+    remarks: params[:remarks]
+  )
 
   content_type 'application/json'
   return { success: true }.to_json
@@ -692,18 +699,7 @@ post '/monitor/:net_id' do
   @net_info = NetInfo.new(id: params[:net_id])
   @net = @net_info.net
 
-  if @user.monitoring_net && @user.monitoring_net != @net
-    # already monitoring one, so stop that first
-    begin
-      NetInfo.new(id: @user.monitoring_net_id).stop_monitoring!(user: @user)
-    rescue NetInfo::NotFoundError
-      # no biggie I guess
-    end
-  end
-
   @net_info.monitor!(user: @user)
-
-  @user.update!(monitoring_net: @net)
 
   redirect "/net/#{url_escape @net.name}#messages"
 end
