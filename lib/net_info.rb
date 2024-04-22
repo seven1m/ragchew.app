@@ -158,7 +158,7 @@ class NetInfo
     fetcher = Fetcher.new(@record.host)
     fetcher.post(
       'SendInstantMessage.php',
-      'NetName' => name,
+      'NetName' => @record.name,
       'Callsign' => name_for_chat(user),
       'Message' => message,
     )
