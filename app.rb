@@ -309,7 +309,6 @@ delete '/log/:id/:num' do
     password: session[:started_net_password],
     num: params[:num],
   )
-  status 404
   return { success: true }.to_json
 end
 

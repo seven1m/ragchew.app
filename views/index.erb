@@ -67,6 +67,7 @@
 <dl>
   <dt>2023-10-08</dt>
   <dd>You can now sort the net list on the home page by the different columns. (Suggested by <a href="https://www.qrz.com/db/KI5ZDE">KI5ZDE</a>.)</dd>
+
   <dt>2023-09-07</dt>
   <dd>Stations that are checked out (status of "(c/o)") are now grayed out in the log. (Suggested by <a href="https://www.qrz.com/db/N4UPC">N4UPC</a>.)</dd>
 </dl>
@@ -76,4 +77,13 @@
   const centers = JSON.parse(elm.getAttribute('data-centers'))
   buildNetMap()
   updateNetMapCenters(centers)
+
+  const minute = 60 * 1000
+  const hour = 60 * minute
+  setIntervalWithBackoff(
+    updatePage,
+    <%= @update_interval || 30 %> * 1000,
+    <%= @update_backoff || 5 %> * 1000,
+    1 * hour
+  )
 </script>

@@ -162,3 +162,29 @@ function favorite(call_sign, elm, unfavorite) {
     })
     .catch(console.error)
 }
+
+let intervalWithBackoffNextId = 0
+const intervalWithBackoffIntervals = {}
+
+function setIntervalWithBackoff(func, delay, backoff, max) {
+  const id = ++intervalWithBackoffNextId
+  intervalWithBackoffIntervals[id] = true
+  const startTime = new Date()
+  const runFuncAndScheduleNext = () => {
+    if (!intervalWithBackoffIntervals[id]) return
+    func()
+    delay += backoff
+    if (new Date() - startTime < max) {
+      console.log(`waiting ${delay} till next update`)
+      setTimeout(runFuncAndScheduleNext, delay)
+    } else {
+      console.log(`stopped updating after ${max}`)
+    }
+  }
+  setTimeout(runFuncAndScheduleNext, delay)
+  return id
+}
+
+function clearIntervalWithBackoff(id) {
+  intervalWithBackoffIntervals[id] = false
+}

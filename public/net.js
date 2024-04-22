@@ -13,11 +13,19 @@ class Net extends Component {
     monitors: [],
     favorites: [],
     lastUpdatedAt: null,
+    editing: null,
   }
 
   componentDidMount() {
     this.updateData()
-    setInterval(this.updateData.bind(this), this.props.updateInterval * 1000)
+    const minute = 60 * 1000
+    const hour = 60 * minute
+    setIntervalWithBackoff(
+      this.updateData.bind(this),
+      this.props.updateInterval * 1000,
+      0,
+      3 * hour
+    )
   }
 
   async updateData() {
@@ -49,13 +57,16 @@ class Net extends Component {
         netId=${this.props.netId}
         checkins=${this.state.checkins}
         favorites=${this.state.favorites}
+        onEditEntry=${this.handleEditEntry.bind(this)}
         onDeleteEntry=${this.handleDeleteEntry.bind(this)}
+        isLogger=${this.props.isLogger}
       />
 
       ${this.props.isLogger &&
       h(LogForm, {
+        editing: this.state.editing,
         netId: this.props.netId,
-        num: this.nextNum(),
+        num: this.state.editing ? this.state.editing.num : this.nextNum(),
         onAddOrUpdateEntry: this.handleAddOrUpdateEntry.bind(this),
         onDeleteEntry: this.handleDeleteEntry.bind(this),
       })}
@@ -81,6 +92,7 @@ class Net extends Component {
   }
 
   handleAddOrUpdateEntry(entry) {
+    this.setState({ editing: null })
     const index = this.state.checkins.findIndex((c) => c.num === entry.num)
     if (index === -1) {
       this.setState({ checkins: [...this.state.checkins, entry] })
@@ -89,6 +101,11 @@ class Net extends Component {
       checkins[index] = entry
       this.setState({ checkins })
     }
+  }
+
+  handleEditEntry(num) {
+    const entry = this.state.checkins.find((c) => c.num === num)
+    this.setState({ editing: entry })
   }
 
   handleDeleteEntry(num) {
@@ -144,7 +161,9 @@ class Checkins extends Component {
                 index,
                 netId: this.props.netId,
                 favorited: this.props.favorites.indexOf(checkin.call_sign) > -1,
+                onEditEntry: this.props.onEditEntry,
                 onDeleteEntry: this.props.onDeleteEntry,
+                isLogger: this.props.isLogger,
               })
             )}
           </tbody>
@@ -155,16 +174,39 @@ class Checkins extends Component {
 }
 
 class CheckinRow extends Component {
+  state = {
+    editing: false,
+    deleting: false,
+    deletingTimeout: null,
+  }
+
+  async handleEdit(e) {
+    e.preventDefault()
+    this.props.onEditEntry(this.props.num)
+  }
+
   async handleDelete(e) {
     e.preventDefault()
-    const response = await fetch(`/log/${this.props.netId}/${this.props.num}`, {
-      method: "DELETE",
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-      },
-    })
-    if (response.status === 404) {
-      this.props.onDeleteEntry(this.props.num)
+    if (this.state.deleting) {
+      clearTimeout(this.state.deletingTimeout)
+      const response = await fetch(
+        `/log/${this.props.netId}/${this.props.num}`,
+        {
+          method: "DELETE",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        }
+      )
+      if (response.status === 200) {
+        this.props.onDeleteEntry(this.props.num)
+      }
+      this.setState({ deleting: false, deletingTimeout: null })
+    } else {
+      const deletingTimeout = setTimeout(() => {
+        this.setState({ deleting: false, deletingTimeout: null })
+      }, 3000)
+      this.setState({ deleting: true, deletingTimeout })
     }
   }
 
@@ -197,7 +239,7 @@ class CheckinRow extends Component {
         >
           ${this.props.call_sign}
         </a>
-        ${" "}<button onclick=${this.handleDelete.bind(this)}>delete</button>
+        ${" "}${this.renderLoggerControls()}
       </td>
       <td>${this.props.name}</td>
       <td>${formatTime(this.props.checked_in_at)}</td>
@@ -221,6 +263,21 @@ class CheckinRow extends Component {
         <td></td>
         <td colspan="9" class="can-wrap">${this.props.remarks}</td>
       </tr>
+    `
+  }
+
+  renderLoggerControls() {
+    if (!this.props.isLogger) return null
+
+    return html`
+      <button onclick=${this.handleEdit.bind(this)}>edit</button>
+      ${" "}
+      <button
+        onclick=${this.handleDelete.bind(this)}
+        class=${this.state.deleting && "danger"}
+      >
+        delete ${this.state.deleting && "(click again)"}
+      </button>
     `
   }
 
@@ -444,6 +501,16 @@ class LogForm extends Component {
 
   inputRef = createRef()
 
+  componentWillUpdate(nextProps) {
+    console.log(nextProps)
+    if (nextProps.editing && nextProps.num !== this.props.num) {
+      this.setState({
+        call_sign: nextProps.editing.call_sign,
+        remarks: nextProps.editing.remarks,
+      })
+    }
+  }
+
   handleInput(e) {
     this.setState({ call_sign: e.target.value.toUpperCase(), error: null })
     if (window.inputTimeout) clearTimeout(window.inputTimeout)
@@ -511,7 +578,7 @@ class LogForm extends Component {
 
   render() {
     return html`
-      <h2>Add Log Entry (${this.props.num})</h2>
+      ${this.renderHeader()}
       <form onsubmit=${(e) => this.handleSubmit(e)}>
         <label>
           Call Sign:<br />
@@ -533,9 +600,17 @@ class LogForm extends Component {
             autocomplete="off"
           />
         </label>
-        <input type="submit" value="Add" /> ${this.renderInfo()}
+        <input type="submit" value=${this.props.editing ? "Update" : "Add"} />
+        ${" "}${this.renderInfo()}
       </form>
     `
+  }
+
+  renderHeader() {
+    if (this.props.editing)
+      return html`<h2>Edit Log Entry ${this.props.num}</h2>`
+
+    return html`<h2>Add Log Entry (${this.props.num})</h2>`
   }
 
   renderInfo() {
@@ -790,26 +865,3 @@ document.querySelectorAll("[data-component]").forEach((elm) => {
   elm.innerHTML = ""
   render(html`<${components[name]} ...${props} />`, elm)
 })
-
-// TODO
-//    <% if @last_updated_at && params[:autoupdate] != 'false' %>
-//      <script>
-//        let secondsToWaitBetweenUpdates = <%= @update_interval || 30 %>
-//        const updateBackoff = <%= @update_backoff || 0 %>
-//        const startTime = new Date()
-//        const maxTimeToRefreshInSeconds = 3 * 60 * 60 // 3 hours
-//        function updatePageAndScheduleNext() {
-//          updatePage()
-//          secondsToWaitBetweenUpdates += updateBackoff
-//          if ((new Date() - startTime) < (maxTimeToRefreshInSeconds * 1000)) {
-//            console.log(`waiting ${secondsToWaitBetweenUpdates} seconds till next update`)
-//            setTimeout(updatePageAndScheduleNext, secondsToWaitBetweenUpdates * 1000)
-//          } else {
-//            console.log(`stopped refreshing after ${maxTimeToRefreshInSeconds} seconds`)
-//          }
-//        }
-//        setTimeout(() => {
-//          updatePageAndScheduleNext()
-//        }, (secondsToWaitBetweenUpdates - Math.min(secondsToWaitBetweenUpdates, <%= Time.now - @last_updated_at %>)) * 1000)
-//      </script>
-//    <% end %>
