@@ -46,8 +46,10 @@ class Net extends Component {
       <h2>Log</h2>
 
       <${Checkins}
+        netId=${this.props.netId}
         checkins=${this.state.checkins}
         favorites=${this.state.favorites}
+        onDeleteEntry=${this.handleDeleteEntry.bind(this)}
       />
 
       ${this.props.isLogger &&
@@ -55,6 +57,7 @@ class Net extends Component {
         netId: this.props.netId,
         num: this.nextNum(),
         onAddOrUpdateEntry: this.handleAddOrUpdateEntry.bind(this),
+        onDeleteEntry: this.handleDeleteEntry.bind(this),
       })}
 
       <h2>Messages</h2>
@@ -86,6 +89,13 @@ class Net extends Component {
       checkins[index] = entry
       this.setState({ checkins })
     }
+  }
+
+  handleDeleteEntry(num) {
+    const index = this.state.checkins.findIndex((c) => c.num === num)
+    const checkins = [...this.state.checkins]
+    checkins.splice(index, 1)
+    this.setState({ checkins })
   }
 }
 
@@ -132,7 +142,9 @@ class Checkins extends Component {
               h(CheckinRow, {
                 ...checkin,
                 index,
+                netId: this.props.netId,
                 favorited: this.props.favorites.indexOf(checkin.call_sign) > -1,
+                onDeleteEntry: this.props.onDeleteEntry,
               })
             )}
           </tbody>
@@ -143,6 +155,19 @@ class Checkins extends Component {
 }
 
 class CheckinRow extends Component {
+  async handleDelete(e) {
+    e.preventDefault()
+    const response = await fetch(`/log/${this.props.netId}/${this.props.num}`, {
+      method: "DELETE",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    })
+    if (response.status === 404) {
+      this.props.onDeleteEntry(this.props.num)
+    }
+  }
+
   render() {
     return [this.renderDetails(), this.renderRemarks()]
   }
@@ -172,6 +197,7 @@ class CheckinRow extends Component {
         >
           ${this.props.call_sign}
         </a>
+        ${" "}<button onclick=${this.handleDelete.bind(this)}>delete</button>
       </td>
       <td>${this.props.name}</td>
       <td>${formatTime(this.props.checked_in_at)}</td>
@@ -357,7 +383,7 @@ class Messages extends Component {
       ${this.state.error && html`<p class="error">${this.state.error}</p>`}
       <form onsubmit=${(e) => this.handleSubmit(e)}>
         <input
-          onKeyUp=${(e) => this.setState({ messageInput: e.target.value })}
+          oninput=${(e) => this.setState({ messageInput: e.target.value })}
           value=${this.state.messageInput}
           type="text"
           name="message"
@@ -412,13 +438,14 @@ class LogForm extends Component {
     call_sign: "",
     remarks: "",
     info: null, // null=blank, false=not-found, {...}=found
-    errors: {},
+    error: null,
+    submitting: false,
   }
 
   inputRef = createRef()
 
   handleInput(e) {
-    this.setState({ call_sign: e.target.value.toUpperCase() })
+    this.setState({ call_sign: e.target.value.toUpperCase(), error: null })
     if (window.inputTimeout) clearTimeout(window.inputTimeout)
     window.inputTimeout = setTimeout(async () => {
       if (this.state.call_sign.length >= 4) {
@@ -440,6 +467,8 @@ class LogForm extends Component {
   async handleSubmit(e) {
     e.preventDefault()
 
+    this.setState({ submitting: true, error: null })
+
     let info = this.state.info
     if (!info) {
       const response = await fetch(`/station/${this.state.call_sign}`)
@@ -457,6 +486,7 @@ class LogForm extends Component {
       preferred_name: info.first_name,
       checked_in_at: dayjs().format(),
     }
+    this.props.onAddOrUpdateEntry(payload)
     try {
       const response = await fetch(`/log/${this.props.netId}`, {
         method: "POST",
@@ -470,17 +500,20 @@ class LogForm extends Component {
         this.setState({ call_sign: "", remarks: "", info: null })
         this.inputRef.current.focus()
       } else {
-        this.setState({ error: "There was an error" })
+        this.setState({ error: `There was an error: ${await response.text()}` })
+        this.props.onDeleteEntry(this.props.num)
       }
-    } catch (error) {}
-    this.props.onAddOrUpdateEntry(payload)
+    } catch (error) {
+      this.setState({ error: `There was an error: ${error}` })
+      this.props.onDeleteEntry(this.props.num)
+    }
   }
 
   render() {
     return html`
       <h2>Add Log Entry (${this.props.num})</h2>
       <form onsubmit=${(e) => this.handleSubmit(e)}>
-        <label class="${this.state.errors.call_sign ? "error" : ""}">
+        <label>
           Call Sign:<br />
           <input
             ref=${this.inputRef}
@@ -488,9 +521,10 @@ class LogForm extends Component {
             value=${this.state.call_sign}
             oninput=${this.handleInput.bind(this)}
             autocomplete="off"
+            autofocus
           />
         </label>
-        <label class="${this.state.errors.remarks ? "error" : ""}">
+        <label>
           Remarks:<br />
           <input
             name="remarks"
@@ -505,6 +539,9 @@ class LogForm extends Component {
   }
 
   renderInfo() {
+    if (this.state.error)
+      return html`<em class="error">${this.state.error}</em>`
+
     if (this.state.info === null) return null
     if (this.state.info === false) return html`<span>not found</span>`
 
@@ -526,6 +563,7 @@ class CreateNetForm extends Component {
     band: "",
     mode: "",
     net_control: this.props.net_control,
+    submitting: false,
     errors: {},
   }
 
@@ -570,6 +608,7 @@ class CreateNetForm extends Component {
   ]
 
   handleSubmit(e) {
+    if (this.state.submitting) return
     const errors = {}
     for (let i = 0; i < this.requiredFields.length; i++) {
       const key = this.requiredFields[i]
@@ -578,6 +617,7 @@ class CreateNetForm extends Component {
     }
     this.setState({ errors })
     if (Object.keys(errors).length > 0) e.preventDefault()
+    else this.setState({ submitting: true })
   }
 
   render() {
@@ -612,7 +652,7 @@ class CreateNetForm extends Component {
             name="frequency"
             placeholder="146.52"
             value=${this.state.frequency}
-            onkeyup=${(e) => {
+            oninput=${(e) => {
               this.setState({ frequency: e.target.value })
               this.guessStuffFromFrequency(e.target.value)
             }}
@@ -674,7 +714,11 @@ class CreateNetForm extends Component {
             placeholder="KI5ZDF"
           />
         </label>
-        <input type="submit" value="START NET NOW" />
+        <input
+          type="submit"
+          value="START NET NOW"
+          disabled=${this.state.submitting}
+        />
       </form>
     `
   }

@@ -300,6 +300,19 @@ post '/log/:id' do
   return { success: true }.to_json
 end
 
+delete '/log/:id/:num' do
+  @user = get_user
+  require_logger!
+
+  net = NetInfo.new(id: params[:id])
+  net.delete_log_entry!(
+    password: session[:started_net_password],
+    num: params[:num],
+  )
+  status 404
+  return { success: true }.to_json
+end
+
 post '/close-net/:id' do
   @user = get_user
   require_logger!

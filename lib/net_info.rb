@@ -164,7 +164,7 @@ class NetInfo
     )
   end
 
-  def log_entry!(password:, mode:, num:, call_sign:, city:, state:, first_name:, last_name:, remarks:, county:, grid_square:, street:, zip:, country:, dxcc:, preferred_name:, official_status: nil)
+  def log_entry!(password:, mode:, num:, call_sign:, city: nil, state: nil, first_name: nil, last_name: nil, remarks: nil, county: nil, grid_square: nil, street: nil, zip: nil, country: nil, dxcc: nil, preferred_name: nil, official_status: nil)
     # A|1|KI5ZDF|Tulsa|OK|Tim R Morgan|      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
     # A|2|KI5ZDG|Tulsa|OK|Kai Morgan  |      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Wesley Kai~`1|future use 2|future use 3|`^future use 4|future use 5^
     # U|1|KI5ZDF|Tulsa|OK|Tim R Morgan|remarks| |Tulsa|EM26aa|10727 Riverside Pkwy|74137|(nc)| |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
@@ -212,8 +212,8 @@ class NetInfo
     )
   end
 
-  def delete_log_entry!(num:)
-    # TODO
+  def delete_log_entry!(password:, num:)
+    log_entry!(mode: 'U', password:, num:, call_sign: '')
   end
 
   def close_net!(password:)
