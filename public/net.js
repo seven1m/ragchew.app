@@ -1,4 +1,4 @@
-import { h, render, Component } from "https://esm.sh/preact"
+import { h, render, Component, createRef } from "https://esm.sh/preact"
 import htm from "https://esm.sh/htm"
 import dayjs from "https://esm.sh/dayjs"
 
@@ -411,9 +411,11 @@ class LogForm extends Component {
   state = {
     call_sign: "",
     remarks: "",
-    info: null,
+    info: null, // null=blank, false=not-found, {...}=found
     errors: {},
   }
+
+  inputRef = createRef()
 
   handleInput(e) {
     this.setState({ call_sign: e.target.value.toUpperCase() })
@@ -423,12 +425,14 @@ class LogForm extends Component {
         try {
           const response = await fetch(`/station/${this.state.call_sign}`)
           const info = await response.json()
-          if (info.error) this.setState({ info: null })
+          if (info.error) this.setState({ info: false })
           else this.setState({ info })
         } catch (error) {
           this.setState({ info: null })
           console.error(`Error fetching station: ${error}`)
         }
+      } else {
+        this.setState({ info: null })
       }
     }, 800)
   }
@@ -440,7 +444,7 @@ class LogForm extends Component {
     if (!info) {
       const response = await fetch(`/station/${this.state.call_sign}`)
       info = await response.json()
-      if (info.error) info = {}
+      if (info.error) info = { call_sign: this.state.call_sign }
     }
 
     const payload = {
@@ -449,16 +453,26 @@ class LogForm extends Component {
       id: this.props.netId,
       num: this.props.num,
       remarks: this.state.remarks,
+      name: `${info.first_name} ${info.last_name}`,
       preferred_name: info.first_name,
+      checked_in_at: dayjs().format(),
     }
-    fetch(`/log/${this.props.netId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      body: JSON.stringify(payload),
-    })
+    try {
+      const response = await fetch(`/log/${this.props.netId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify(payload),
+      })
+      if (response.status === 201) {
+        this.setState({ call_sign: "", remarks: "", info: null })
+        this.inputRef.current.focus()
+      } else {
+        this.setState({ error: "There was an error" })
+      }
+    } catch (error) {}
     this.props.onAddOrUpdateEntry(payload)
   }
 
@@ -469,6 +483,7 @@ class LogForm extends Component {
         <label class="${this.state.errors.call_sign ? "error" : ""}">
           Call Sign:<br />
           <input
+            ref=${this.inputRef}
             name="call_sign"
             value=${this.state.call_sign}
             oninput=${this.handleInput.bind(this)}
@@ -484,13 +499,14 @@ class LogForm extends Component {
             autocomplete="off"
           />
         </label>
-        <input type="submit" value="Add" />${" "} ${this.renderInfo()}
+        <input type="submit" value="Add" /> ${this.renderInfo()}
       </form>
     `
   }
 
   renderInfo() {
-    if (!this.state.info) return null
+    if (this.state.info === null) return null
+    if (this.state.info === false) return html`<span>not found</span>`
 
     return html`
       <span>

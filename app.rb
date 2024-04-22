@@ -296,6 +296,7 @@ post '/log/:id' do
   )
 
   content_type 'application/json'
+  status 201
   return { success: true }.to_json
 end
 
