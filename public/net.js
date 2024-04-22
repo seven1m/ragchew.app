@@ -39,7 +39,7 @@ class Net extends Component {
       <${Map} coords=${this.state.coords} />
 
       <p class="timestamps">
-        Current time: ${formatTime(new Date())} (Last updated
+        Current time: <${CurrentTime} /> (Last updated${" "}
         ${formatTime(this.state.lastUpdatedAt)})
       </p>
 
@@ -681,6 +681,25 @@ class CreateNet extends Component {
 
       ${this.state.formVisible ? h(CreateNetForm, this.props) : null}
     `
+  }
+}
+
+class CurrentTime extends Component {
+  state = { time: new Date() }
+
+  componentDidMount() {
+    window.currentTimeInterval = setInterval(
+      () => this.setState({ time: new Date() }),
+      1000
+    )
+  }
+
+  componentWillUnmount() {
+    if (window.currentTimeInterval) clearInterval(window.currentTimeInterval)
+  }
+
+  render() {
+    return formatTime(this.state.time)
   }
 }
 
