@@ -164,13 +164,13 @@ class NetInfo
     )
   end
 
-  def log_entry!(password:, num:, call_sign:, remarks:, official_status: nil)
+  def log_entry!(password:, mode:, num:, call_sign:, city:, state:, first_name:, last_name:, remarks:, county:, grid_square:, street:, zip:, country:, dxcc:, preferred_name:, official_status: nil)
     # A|1|KI5ZDF|Tulsa|OK|Tim R Morgan|      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
     # A|2|KI5ZDG|Tulsa|OK|Kai Morgan  |      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Wesley Kai~`1|future use 2|future use 3|`^future use 4|future use 5^
     # U|1|KI5ZDF|Tulsa|OK|Tim R Morgan|remarks| |Tulsa|EM26aa|10727 Riverside Pkwy|74137|(nc)| |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
+
     raise 'must specify num' unless num.present?
 
-    add_or_update = 'A'
     highlight_num = 1 # TODO
 
     begin
@@ -181,23 +181,23 @@ class NetInfo
     end
 
     line1 = [
-      add_or_update,
+      mode,
       num,
-      info[:call_sign],
-      info[:city],
-      info[:state],
-      [info[:first_name], info[:last_name]].compact.join(' '),
+      call_sign,
+      city,
+      state,
+      [first_name, last_name].compact.join(' '),
       remarks,
       '', # unknown
-      info[:county],
-      info[:grid_square],
-      info[:street],
-      info[:zip],
+      county,
+      grid_square,
+      street,
+      zip,
       official_status,
       '', # unknown
-      info[:country],
-      info[:dxcc],
-      info[:first_name],
+      country,
+      dxcc,
+      preferred_name,
     ].map { |cell| cell.to_s.tr('|~`', ' ') }.join('|')
     line2 = "`#{highlight_num}|future use 2|future use 3|`^future use 4|future use 5^"
     data = [line1, line2].join('~')

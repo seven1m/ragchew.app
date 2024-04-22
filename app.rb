@@ -277,9 +277,22 @@ post '/log/:id' do
   net = NetInfo.new(id: params[:id])
   net.log_entry!(
     password: session[:started_net_password],
+    mode: params[:mode],
     num: params[:num],
     call_sign: params[:call_sign],
-    remarks: params[:remarks]
+    city: params[:city],
+    state: params[:state],
+    first_name: params[:first_name],
+    last_name: params[:last_name],
+    remarks: params[:remarks],
+    county: params[:county],
+    grid_square: params[:grid_square],
+    street: params[:street],
+    zip: params[:zip],
+    country: params[:country],
+    dxcc: params[:dxcc],
+    preferred_name: params[:preferred_name],
+    official_status: params[:official_status],
   )
 
   content_type 'application/json'

@@ -411,24 +411,55 @@ class LogForm extends Component {
   state = {
     call_sign: "",
     remarks: "",
+    info: null,
     errors: {},
   }
 
-  handleSubmit(e) {
+  handleInput(e) {
+    this.setState({ call_sign: e.target.value.toUpperCase() })
+    if (window.inputTimeout) clearTimeout(window.inputTimeout)
+    window.inputTimeout = setTimeout(async () => {
+      if (this.state.call_sign.length >= 4) {
+        try {
+          const response = await fetch(`/station/${this.state.call_sign}`)
+          const info = await response.json()
+          if (info.error) this.setState({ info: null })
+          else this.setState({ info })
+        } catch (error) {
+          this.setState({ info: null })
+          console.error(`Error fetching station: ${error}`)
+        }
+      }
+    }, 800)
+  }
+
+  async handleSubmit(e) {
+    e.preventDefault()
+
+    let info = this.state.info
+    if (!info) {
+      const response = await fetch(`/station/${this.state.call_sign}`)
+      info = await response.json()
+      if (info.error) info = {}
+    }
+
+    const payload = {
+      ...info,
+      mode: "A", // TODO
+      id: this.props.netId,
+      num: this.props.num,
+      remarks: this.state.remarks,
+      preferred_name: info.first_name,
+    }
     fetch(`/log/${this.props.netId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Requested-With": "XMLHttpRequest",
       },
-      body: JSON.stringify({
-        num: this.props.num,
-        call_sign: this.state.call_sign,
-        remarks: this.state.remarks,
-      }),
+      body: JSON.stringify(payload),
     })
-    e.preventDefault()
-    this.props.onAddOrUpdateEntry(this.state)
+    this.props.onAddOrUpdateEntry(payload)
   }
 
   render() {
@@ -440,8 +471,7 @@ class LogForm extends Component {
           <input
             name="call_sign"
             value=${this.state.call_sign}
-            oninput=${(e) =>
-              this.setState({ call_sign: e.target.value.toUpperCase() })}
+            oninput=${this.handleInput.bind(this)}
             autocomplete="off"
           />
         </label>
@@ -454,8 +484,20 @@ class LogForm extends Component {
             autocomplete="off"
           />
         </label>
-        <input type="submit" value="Add" />
+        <input type="submit" value="Add" />${" "} ${this.renderInfo()}
       </form>
+    `
+  }
+
+  renderInfo() {
+    if (!this.state.info) return null
+
+    return html`
+      <span>
+        ${this.state.info.first_name} ${this.state.info.last_name},${" "}
+        ${this.state.info.city}, ${this.state.info.state}${" "}
+        (${this.state.info.country})
+      </span>
     `
   }
 }
