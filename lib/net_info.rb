@@ -198,7 +198,7 @@ class NetInfo
       country,
       dxcc,
       preferred_name,
-    ].map { |cell| cell.to_s.tr('|~`', ' ') }.join('|')
+    ].map { |cell| cell.present? ? cell.to_s.tr('|~`', ' ') : ' ' }.join('|')
     line2 = "`#{highlight_num}|future use 2|future use 3|`^future use 4|future use 5^"
     data = [line1, line2].join('~')
 
