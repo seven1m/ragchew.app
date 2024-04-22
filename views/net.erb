@@ -9,7 +9,7 @@
     <h1><%== @net.name %> (<%== @net.id %>)</h1>
 
     <% if session[:started_net] == @net.name %>
-      <form action="/close-net/<%== @net.id %>" method="POST">
+      <form action="/close-net/<%== @net.id %>" method="POST" onsubmit="if (!confirm('Are you sure?')) return false">
         <input type="submit" value="Close net!"/>
       </form>
     <% end %>
