@@ -17,3 +17,11 @@ class NilClass
     nil
   end
 end
+
+class Hash
+  def symbolize_keys
+    each_with_object({}) do |(key, value), hash|
+      hash[key.to_sym] = value
+    end
+  end
+end

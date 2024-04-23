@@ -249,7 +249,7 @@ post '/create-net' do
 
   # TODO: check that name only contains allowed characters
 
-  NetInfo.create_net!(
+  NetLogger.create_net!(
     name: params[:name],
     password: params[:password],
     frequency: params[:frequency],
@@ -258,7 +258,6 @@ post '/create-net' do
     mode: params[:mode],
     band: params[:band],
   )
-  NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
 
   session[:started_net] = params[:name]
   session[:started_net_password] = params[:password]
@@ -274,26 +273,22 @@ post '/log/:id' do
 
   @params = params.merge(JSON.parse(request.body.read))
 
-  net = NetInfo.new(id: params[:id])
-  net.log_entry!(
-    password: session[:started_net_password],
-    mode: params[:mode],
-    num: params[:num],
-    call_sign: params[:call_sign],
-    city: params[:city],
-    state: params[:state],
-    first_name: params[:first_name],
-    last_name: params[:last_name],
-    remarks: params[:remarks],
-    county: params[:county],
-    grid_square: params[:grid_square],
-    street: params[:street],
-    zip: params[:zip],
-    country: params[:country],
-    dxcc: params[:dxcc],
-    preferred_name: params[:preferred_name],
-    official_status: params[:official_status],
-  )
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger.append!(params)
+
+  content_type 'application/json'
+  status 201
+  return { success: true }.to_json
+end
+
+patch '/log/:id/:num' do
+  @user = get_user
+  require_logger!
+
+  @params = params.merge(JSON.parse(request.body.read))
+
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger.update!(params.fetch(:num).to_i, params)
 
   content_type 'application/json'
   status 201
@@ -304,11 +299,9 @@ delete '/log/:id/:num' do
   @user = get_user
   require_logger!
 
-  net = NetInfo.new(id: params[:id])
-  net.delete_log_entry!(
-    password: session[:started_net_password],
-    num: params[:num],
-  )
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger.delete!(params.fetch(:num).to_i)
+
   return { success: true }.to_json
 end
 
@@ -316,9 +309,8 @@ post '/close-net/:id' do
   @user = get_user
   require_logger!
 
-  net = NetInfo.new(id: params[:id])
-  net.close_net!(password: session[:started_net_password])
-  NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger.close_net!
 
   session.delete(:started_net)
   session.delete(:started_net_password)

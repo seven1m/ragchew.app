@@ -2,9 +2,9 @@ require 'time'
 
 require_relative './fetcher'
 require_relative './tables'
+require_relative './user_presenter'
 
 class NetInfo
-  NET_LOGGER_FAKE_VERSION = 'v3.1.7L'
   EARTH_RADIUS_IN_KM = 6378.137
   CENTER_PERCENTILE = 75
   MIN_LATITUDES_FOR_MAJORITY = 3
@@ -13,28 +13,6 @@ class NetInfo
   MAX_CENTER_RADIUS_TO_SHOW = 3000000
 
   class NotFoundError < StandardError; end
-  class CouldNotCreateNetError < StandardError; end
-  class CouldNotCloseNetError < StandardError; end
-
-  class UserPresenter
-    def initialize(user)
-      @user = user
-    end
-
-    def name_for_monitoring
-      name = name_for_chat
-      # NOTE: must use a real version here or UnsubscribeFromNet won't work :-(
-      name + " - #{NET_LOGGER_FAKE_VERSION}"
-    end
-
-    alias name_for_logging name_for_monitoring
-
-    def name_for_chat
-      name = @user.call_sign
-      name += '-' + @user.first_name unless @user.first_name.to_s.strip.empty?
-      name.upcase
-    end
-  end
 
   def initialize(name: nil, id: nil)
     if id
@@ -48,30 +26,9 @@ class NetInfo
     raise NotFoundError, 'Net is closed'
   end
 
-  def self.create_net!(name:, password:, frequency:, net_control:, user:, mode:, band:, enable_messaging: true, update_interval: 20000, misc_net_parameters: nil, host: 'www.netlogger.org')
-    user = UserPresenter.new(user)
-    fetcher = Fetcher.new(host)
-    result = fetcher.raw_get(
-      'OpenNet20.php',
-      'NetName' => name,
-      'Token' => password,
-      'Frequency' => frequency,
-      'NetControl' => net_control,
-      'Logger' => user.name_for_logging,
-      'Mode' => mode,
-      'Band' => band,
-      'EnableMessaging' => enable_messaging ? 'Y' : 'N',
-      'UpdateInterval' => update_interval.to_s,
-      'MiscNetParameters' => misc_net_parameters.to_s,
-    )
-    unless result =~ /\*success\*/
-      raise CouldNotCreateNetError, result
-    end
-  end
-
-  def net
-    @record
-  end
+  def net = @record
+  def name = @record.name
+  def host = @record.host
 
   def update!
     return unless cache_needs_updating?
@@ -81,6 +38,13 @@ class NetInfo
       if cache_needs_updating?
         update_cache
       end
+    end
+  end
+
+  def update_net_right_now_with_wreckless_disregard_for_the_last_update!
+    Tables::Net.with_advisory_lock(:update_net_cache, timeout_seconds: 2) do
+      @record.reload
+      update_cache
     end
   end
 
@@ -162,70 +126,6 @@ class NetInfo
       'Callsign' => name_for_chat(user),
       'Message' => message,
     )
-  end
-
-  def log_entry!(password:, mode:, num:, call_sign:, city: nil, state: nil, first_name: nil, last_name: nil, remarks: nil, county: nil, grid_square: nil, street: nil, zip: nil, country: nil, dxcc: nil, preferred_name: nil, official_status: nil)
-    # A|1|KI5ZDF|Tulsa|OK|Tim R Morgan|      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
-    # A|2|KI5ZDG|Tulsa|OK|Kai Morgan  |      | |Tulsa|EM26aa|10727 Riverside Pkwy|74137| | |United States| |Wesley Kai~`1|future use 2|future use 3|`^future use 4|future use 5^
-    # U|1|KI5ZDF|Tulsa|OK|Tim R Morgan|remarks| |Tulsa|EM26aa|10727 Riverside Pkwy|74137|(nc)| |United States| |Tim~`1|future use 2|future use 3|`^future use 4|future use 5^
-
-    raise 'must specify num' unless num.present?
-
-    highlight_num = 1 # TODO
-
-    begin
-      info = qrz.lookup(call_sign)
-    rescue Qrz::Error
-      # well we tried
-      info = { call_sign: call_sign.upcase }
-    end
-
-    line1 = [
-      mode,
-      num,
-      call_sign,
-      city,
-      state,
-      [first_name, last_name].compact.join(' '),
-      remarks,
-      '', # unknown
-      county,
-      grid_square,
-      street,
-      zip,
-      official_status,
-      '', # unknown
-      country,
-      dxcc,
-      preferred_name,
-    ].map { |cell| cell.present? ? cell.to_s.tr('|~`', ' ') : ' ' }.join('|')
-    line2 = "`#{highlight_num}|future use 2|future use 3|`^future use 4|future use 5^"
-    data = [line1, line2].join('~')
-
-    fetcher = Fetcher.new(@record.host)
-    fetcher.post(
-      'SendUpdates3.php',
-      'ProtocolVersion' => '2.3',
-      'NetName' => @record.name,
-      'Token' => password,
-      'UpdatesFromNetControl' => data,
-    )
-  end
-
-  def delete_log_entry!(password:, num:)
-    log_entry!(mode: 'U', password:, num:, call_sign: '')
-  end
-
-  def close_net!(password:)
-    fetcher = Fetcher.new(@record.host)
-    result = fetcher.raw_get(
-      'CloseNet.php',
-      'NetName' => @record.name,
-      'Token' => password,
-    )
-    unless result =~ /\*success\*/
-      raise CouldNotCloseNetError, result
-    end
   end
 
   private

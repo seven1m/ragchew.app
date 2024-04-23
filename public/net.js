@@ -13,8 +13,16 @@ class Net extends Component {
     monitors: [],
     favorites: [],
     lastUpdatedAt: null,
-    editing: null,
+    editing: {
+      num: null,
+      call_sign: "",
+      remarks: "",
+    },
+    info: null,
+    error: null,
   }
+
+  formRef = createRef()
 
   componentDidMount() {
     this.updateData()
@@ -58,17 +66,22 @@ class Net extends Component {
         checkins=${this.state.checkins}
         favorites=${this.state.favorites}
         onEditEntry=${this.handleEditEntry.bind(this)}
-        onDeleteEntry=${this.handleDeleteEntry.bind(this)}
+        removeEntryFromView=${this.removeEntryFromView.bind(this)}
         isLogger=${this.props.isLogger}
       />
 
       ${this.props.isLogger &&
       h(LogForm, {
-        editing: this.state.editing,
+        ...this.state.editing,
+        ref: this.formRef,
         netId: this.props.netId,
-        num: this.state.editing ? this.state.editing.num : this.nextNum(),
-        onAddOrUpdateEntry: this.handleAddOrUpdateEntry.bind(this),
-        onDeleteEntry: this.handleDeleteEntry.bind(this),
+        nextNum: this.nextNum(),
+        info: this.state.info,
+        error: this.state.error,
+        onCallSignInput: this.handleCallSignInput.bind(this),
+        onRemarksInput: this.handleRemarksInput.bind(this),
+        onSubmit: this.handleLogFormSubmit.bind(this),
+        onClear: this.handleLogFormClear.bind(this),
       })}
 
       <h2>Messages</h2>
@@ -91,10 +104,117 @@ class Net extends Component {
     return Math.max(...this.state.checkins.map((checkin) => checkin.num), 0) + 1
   }
 
-  handleAddOrUpdateEntry(entry) {
-    this.setState({ editing: null })
+  handleCallSignInput(call_sign) {
+    this.setState({
+      editing: { ...this.state.editing, call_sign: call_sign.toUpperCase() },
+    })
+    if (window.inputTimeout) clearTimeout(window.inputTimeout)
+    window.inputTimeout = setTimeout(async () => {
+      if (this.state.editing.call_sign.length >= 4) {
+        try {
+          const response = await fetch(
+            `/station/${this.state.editing.call_sign}`
+          )
+          if (response.status === 200) {
+            const info = await response.json()
+            if (info.error) this.setState({ info: false })
+            else this.setState({ info })
+          } else {
+            this.setState({ info: null })
+            console.error(`Error fetching station: ${error}`)
+          }
+        } catch (error) {
+          this.setState({ info: null })
+          console.error(`Error fetching station: ${error}`)
+        }
+      } else {
+        this.setState({ info: null })
+      }
+    }, 800)
+  }
+
+  handleRemarksInput(remarks) {
+    this.setState({ editing: { ...this.state.editing, remarks } })
+  }
+
+  async handleLogFormSubmit() {
+    if (!present(this.state.editing.call_sign)) return
+
+    this.setState({ submitting: true, error: null })
+
+    let info = this.state.info
+    if (!info) {
+      try {
+        const response = await fetch(`/station/${this.state.editing.call_sign}`)
+        info = await response.json()
+        if (info.error) info = { call_sign: this.state.editing.call_sign }
+      } catch (error) {
+        info = { call_sign: this.state.editing.call_sign }
+        console.error(`Error fetching station: ${error}`)
+      }
+    }
+
+    const payload = {
+      ...info,
+      id: this.props.netId,
+      num: this.state.editing.num,
+      remarks: this.state.editing.remarks,
+      name: `${info.first_name} ${info.last_name}`,
+      preferred_name: info.first_name,
+      checked_in_at: dayjs().format(),
+    }
+    this.addOrUpdateEntry(payload)
+    try {
+      const response = await fetch(`/log/${this.props.netId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify(payload),
+      })
+      if (response.status === 201) {
+        this.handleLogFormClear()
+        return true
+      } else {
+        console.error(`response status was ${response.status}`)
+        try {
+          const data = await response.json()
+          this.setState({
+            error: `There was an error: ${JSON.stringify(data)}`,
+          })
+        } catch (_) {
+          this.setState({
+            error: `There was an unknown error (${response.status})`,
+          })
+        }
+        this.removeEntryFromView(this.props.num)
+        return false
+      }
+    } catch (error) {
+      console.error(error)
+      this.setState({ error: `There was an error: ${error}` })
+      this.removeEntryFromView(this.props.num)
+      return false
+    }
+  }
+
+  handleLogFormClear() {
+    this.setState({ editing: { call_sign: "", remarks: "" }, info: null })
+  }
+
+  handleEditEntry(num) {
+    const entry = this.state.checkins.find((c) => c.num === num)
+    this.setState({ editing: entry })
+    this.formRef.current.focus()
+  }
+
+  // This just superficially updates the entry table in memory.
+  addOrUpdateEntry(entry) {
+    console.log(entry)
     const index = this.state.checkins.findIndex((c) => c.num === entry.num)
-    if (index === -1) {
+    if (!entry.num || index === -1) {
+      entry.num = this.nextNum()
       this.setState({ checkins: [...this.state.checkins, entry] })
     } else {
       const checkins = [...this.state.checkins]
@@ -103,15 +223,21 @@ class Net extends Component {
     }
   }
 
-  handleEditEntry(num) {
-    const entry = this.state.checkins.find((c) => c.num === num)
-    this.setState({ editing: entry })
-  }
-
-  handleDeleteEntry(num) {
+  // This just superficially updates the entry table in memory.
+  removeEntryFromView(num) {
     const index = this.state.checkins.findIndex((c) => c.num === num)
-    const checkins = [...this.state.checkins]
-    checkins.splice(index, 1)
+
+    if (this.state.checkins.length <= 1) {
+      this.setState({ checkins: [] })
+      return
+    }
+
+    const checkins = [
+      ...this.state.checkins.slice(0, index),
+      ...this.state.checkins
+        .slice(index + 1)
+        .map((checkin) => ({ ...checkin, num: checkin.num - 1 })),
+    ]
     this.setState({ checkins })
   }
 }
@@ -162,7 +288,7 @@ class Checkins extends Component {
                 netId: this.props.netId,
                 favorited: this.props.favorites.indexOf(checkin.call_sign) > -1,
                 onEditEntry: this.props.onEditEntry,
-                onDeleteEntry: this.props.onDeleteEntry,
+                removeEntryFromView: this.props.removeEntryFromView,
                 isLogger: this.props.isLogger,
               })
             )}
@@ -199,7 +325,7 @@ class CheckinRow extends Component {
         }
       )
       if (response.status === 200) {
-        this.props.onDeleteEntry(this.props.num)
+        this.props.removeEntryFromView(this.props.num)
       }
       this.setState({ deleting: false, deletingTimeout: null })
     } else {
@@ -491,102 +617,29 @@ class Monitors extends Component {
 }
 
 class LogForm extends Component {
-  state = {
-    call_sign: "",
-    remarks: "",
-    info: null, // null=blank, false=not-found, {...}=found
-    error: null,
-    submitting: false,
-  }
-
   inputRef = createRef()
 
-  componentWillUpdate(nextProps) {
-    console.log(nextProps)
-    if (nextProps.editing && nextProps.num !== this.props.num) {
-      this.setState({
-        call_sign: nextProps.editing.call_sign,
-        remarks: nextProps.editing.remarks,
-      })
-    }
-  }
-
-  handleInput(e) {
-    this.setState({ call_sign: e.target.value.toUpperCase(), error: null })
-    if (window.inputTimeout) clearTimeout(window.inputTimeout)
-    window.inputTimeout = setTimeout(async () => {
-      if (this.state.call_sign.length >= 4) {
-        try {
-          const response = await fetch(`/station/${this.state.call_sign}`)
-          const info = await response.json()
-          if (info.error) this.setState({ info: false })
-          else this.setState({ info })
-        } catch (error) {
-          this.setState({ info: null })
-          console.error(`Error fetching station: ${error}`)
-        }
-      } else {
-        this.setState({ info: null })
-      }
-    }, 800)
-  }
-
-  async handleSubmit(e) {
-    e.preventDefault()
-
-    this.setState({ submitting: true, error: null })
-
-    let info = this.state.info
-    if (!info) {
-      const response = await fetch(`/station/${this.state.call_sign}`)
-      info = await response.json()
-      if (info.error) info = { call_sign: this.state.call_sign }
-    }
-
-    const payload = {
-      ...info,
-      mode: "A", // TODO
-      id: this.props.netId,
-      num: this.props.num,
-      remarks: this.state.remarks,
-      name: `${info.first_name} ${info.last_name}`,
-      preferred_name: info.first_name,
-      checked_in_at: dayjs().format(),
-    }
-    this.props.onAddOrUpdateEntry(payload)
-    try {
-      const response = await fetch(`/log/${this.props.netId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify(payload),
-      })
-      if (response.status === 201) {
-        this.setState({ call_sign: "", remarks: "", info: null })
-        this.inputRef.current.focus()
-      } else {
-        this.setState({ error: `There was an error: ${await response.text()}` })
-        this.props.onDeleteEntry(this.props.num)
-      }
-    } catch (error) {
-      this.setState({ error: `There was an error: ${error}` })
-      this.props.onDeleteEntry(this.props.num)
-    }
+  focus() {
+    this.inputRef.current.focus()
   }
 
   render() {
     return html`
       ${this.renderHeader()}
-      <form onsubmit=${(e) => this.handleSubmit(e)}>
+      <form
+        onsubmit=${async (e) => {
+          e.preventDefault()
+          const success = await this.props.onSubmit(e)
+          if (success) this.focus()
+        }}
+      >
         <label>
           Call Sign:<br />
           <input
             ref=${this.inputRef}
             name="call_sign"
-            value=${this.state.call_sign}
-            oninput=${this.handleInput.bind(this)}
+            value=${this.props.call_sign}
+            oninput=${(e) => this.props.onCallSignInput(e.target.value)}
             autocomplete="off"
             autofocus
           />
@@ -595,38 +648,52 @@ class LogForm extends Component {
           Remarks:<br />
           <input
             name="remarks"
-            value=${this.state.remarks}
-            oninput=${(e) => this.setState({ remarks: e.target.value })}
+            value=${this.props.remarks}
+            oninput=${(e) => this.props.onRemarksInput(e.target.value)}
             autocomplete="off"
           />
         </label>
-        <input type="submit" value=${this.props.editing ? "Update" : "Add"} />
-        ${" "}${this.renderInfo()}
+        <input type="submit" value=${this.props.num ? "Update" : "Add"} />
+        ${" "}${this.renderInfo()} ${this.renderClear()}
       </form>
     `
   }
 
   renderHeader() {
-    if (this.props.editing)
-      return html`<h2>Edit Log Entry ${this.props.num}</h2>`
+    if (this.props.num) return html`<h2>Edit Log Entry ${this.props.num}</h2>`
 
-    return html`<h2>Add Log Entry (${this.props.num})</h2>`
+    return html`<h2>Add Log Entry (${this.props.nextNum})</h2>`
   }
 
   renderInfo() {
-    if (this.state.error)
-      return html`<em class="error">${this.state.error}</em>`
+    if (this.props.error)
+      return html`<em class="error">${this.props.error}</em>`
 
-    if (this.state.info === null) return null
-    if (this.state.info === false) return html`<span>not found</span>`
+    if (this.props.info === null) return null
+    if (this.props.info === false) return html`<span>not found</span>`
 
     return html`
       <span>
-        ${this.state.info.first_name} ${this.state.info.last_name},${" "}
-        ${this.state.info.city}, ${this.state.info.state}${" "}
-        (${this.state.info.country})
+        ${this.props.info.first_name} ${this.props.info.last_name},${" "}
+        ${this.props.info.city}, ${this.props.info.state}${" "}
+        (${this.props.info.country})
       </span>
     `
+  }
+
+  renderClear() {
+    if (!present(this.props.call_sign) && !present(this.props.remarks))
+      return null
+
+    return html`<span
+      class="linkish"
+      onclick=${() => {
+        this.props.onClear()
+        this.focus()
+      }}
+    >
+      cancel
+    </span>`
   }
 }
 
