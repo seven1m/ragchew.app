@@ -213,7 +213,7 @@ get '/net/:id/details' do
   end
 
   content_type 'application/json'
-  return {
+  {
     checkins:,
     coords:,
     messages:,
@@ -222,6 +222,10 @@ get '/net/:id/details' do
     favorites:,
     lastUpdatedAt: net.fully_updated_at,
   }.to_json
+rescue NetInfo::NotFoundError
+  status 404
+  content_type 'application/json'
+  { error: 'net not found' }.to_json
 end
 
 get '/create-net' do
