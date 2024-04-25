@@ -66,8 +66,8 @@ class Net extends Component {
         checkins=${this.state.checkins}
         favorites=${this.state.favorites}
         onEditEntry=${this.handleEditEntry.bind(this)}
-        removeEntryFromView=${this.removeEntryFromView.bind(this)}
-        highlightEntry=${this.highlightEntry.bind(this)}
+        removeCheckinFromMemory=${this.removeCheckinFromMemory.bind(this)}
+        highlightCheckinInMemory=${this.highlightCheckinInMemory.bind(this)}
         isLogger=${this.props.isLogger}
       />
 
@@ -164,7 +164,7 @@ class Net extends Component {
       preferred_name: info.first_name,
       checked_in_at: dayjs().format(),
     }
-    this.addOrUpdateEntry(payload)
+    this.addOrUpdateCheckinInMemory(payload)
     try {
       const response = await fetch(`/log/${this.props.netId}`, {
         method: "POST",
@@ -189,13 +189,13 @@ class Net extends Component {
             error: `There was an unknown error (${response.status})`,
           })
         }
-        this.removeEntryFromView(this.props.num)
+        this.removeCheckinFromMemory(this.props.num)
         return false
       }
     } catch (error) {
       console.error(error)
       this.setState({ error: `There was an error: ${error}` })
-      this.removeEntryFromView(this.props.num)
+      this.removeCheckinFromMemory(this.props.num)
       return false
     }
   }
@@ -210,9 +210,7 @@ class Net extends Component {
     this.formRef.current.focus()
   }
 
-  // This just superficially updates the entry table in memory.
-  addOrUpdateEntry(entry) {
-    console.log(entry)
+  addOrUpdateCheckinInMemory(entry) {
     const index = this.state.checkins.findIndex((c) => c.num === entry.num)
     if (!entry.num || index === -1) {
       entry.num = this.nextNum()
@@ -224,8 +222,7 @@ class Net extends Component {
     }
   }
 
-  // This just superficially updates the entry table in memory.
-  removeEntryFromView(num) {
+  removeCheckinFromMemory(num) {
     const index = this.state.checkins.findIndex((c) => c.num === num)
 
     if (this.state.checkins.length <= 1) {
@@ -242,8 +239,7 @@ class Net extends Component {
     this.setState({ checkins })
   }
 
-  // This just superficially updates the entry table in memory.
-  highlightEntry(num) {
+  highlightCheckinInMemory(num) {
     const checkins = this.state.checkins.map((checkin) => ({
       ...checkin,
       currently_operating: checkin.num === num,
@@ -298,8 +294,8 @@ class Checkins extends Component {
                 netId: this.props.netId,
                 favorited: this.props.favorites.indexOf(checkin.call_sign) > -1,
                 onEditEntry: this.props.onEditEntry,
-                removeEntryFromView: this.props.removeEntryFromView,
-                highlightEntry: this.props.highlightEntry,
+                removeCheckinFromMemory: this.props.removeCheckinFromMemory,
+                highlightCheckinInMemory: this.props.highlightCheckinInMemory,
                 isLogger: this.props.isLogger,
               })
             )}
@@ -336,7 +332,7 @@ class CheckinRow extends Component {
         }
       )
       if (response.status === 200) {
-        this.props.removeEntryFromView(this.props.num)
+        this.props.removeCheckinFromMemory(this.props.num)
       }
       this.setState({ deleting: false, deletingTimeout: null })
     } else {
@@ -359,7 +355,7 @@ class CheckinRow extends Component {
       }
     )
     if (response.status === 200) {
-      this.props.highlightEntry(this.props.num)
+      this.props.highlightCheckinInMemory(this.props.num)
     } else {
       console.error(`Error highlighting entry: ${response.status}`)
     }
