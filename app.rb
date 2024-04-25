@@ -309,6 +309,16 @@ delete '/log/:id/:num' do
   return { success: true }.to_json
 end
 
+patch '/highlight/:id/:num' do
+  @user = get_user
+  require_logger!
+
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger.highlight!(params.fetch(:num).to_i)
+
+  return { success: true }.to_json
+end
+
 post '/close-net/:id' do
   @user = get_user
   require_logger!

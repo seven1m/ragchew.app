@@ -67,6 +67,7 @@ class Net extends Component {
         favorites=${this.state.favorites}
         onEditEntry=${this.handleEditEntry.bind(this)}
         removeEntryFromView=${this.removeEntryFromView.bind(this)}
+        highlightEntry=${this.highlightEntry.bind(this)}
         isLogger=${this.props.isLogger}
       />
 
@@ -240,6 +241,15 @@ class Net extends Component {
     ]
     this.setState({ checkins })
   }
+
+  // This just superficially updates the entry table in memory.
+  highlightEntry(num) {
+    const checkins = this.state.checkins.map((checkin) => ({
+      ...checkin,
+      currently_operating: checkin.num === num,
+    }))
+    this.setState({ checkins })
+  }
 }
 
 class Map extends Component {
@@ -289,6 +299,7 @@ class Checkins extends Component {
                 favorited: this.props.favorites.indexOf(checkin.call_sign) > -1,
                 onEditEntry: this.props.onEditEntry,
                 removeEntryFromView: this.props.removeEntryFromView,
+                highlightEntry: this.props.highlightEntry,
                 isLogger: this.props.isLogger,
               })
             )}
@@ -333,6 +344,24 @@ class CheckinRow extends Component {
         this.setState({ deleting: false, deletingTimeout: null })
       }, 3000)
       this.setState({ deleting: true, deletingTimeout })
+    }
+  }
+
+  async handleHighlight(e) {
+    e.preventDefault()
+    const response = await fetch(
+      `/highlight/${this.props.netId}/${this.props.num}`,
+      {
+        method: "PATCH",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      }
+    )
+    if (response.status === 200) {
+      this.props.highlightEntry(this.props.num)
+    } else {
+      console.error(`Error highlighting entry: ${response.status}`)
     }
   }
 
@@ -404,6 +433,8 @@ class CheckinRow extends Component {
       >
         delete ${this.state.deleting && "(click again)"}
       </button>
+      ${" "}
+      <button onclick=${this.handleHighlight.bind(this)}>highlight</button>
     `
   }
 

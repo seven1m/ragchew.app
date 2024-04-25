@@ -57,6 +57,10 @@ class NetLogger
     @net_info.update_net_right_now_with_wreckless_disregard_for_the_last_update!
   end
 
+  def highlight!(num)
+    send_update!([], highlight_num: num)
+  end
+
   def next_num
     @net_info.net.checkins.maximum(:num).to_i + 1
   end
@@ -98,7 +102,7 @@ class NetLogger
 
   private
 
-  def send_update!(entries)
+  def send_update!(entries, highlight_num: current_highlight_num)
     lines = entries.map do |entry|
       mode = entry.fetch(:mode)
       raise 'mode must be A or U' unless %w[A U].include?(mode)
@@ -124,7 +128,6 @@ class NetLogger
       ].map { |cell| cell.present? ? cell.to_s.tr('|~`', ' ') : ' ' }.join('|')
     end
 
-    highlight_num = 1 # TODO
     lines << "`#{highlight_num}|future use 2|future use 3|`^future use 4|future use 5^"
     data = lines.join('~')
 
@@ -136,5 +139,9 @@ class NetLogger
       'Token' => password,
       'UpdatesFromNetControl' => data,
     )
+  end
+
+  def current_highlight_num
+    @net_info.net.checkins.find_by(currently_operating: true)&.num || 0
   end
 end
