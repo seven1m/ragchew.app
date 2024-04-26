@@ -6,13 +6,21 @@
 
 <p>
   You are about to start a net. Only do this if you absolutely know what you are doing.
-  If you are trying to participate in a net or join a net, this is not where you do that.
-  Instead, go back <a href="/">home</a> and find the net there. If it's not there, then
-  whoever is responsible for running and/or logging the net hasn't started it yet.
+  If you are trying to participate in a net or join a net or call into a net, this is not
+  where you do that. Instead, go back <a href="/">home</a> and find the net there.
+  If it's not there, then whoever is responsible for running and/or logging the net hasn't
+  started it yet.
 </p>
 
 <p>
   <strong>Do not continue unless you are a person in charge of this net!</strong>
+</p>
+
+<p class="danger-callout">
+  <strong>Also, this is a BETA feature.</strong> It is very likely you will encounter bugs,
+  and if you're lucky they won't be the kind of bugs that eat your net and all your ham buddies.
+  If you aren't willing to be embarrassed by bad software, please don't use this feature.
+  If, on the other hand, you want to help me work out the kinks, carry on, friend!
 </p>
 
 <div data-component="CreateNet" data-props="<%= json_for_html_attribute({ net_control: @user.call_sign }) %>"></div>
