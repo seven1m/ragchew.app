@@ -1,0 +1,93 @@
+/* General */
+
+.timestamps { float: right; font-size: smaller; font-style: italic; }
+
+.right { float: right; }
+
+.user-nav { float: right; text-align: right; }
+
+.index-map-explanation { color: #999; font-size: smaller; font-style: italic; }
+
+.disclaimer { margin-top: 50px; font-size: smaller; color: #999; }
+.disclaimer a, .disclaimer a:visited { color: #999; }
+
+/* Layout */
+
+header { clear: both; margin-top: 50px; }
+header.flex { display: flex; justify-content: space-between; }
+header.flex .header-col-grow { flex-grow: 1; }
+
+h1 { margin-top: 10px; }
+h2 { border-bottom: 3px double #999; }
+
+body { max-width: 100%; }
+
+footer { margin-top: 50px; }
+footer p { font-size: smaller; color: #999; }
+footer a, footer a:visited { color: #999; }
+
+.columns { display: flex; justify-content: space-between; }
+.columns .column { flex-grow: 1; }
+
+/* Net */
+
+span.Offline { color: #ccc; }
+
+tr.currently-operating td { background-color: #fcf; }
+tr.checked-out td, tr.checked-out td a { color: #999; }
+td { white-space: nowrap; }
+td.can-wrap { white-space: normal; min-width: 150px; }
+tr.odd { background-color: #eee; }
+tr.details { border-bottom: none; }
+tr.remarks { color: #777; }
+td.avatar-cell { height: 64px; }
+
+.blue-screen { background-color: #e8f4f8; }
+
+.favorite-star { width: 15px; height: 15px; max-width: none; cursor: pointer; }
+
+.net-logo { max-height: 125px; }
+#net-map { height: 500px; }
+
+.logger-control, .logger-control .material-symbols-outlined { font-size: 1.0em; }
+
+@media only screen and (max-height: 800px) {
+  #net-map { height: 300px; }
+}
+
+/* Forms */
+
+form.inline { display: inline; }
+
+form.wide input[type="text"] { width: 800px; max-width: 100%; }
+form.wide textarea { width: 800px; max-width: 100%; }
+
+form label { display: block; margin-bottom: 20px; }
+form label.sub { margin-top: -20px; }
+
+input, select { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
+
+/* Misc */
+
+em.highlight { font-style: normal; background-color: #ffc; }
+
+.error, .danger { color: red; }
+.danger-callout { background-color: #fcc; padding: 15px; border: 1px solid red; }
+
+ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
+
+.admin-only { background-color: #f9c; padding: 15px; }
+
+.linkish { text-decoration: underline; cursor: pointer; }
+.linkish:hover { color: dodgerblue; }
+
+/* Mobile */
+
+@media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
+  .table-wrapper { overflow-x: auto; }
+  #net-map { height: 300px; }
+  .columns { display: block; }
+  .columns .column { flex-grow: 0; }
+  header.flex { flex-direction: column-reverse; }
+  header.flex img { margin: 20px 0; }
+}

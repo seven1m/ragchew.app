@@ -15,67 +15,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/images/logo.svg" type="image/svg">
     <link rel="stylesheet" href="/typesafe.css">
-    <script src="/main.js?_ts=<%== File.stat('public/main.js').mtime.to_i %>"></script>
-    <style>
-      span.Offline { color: #ccc; }
-      em.highlight { font-style: normal; background-color: #ffc; }
-      h1 { margin-top: 10px; }
-      h2 { border-bottom: 3px double #999; }
-      body { max-width: 100%; }
-      .timestamps { float: right; font-size: smaller; font-style: italic; }
-      footer { margin-top: 50px; }
-      footer p { font-size: smaller; color: #999; }
-      footer a, footer a:visited { color: #999; }
-      tr.currently-operating td { background-color: #fcf; }
-      tr.checked-out td, tr.checked-out td a { color: #999; }
-      td { white-space: nowrap; }
-      td.can-wrap { white-space: normal; min-width: 150px; }
-      tr.odd { background-color: #eee; }
-      tr.details { border-bottom: none; }
-      tr.remarks { color: #777; }
-      td.avatar-cell { height: 64px; }
-      .error, .danger { color: red; }
-      .danger-callout { background-color: #fcc; padding: 15px; border: 1px solid red; }
-      input, select { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
-      .user-nav { float: right; text-align: right; }
-      .blue-screen { background-color: #e8f4f8; }
-      .index-map-explanation { color: #999; font-size: smaller; font-style: italic; }
-      .favorite-star { width: 15px; height: 15px; max-width: none; cursor: pointer; }
-      .disclaimer { margin-top: 50px; font-size: smaller; color: #999; }
-      .disclaimer a, .disclaimer a:visited { color: #999; }
-      .right { float: right; }
-      form.inline { display: inline; }
-      ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
-      .columns { display: flex; justify-content: space-between; }
-      .columns .column { flex-grow: 1; }
-      .net-logo { max-height: 125px; }
-      form.wide input[type="text"] { width: 800px; max-width: 100%; }
-      form.wide textarea { width: 800px; max-width: 100%; }
-      form label { display: block; margin-bottom: 20px; }
-      form label.sub { margin-top: -20px; }
-      .breadcrumbs { }
-      header { clear: both; margin-top: 50px; }
-      header.flex { display: flex; justify-content: space-between; }
-      header.flex .header-col-grow { flex-grow: 1; }
-      #net-map { height: 500px; }
-      .admin-only { background-color: #f9c; padding: 15px; }
-      .linkish { text-decoration: underline; cursor: pointer; }
-      .linkish:hover { color: dodgerblue; }
-      .logger-control, .logger-control .material-symbols-outlined { font-size: 1.0em; }
-      @media only screen and (max-height: 800px) {
-        #net-map { height: 300px; }
-      }
-      @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
-        .table-wrapper { overflow-x: auto; }
-        #net-map { height: 300px; }
-        .columns { display: block; }
-        .columns .column { flex-grow: 0; }
-        header.flex { flex-direction: column-reverse; }
-        header.flex img { margin: 20px 0; }
-      }
-    </style>
+    <link rel="stylesheet" href="/main.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"/>
+    <script src="/main.js?_ts=<%== File.stat('public/main.js').mtime.to_i %>"></script>
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"></script>
   </head>
