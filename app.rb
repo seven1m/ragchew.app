@@ -271,20 +271,6 @@ post '/create-net' do
   redirect "/net/#{CGI.escape(params[:name])}"
 end
 
-post '/log/:id' do
-  @user = get_user
-  require_logger!
-
-  @params = params.merge(JSON.parse(request.body.read))
-
-  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
-  logger.append!(params)
-
-  content_type 'application/json'
-  status 201
-  return { success: true }.to_json
-end
-
 patch '/log/:id/:num' do
   @user = get_user
   require_logger!
@@ -295,7 +281,6 @@ patch '/log/:id/:num' do
   logger.update!(params.fetch(:num).to_i, params)
 
   content_type 'application/json'
-  status 201
   return { success: true }.to_json
 end
 

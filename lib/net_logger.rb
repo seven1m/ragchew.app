@@ -16,11 +16,6 @@ class NetLogger
 
   attr_reader :net_info, :password, :fetcher
 
-  def append!(entry)
-    send_update!([entry.merge(mode: 'A', num: next_num)])
-    @net_info.update_net_right_now_with_wreckless_disregard_for_the_last_update!
-  end
-
   def insert!(num, entry)
     entries = net_info.net.checkins.where('num >= ?', num).order(:num).map do |entry|
       entry.attributes.symbolize_keys.merge(
@@ -35,7 +30,9 @@ class NetLogger
   end
 
   def update!(num, entry)
-    entries = [entry.merge(mode: 'U', num:)]
+    existing = net_info.net.checkins.where('num >= ?', num).count > 0
+    mode = existing ? 'U' : 'A'
+    entries = [entry.merge(mode:, num:)]
     send_update!(entries)
     @net_info.update_net_right_now_with_wreckless_disregard_for_the_last_update!
   end
@@ -48,8 +45,9 @@ class NetLogger
       )
     end
     blank_attributes = Tables::Checkin.new.attributes
+    highest_num = net_info.net.checkins.maximum(:num)
     entries << blank_attributes.symbolize_keys.merge(
-      num:,
+      num: highest_num,
       mode: 'U',
       call_sign: '',
     )
@@ -59,10 +57,11 @@ class NetLogger
 
   def highlight!(num)
     send_update!([], highlight_num: num)
+    @net_info.update_net_right_now_with_wreckless_disregard_for_the_last_update!
   end
 
   def next_num
-    @net_info.net.checkins.maximum(:num).to_i + 1
+    @net_info.net.checkins.not_blank.maximum(:num).to_i + 1
   end
 
   def self.create_net!(name:, password:, frequency:, net_control:, user:, mode:, band:, enable_messaging: true, update_interval: 20000, misc_net_parameters: nil, host: 'www.netlogger.org')
@@ -107,13 +106,16 @@ class NetLogger
       mode = entry.fetch(:mode)
       raise 'mode must be A or U' unless %w[A U].include?(mode)
 
+      name = entry.fetch(:name).presence ||
+             [entry[:first_name], entry[:last_name]].compact.join(' ')
+
       [
         mode,
         entry.fetch(:num),
         entry.fetch(:call_sign).upcase,
         entry[:city],
         entry[:state],
-        [entry[:first_name], entry[:last_name]].compact.join(' '),
+        name,
         entry[:remarks],
         '', # unknown
         entry[:county],

@@ -102,7 +102,10 @@ class Net extends Component {
   }
 
   nextNum() {
-    return Math.max(...this.state.checkins.map((checkin) => checkin.num), 0) + 1
+    const checkins = this.state.checkins.filter(
+      (checkin) => present(checkin.call_sign) || present(checkin.remarks)
+    )
+    return Math.max(...checkins.map((checkin) => checkin.num), 0) + 1
   }
 
   handleCallSignInput(call_sign) {
@@ -139,18 +142,19 @@ class Net extends Component {
   }
 
   async handleLogFormSubmit() {
-    if (!present(this.state.editing.call_sign)) return
+    const { call_sign, remarks } = this.state.editing
+    if (!present(call_sign) && !present(remarks)) return
 
     this.setState({ submitting: true, error: null })
 
     let info = this.state.info
     if (!info) {
       try {
-        const response = await fetch(`/station/${this.state.editing.call_sign}`)
+        const response = await fetch(`/station/${call_sign}`)
         info = await response.json()
-        if (info.error) info = { call_sign: this.state.editing.call_sign }
+        if (info.error) info = { call_sign }
       } catch (error) {
-        info = { call_sign: this.state.editing.call_sign }
+        info = { call_sign }
         console.error(`Error fetching station: ${error}`)
       }
     }
@@ -166,15 +170,18 @@ class Net extends Component {
     }
     this.addOrUpdateCheckinInMemory(payload)
     try {
-      const response = await fetch(`/log/${this.props.netId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify(payload),
-      })
-      if (response.status === 201) {
+      const response = await fetch(
+        `/log/${this.props.netId}/${this.state.editing.num}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify(payload),
+        }
+      )
+      if (response.status === 200) {
         this.handleLogFormClear()
         return true
       } else {
@@ -369,7 +376,7 @@ class CheckinRow extends Component {
     if (!present(this.props.call_sign)) return null
 
     return html`<tr class="details ${this.rowClass()}">
-      <td>${this.props.num}</td>
+      <td>${this.props.num} ${this.renderLoggerControls()}</td>
       <td class="avatar-cell">
         <a
           href="/station/${encodeURIComponent(this.props.call_sign)}/image"
@@ -390,7 +397,6 @@ class CheckinRow extends Component {
         >
           ${this.props.call_sign}
         </a>
-        ${" "}${this.renderLoggerControls()}
       </td>
       <td>${this.props.name}</td>
       <td>${formatTime(this.props.checked_in_at)}</td>
@@ -410,7 +416,7 @@ class CheckinRow extends Component {
       <tr class="remarks ${this.rowClass()}">
         ${present(this.props.call_sign)
           ? html`<td></td>`
-          : html`<td>${this.props.num}</td>`}
+          : html`<td>${this.props.num} ${this.renderLoggerControls()}</td>`}
         <td></td>
         <td colspan="9" class="can-wrap">${this.props.remarks}</td>
       </tr>
@@ -421,16 +427,21 @@ class CheckinRow extends Component {
     if (!this.props.isLogger) return null
 
     return html`
-      <button onclick=${this.handleEdit.bind(this)}>edit</button>
+      <button class="logger-control" onclick=${this.handleEdit.bind(this)}>
+        <span class="material-symbols-outlined">edit</span>
+      </button>
       ${" "}
       <button
         onclick=${this.handleDelete.bind(this)}
-        class=${this.state.deleting && "danger"}
+        class=${`logger-control ${this.state.deleting && "danger"}`}
       >
-        delete ${this.state.deleting && "(click again)"}
+        <span class="material-symbols-outlined">delete</span>
+        ${this.state.deleting && " (click again to delete)"}
       </button>
       ${" "}
-      <button onclick=${this.handleHighlight.bind(this)}>highlight</button>
+      <button class="logger-control" onclick=${this.handleHighlight.bind(this)}>
+        <span class="material-symbols-outlined">highlight</span>
+      </button>
     `
   }
 
