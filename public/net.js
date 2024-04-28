@@ -36,14 +36,14 @@ class Net extends Component {
       cluster: this.props.pusher.cluster,
     })
     const channel = pusher.subscribe(this.props.pusher.channel)
-    channel.bind("net-updated", (data) => {
+    channel.bind("net-updated", ({ updatedAt, changes }) => {
       if (this.state.fetchInFlight) return
-      if (data.updatedAt === this.state.lastUpdatedAt) return
+      if (updatedAt === this.state.lastUpdatedAt) return
 
-      console.log("Channel indicates net needs update")
+      console.log(`Channel indicates net needs update (changes: ${changes}).`)
       this.updateData()
 
-      console.log("Resyncing update interval")
+      // resync the update interval
       clearIntervalWithBackoff(window.updateInterval)
       this.startUpdatingRegularly()
     })
