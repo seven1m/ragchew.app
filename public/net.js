@@ -66,9 +66,11 @@ class Net extends Component {
 
   async updateData() {
     try {
+      if (this.state.fetchInFlight) return
       this.setState({ fetchInFlight: true })
       const response = await fetch(`/net/${this.props.netId}/details`)
       this.setState({ fetchInFlight: false })
+
       if (response.status === 404) {
         location.reload() // show closed-net page
       } else {
