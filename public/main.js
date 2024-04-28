@@ -186,5 +186,5 @@ function setIntervalWithBackoff(func, delay, backoff, max) {
 }
 
 function clearIntervalWithBackoff(id) {
-  intervalWithBackoffIntervals[id] = false
+  delete intervalWithBackoffIntervals[id]
 }

@@ -1,6 +1,7 @@
-import { h, render, Component, createRef } from "https://esm.sh/preact"
-import htm from "https://esm.sh/htm"
-import dayjs from "https://esm.sh/dayjs"
+import { h, render, Component, createRef } from "https://esm.sh/preact@10.20.2"
+import htm from "https://esm.sh/htm@3.1.1"
+import dayjs from "https://esm.sh/dayjs@1.11.10"
+import Pusher from "https://esm.sh/pusher-js@8.4.0-rc2"
 
 const html = htm.bind(h)
 
@@ -20,15 +21,41 @@ class Net extends Component {
     },
     info: null,
     error: null,
+    lastUpdatedAt: null,
   }
 
   formRef = createRef()
 
   componentDidMount() {
     this.updateData()
+    this.startUpdatingRegularly()
+    const pusher = new Pusher(this.props.pusher.key, {
+      channelAuthorization: {
+        endpoint: this.props.pusher.authEndpoint,
+      },
+      cluster: this.props.pusher.cluster,
+    })
+    const channel = pusher.subscribe(this.props.pusher.channel)
+    channel.bind("net-updated", (data) => {
+      if (this.state.fetchInFlight) return
+      if (data.updatedAt === this.state.lastUpdatedAt) return
+
+      console.log("Channel indicates net needs update")
+      this.updateData()
+
+      console.log("Resyncing update interval")
+      clearIntervalWithBackoff(window.updateInterval)
+      this.startUpdatingRegularly()
+    })
+    channel.bind("message", ({ message }) => {
+      this.setState({ messages: [...this.state.messages, message] })
+    })
+  }
+
+  startUpdatingRegularly() {
     const minute = 60 * 1000
     const hour = 60 * minute
-    setIntervalWithBackoff(
+    window.updateInterval = setIntervalWithBackoff(
       this.updateData.bind(this),
       this.props.updateInterval * 1000,
       0,
@@ -38,7 +65,9 @@ class Net extends Component {
 
   async updateData() {
     try {
+      this.setState({ fetchInFlight: true })
       const response = await fetch(`/net/${this.props.netId}/details`)
+      this.setState({ fetchInFlight: false })
       if (response.status === 404) {
         location.reload() // show closed-net page
       } else {

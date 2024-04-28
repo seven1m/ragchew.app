@@ -11,6 +11,7 @@ class NetInfo
   MIN_LONGITUDES_FOR_MAJORITY = 3
   MIN_CENTER_RADIUS_IN_METERS = 50000
   MAX_CENTER_RADIUS_TO_SHOW = 3000000
+  LOCK_TIMEOUT = 2
 
   class NotFoundError < StandardError; end
 
@@ -33,8 +34,7 @@ class NetInfo
   def update!
     return unless cache_needs_updating?
 
-    Tables::Net.with_advisory_lock(:update_net_cache, timeout_seconds: 2) do
-      @record.reload
+    with_lock do
       if cache_needs_updating?
         update_cache
       end
@@ -42,8 +42,7 @@ class NetInfo
   end
 
   def update_net_right_now_with_wreckless_disregard_for_the_last_update!
-    Tables::Net.with_advisory_lock(:update_net_cache, timeout_seconds: 2) do
-      @record.reload
+    with_lock do
       update_cache
     end
   end
@@ -119,6 +118,21 @@ class NetInfo
     #Callsign:     KI5ZDF-TIM MORGAN
     #IsNetControl: X
     #Message:      hello just testing https://ragchew.app
+
+    with_lock do
+      message_record = @record.messages.create!(
+        log_id: nil, # temporary messages don't have a log_id
+        call_sign: name_for_chat(user),
+        message:,
+        sent_at: Time.now,
+      )
+      Pusher::Client.from_env.trigger(
+        "private-net-#{@record.id}",
+        'message',
+        message: message_record.as_json
+      )
+    end
+
     fetcher = Fetcher.new(@record.host)
     fetcher.post(
       'SendInstantMessage.php',
@@ -133,12 +147,22 @@ class NetInfo
   def update_cache
     data = fetch
 
-    update_checkins(data[:checkins], currently_operating: data[:currently_operating])
-    update_monitors(data[:monitors])
-    update_messages(data[:messages])
+    changes = update_checkins(data[:checkins], currently_operating: data[:currently_operating])
+    changes += update_monitors(data[:monitors])
+    changes += update_messages(data[:messages])
 
-    # do this last
+    # update this last
     update_net_info(data[:info])
+
+    # let connected clients know
+    if changes > 0
+      Pusher::Client.from_env.trigger(
+        "private-net-#{@record.id}",
+        'net-updated',
+        changes:,
+        updatedAt: @record.updated_at.rfc3339,
+      )
+    end
   end
 
   def update_net_info(info)
@@ -183,13 +207,17 @@ class NetInfo
   end
 
   def update_checkins(checkins, currently_operating:)
-    records = @record.checkins.all
+    records = @record.checkins.to_a
+
+    changes = 0
 
     checkins.each do |checkin|
       if (existing = records.detect { |r| r.num == checkin[:num] })
         existing.update!(checkin)
+        changes += 1 if existing.previous_changes.any?
       else
-        @record.checkins.create!(checkin)
+        records << @record.checkins.create!(checkin)
+        changes += 1
       end
       Tables::Station.find_or_initialize_by(call_sign: checkin[:call_sign]).update!(
         last_heard_on: @record.name,
@@ -197,31 +225,58 @@ class NetInfo
       )
     end
 
-    if currently_operating && records.detect { |r| r.currently_operating? }&.num != currently_operating
-      @record.checkins.update_all("currently_operating = (num = #{currently_operating.to_i})")
+    stored_currently_operating = records.detect { |r| r.currently_operating? }&.num
+    if currently_operating && stored_currently_operating != currently_operating
+      old_record = records.detect { |r| r.num == stored_currently_operating }
+      new_record = records.detect { |r| r.num == currently_operating }
+      if old_record
+        old_record.update!(currently_operating: false)
+        changes += 1
+      end
+      if new_record
+        new_record.update!(currently_operating: true)
+        changes += 1
+      end
     end
+
+    changes
   end
 
   def update_monitors(monitors)
+    changes = 0
+
     records = @record.monitors.all
     monitors.each do |monitor|
       if (existing = records.detect { |r| r.call_sign == monitor[:call_sign] })
         existing.update!(monitor)
+        changes += 1 if existing.previous_changes.any?
       else
         @record.monitors.create!(monitor)
+        changes += 1
       end
     end
+
+    changes
   end
 
   def update_messages(messages)
+    changes = 0
+
     records = @record.messages.all
     messages.each do |message|
       if (existing = records.detect { |r| r.log_id == message[:log_id] })
         existing.update!(message)
+        changes += 1 if existing.previous_changes.any?
       else
         @record.messages.create!(message)
+        changes += 1
       end
     end
+
+    temporary_messages_to_cleanup = records.select { |r| r.log_id.nil? }
+    temporary_messages_to_cleanup.each(&:destroy)
+
+    changes
   end
 
   def cache_needs_updating?
@@ -418,5 +473,12 @@ class NetInfo
 
   def qrz
     @qrz ||= QrzAutoSession.new
+  end
+
+  def with_lock
+    Tables::Net.with_advisory_lock(:update_net_cache, timeout_seconds: LOCK_TIMEOUT) do
+      @record.reload
+      yield
+    end
   end
 end

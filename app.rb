@@ -83,6 +83,16 @@ helpers do
     ts = File.stat(File.join('public', filename)).mtime.to_i
     "<script type=\"module\" src=\"/#{filename}?_ts=#{ts}\"></script>"
   end
+
+  def pusher_url
+    @pusher_url ||= URI.parse(ENV.fetch('PUSHER_URL'))
+  end
+
+  def pusher_key = pusher_url.user
+
+  def pusher_cluster
+    @pusher_cluster ||= pusher_url.host.split('.').first.split('-').last
+  end
 end
 
 include DOTIW::Methods
@@ -220,7 +230,7 @@ get '/net/:id/details' do
     messagesCount:,
     monitors:,
     favorites:,
-    lastUpdatedAt: net.fully_updated_at,
+    lastUpdatedAt: net.updated_at.rfc3339,
   }.to_json
 rescue NetInfo::NotFoundError
   status 404
@@ -875,6 +885,14 @@ patch '/admin/clubs.json' do
     existing.values.each(&:destroy)
     erb "#{created} created, #{updated} updated, #{deleted} deleted"
   end
+end
+
+post '/pusher/auth/:net_id' do
+  @user = get_user
+  require_user!
+
+  content_type 'application/json'
+  Pusher::Client.from_env.authenticate("private-net-#{params[:net_id]}", params[:socket_id]).to_json
 end
 
 get '/sitemap.txt' do
