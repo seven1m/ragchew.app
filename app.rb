@@ -201,7 +201,8 @@ rescue NetInfo::NotFoundError
 end
 
 get '/net/:id/details' do
-  user = get_user
+  @user = get_user
+  require_user!
 
   service = NetInfo.new(id: params[:id])
 
@@ -215,12 +216,15 @@ get '/net/:id/details' do
     end
   end.compact
 
-  messagesCount = net.messages.count
-  if user
-    messages = net.messages.order(:sent_at).to_a
-    monitors = net.monitors.order(:call_sign).to_a
-    favorites = user.favorites.pluck(:call_sign)
+  monitoring_this_net = @user.monitoring_net == net
+  if monitoring_this_net
+    @user.update!(monitoring_net_last_refreshed_at: Time.now)
   end
+
+  messagesCount = net.messages.count
+  messages = monitoring_this_net ? net.messages.order(:sent_at).to_a : []
+  monitors = net.monitors.order(:call_sign).to_a
+  favorites = @user.favorites.pluck(:call_sign)
 
   content_type 'application/json'
   {
@@ -231,6 +235,7 @@ get '/net/:id/details' do
     monitors:,
     favorites:,
     lastUpdatedAt: net.updated_at.rfc3339,
+    monitoringThisNet: monitoring_this_net,
   }.to_json
 rescue NetInfo::NotFoundError
   status 404

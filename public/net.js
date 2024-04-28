@@ -22,6 +22,7 @@ class Net extends Component {
     info: null,
     error: null,
     lastUpdatedAt: null,
+    monitoringThisNet: this.props.monitoringThisNet,
   }
 
   formRef = createRef()
@@ -118,7 +119,7 @@ class Net extends Component {
 
       <${Messages}
         messages=${this.state.messages}
-        monitoringThisNet=${this.props.monitoringThisNet}
+        monitoringThisNet=${this.state.monitoringThisNet}
         messagesCount=${this.state.messagesCount}
         netId=${this.props.netId}
         userCallSign=${this.props.userCallSign}
