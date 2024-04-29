@@ -5,6 +5,14 @@
 
 <h1>Users</h1>
 
+<form action="/admin/users">
+  <input name="call_sign" placeholder="call sign" value="<%== params[:call_sign].to_s.upcase %>"/>
+  <input type="submit" value="search"/>
+  <% if params[:call_sign] %>
+    <a href="/admin/users">clear</a>
+  <% end %>
+</form>
+
 <dl>
   <dt>Total user count:</dt>
   <dd><%== @user_count_total %></dd>
@@ -35,7 +43,7 @@
       <% @users.each do |user| %>
         <tr>
           <td>
-            <a href="https://www.qrz.com/db/<%== url_escape(user.call_sign) %>">
+            <a href="/admin/users/<%== user.id %>">
               <%== user.call_sign %>
             </a>
           </td>
@@ -56,3 +64,13 @@
     </tbody>
   </table>
 </div>
+
+<p>
+  <% if params[:offset] %>
+    <a href="/admin/users<%== params[:call_sign] ? "?name=#{url_escape(params[:call_sign])}" : '' %>">start</a>
+  <% end %>
+  <% if params[:offset] && @more_pages %>|<% end %>
+  <% if @more_pages %>
+    <a href="/admin/users?offset=<%== params[:offset].to_i + @per_page %><%== params[:call_sign] ? "&call_sign=#{url_escape(params[:call_sign])}" : '' %>">more</a>
+  <% end %>
+</p>

@@ -1,0 +1,21 @@
+<p>
+  <a href="/">home</a> |
+  <a href="/admin">admin</a> |
+  <a href="/admin/users">users</a>
+</p>
+
+<h1>User: <%== @user_to_edit.call_sign %></h1>
+
+<pre><code><%== JSON.pretty_generate(@user_to_edit.attributes) %></code></pre>
+
+<form action="/admin/users/<%= @user_to_edit.id %>" method="POST">
+  <label>
+    <input type="checkbox" name="admin" value="true" <%= @user_to_edit.admin_flag? ? 'checked' : '' %>/>
+    Admin
+  </label>
+  <label>
+    <input type="checkbox" name="net_logger" value="true" <%= @user_to_edit.net_logger? ? 'checked' : '' %>/>
+    Net Logger (beta)
+  </label>
+  <input type="submit" value="Save"/>
+</form>

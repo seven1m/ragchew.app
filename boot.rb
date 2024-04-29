@@ -16,6 +16,15 @@ require 'uri'
 require 'yaml'
 require 'with_advisory_lock'
 
+template = Erubis::Eruby.new(File.read('config/database.yaml'))
+db_config = YAML.safe_load(template.result)
+env = :development
+ActiveRecord::Base.establish_connection(db_config[env.to_s])
+ActiveRecord::Base.logger = Logger.new($stderr)
+
+# must be required after ActiveRecord database connection is established
+require 'flag_shih_tzu'
+
 require_relative './lib/associate_club_with_nets'
 require_relative './lib/associate_net_with_club'
 require_relative './lib/extensions'
@@ -30,9 +39,3 @@ require_relative './lib/qrz_auto_session'
 require_relative './lib/station_updater'
 require_relative './lib/tables'
 require_relative './lib/update_club_list'
-
-template = Erubis::Eruby.new(File.read('config/database.yaml'))
-db_config = YAML.safe_load(template.result) 
-env = :development
-ActiveRecord::Base.establish_connection(db_config[env.to_s])
-ActiveRecord::Base.logger = Logger.new($stderr)

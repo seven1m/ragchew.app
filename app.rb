@@ -67,12 +67,11 @@ helpers do
   end
 
   def is_admin?
-    admins = ENV.fetch('ADMIN_CALL_SIGNS').split(',')
-    @user && admins.include?(@user.call_sign)
+    @user&.admin?
   end
 
-  def is_logger?
-    @net && @net.name == session[:started_net] && is_admin?
+  def has_net_logger_role?
+    @user&.net_logger?
   end
 
   def json_for_html_attribute(hash)
@@ -245,7 +244,7 @@ end
 
 get '/create-net' do
   @user = get_user
-  require_logger!
+  require_net_logger_role!
 
   check_started_net!
 
@@ -254,7 +253,7 @@ end
 
 post '/create-net' do
   @user = get_user
-  require_logger!
+  require_net_logger_role!
 
   missing = %i[name password frequency band mode net_control].reject do |key|
     params[key].present?
@@ -294,7 +293,7 @@ end
 
 patch '/log/:id/:num' do
   @user = get_user
-  require_logger!
+  require_net_logger_role!
 
   @params = params.merge(JSON.parse(request.body.read))
 
@@ -307,7 +306,7 @@ end
 
 delete '/log/:id/:num' do
   @user = get_user
-  require_logger!
+  require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
   logger.delete!(params.fetch(:num).to_i)
@@ -317,7 +316,7 @@ end
 
 patch '/highlight/:id/:num' do
   @user = get_user
-  require_logger!
+  require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
   logger.highlight!(params.fetch(:num).to_i)
@@ -327,7 +326,7 @@ end
 
 post '/close-net/:id' do
   @user = get_user
-  require_logger!
+  require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
   logger.close_net!
@@ -356,7 +355,7 @@ end
 
 get '/station/:call_sign' do
   @user = get_user
-  require_logger!
+  require_net_logger_role!
 
   content_type 'application/json'
 
@@ -536,7 +535,9 @@ get '/admin/users' do
   @user = get_user
   require_admin!
 
-  @page_title = 'Admin'
+  @page_title = 'Admin - Users'
+
+  @per_page = 100
 
   order = case params[:order]
           when 'call_sign'
@@ -548,7 +549,12 @@ get '/admin/users' do
           when 'last_signed_in_at', nil
             { last_signed_in_at: :desc }
           end
-  @users = Tables::User.order(order).limit(100).to_a
+  scope = Tables::User.order(order)
+  scope = scope.where('call_sign like ?', '%' + params[:call_sign] + '%') if params[:call_sign]
+  scope = scope.offset(params[:offset]) if params[:offset]
+  @more_pages = scope.count > @per_page
+  scope = scope.limit(@per_page)
+  @users = scope.to_a
   @user_count_total = Tables::User.count
   @user_count_last_30_days = Tables::User.where('last_signed_in_at > ?', Time.now - (30 * 24 * 60 * 60)).count
   @user_count_last_7_days = Tables::User.where('last_signed_in_at > ?', Time.now - (7 * 24 * 60 * 60)).count
@@ -558,15 +564,36 @@ get '/admin/users' do
   erb :admin_users
 end
 
+get '/admin/users/:id' do
+  @user = get_user
+  require_admin!
+
+  @page_title = 'Admin - User'
+  @user_to_edit = Tables::User.find(params[:id])
+  erb :admin_user
+end
+
+post '/admin/users/:id' do
+  @user = get_user
+  require_admin!
+
+  @user_to_edit = Tables::User.find(params[:id])
+  @user_to_edit.admin = params[:admin] == 'true'
+  @user_to_edit.net_logger = params[:net_logger] == 'true'
+  @user_to_edit.save!
+
+  redirect "/admin/users/#{params[:id]}"
+end
+
 get '/admin/closed-nets' do
   @user = get_user
   require_admin!
 
   per_page = 20
   scope = Tables::ClosedNet.order(started_at: :desc)
-  scope.where!('name like ?', '%' + params[:name] + '%') if params[:name]
+  scope = scope.where('name like ?', '%' + params[:name] + '%') if params[:name]
   @total_count = scope.count
-  scope.where!('started_at < ?', params[:started_at]) if params[:started_at]
+  scope = scope.where('started_at < ?', params[:started_at]) if params[:started_at]
   @more_pages = scope.count - per_page > 0
   @closed_nets = scope.limit(per_page)
 
@@ -600,7 +627,10 @@ get '/admin/clubs' do
   require_admin!
 
   scope = Tables::Club.order(:name)
-  scope.where!('name like :query or full_name like :query', query: '%' + params[:name] + '%') if params[:name]
+  scope = scope.where(
+    'name like :query or full_name like :query',
+    query: '%' + params[:name] + '%'
+  ) if params[:name]
   @clubs = scope.to_a
 
   erb :admin_clubs
@@ -721,7 +751,7 @@ get '/admin/table/:table' do
   per_page = 100
   klass = Tables.const_get(params[:table].classify)
   scope = klass.order(:id)
-  scope.where!('id > ?', params[:after]) if params[:after]
+  scope = scope.where('id > ?', params[:after]) if params[:after]
   @more_pages = scope.count > per_page
   scope.limit!(per_page)
   @records = scope.to_a
@@ -942,12 +972,13 @@ end
 def require_admin!
   return if is_admin?
 
-  redirect '/'
+  halt 401, 'not authorized'
 end
 
-def require_logger!
-  # TODO: allow other users to log as part of beta
-  require_admin!
+def require_net_logger_role!
+  return if has_net_logger_role?
+
+  halt 401, 'not authorized'
 end
 
 def check_started_net!
