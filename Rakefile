@@ -37,8 +37,10 @@ task :cleanup do
   scope = Tables::User
     .is_monitoring
     .where('monitoring_net_last_refreshed_at < ?', Time.now - MAX_IDLE_MONITORING_IN_SECONDS)
-  count = scope.count
+  count = 0
   scope.find_each do |user|
+    next if user.logging_net == user.monitoring_net
+
     if (net = user.monitoring_net)
       NetInfo.new(id: net.id).stop_monitoring!(user:)
     end
@@ -46,6 +48,7 @@ task :cleanup do
       monitoring_net: nil,
       monitoring_net_last_refreshed_at: nil,
     )
+    count += 1
   end
   puts "#{count} user(s) stopped monitoring"
 end
