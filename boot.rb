@@ -20,7 +20,7 @@ template = Erubis::Eruby.new(File.read('config/database.yaml'))
 db_config = YAML.safe_load(template.result)
 env = :development
 ActiveRecord::Base.establish_connection(db_config[env.to_s])
-ActiveRecord::Base.logger = Logger.new($stderr)
+ActiveRecord::Base.logger = Logger.new($stderr) if ENV['DEBUG_SQL']
 
 # must be required after ActiveRecord database connection is established
 require 'flag_shih_tzu'
