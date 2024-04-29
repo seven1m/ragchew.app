@@ -827,6 +827,10 @@ class CreateNetForm extends Component {
       const value = this.state[key]
       if (value.trim().length === 0) errors[key] = true
     }
+    if (!errors.name && !this.state.name.match(/^[A-Za-z0-9][A-Za-z0-9 -]*$/))
+      errors.name =
+        "Net name must contain only letters, numbers, spaces, and hyphens, " +
+        "and must start with a letter or number."
     this.setState({ errors })
     if (Object.keys(errors).length > 0) e.preventDefault()
     else this.setState({ submitting: true })
@@ -846,6 +850,8 @@ class CreateNetForm extends Component {
             value=${this.state.name}
             onchange=${(e) => this.setState({ name: e.target.value })}
           />
+          ${typeof this.state.errors.name === "string" &&
+          html`<br /><span class="error">${this.state.errors.name}</span>`}
         </label>
         <label class="${this.state.errors.password ? "error" : ""}">
           Password:<br />

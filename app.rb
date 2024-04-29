@@ -261,12 +261,18 @@ post '/create-net' do
   end
 
   if missing.any?
-    return erb "<p>Some required fields are missing: #{missing.join(', ')}. Go back and try again.</p>"
+    status 400
+    return erb "<p class='error'>Some required fields are missing: #{missing.join(', ')}. " \
+               'Go back and try again.</p>'
   end
 
   check_started_net!
 
-  # TODO: check that name only contains allowed characters
+  unless params[:name] =~ /\A[A-Za-z0-9][A-Za-z0-9 -]*\z/
+    status 400
+    return erb "<p class='error'>Net name must contain only letters, numbers, spaces, and/or hyphens, " \
+               'and must start with a letter or number.</p>'
+  end
 
   NetLogger.create_net!(
     name: params[:name],
