@@ -832,6 +832,15 @@ class CreateNetForm extends Component {
       errors.name =
         "Net name must contain only letters, numbers, spaces, and hyphens, " +
         "and must start with a letter or number."
+
+    if (
+      !errors.password &&
+      (this.state.password.length > 50 ||
+        !this.state.password.match(/^[A-Za-z0-9_-]+$/))
+    )
+      errors.password =
+        "Password cannot be more than 50 characters and must contain only letters, numbers, hyphen, and/or underscore."
+
     this.setState({ errors })
     if (Object.keys(errors).length > 0) e.preventDefault()
     else this.setState({ submitting: true })
