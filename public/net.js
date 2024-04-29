@@ -71,8 +71,8 @@ class Net extends Component {
       const response = await fetch(`/net/${this.props.netId}/details`)
       this.setState({ fetchInFlight: false })
 
-      if (response.status === 404) {
-        location.reload() // show closed-net page
+      if (response.status !== 200) {
+        location.reload() // show closed-net page or redirect
       } else {
         const data = await response.json()
         this.setState(data)
@@ -827,6 +827,7 @@ class CreateNetForm extends Component {
       const value = this.state[key]
       if (value.trim().length === 0) errors[key] = true
     }
+
     if (!errors.name && !this.state.name.match(/^[A-Za-z0-9][A-Za-z0-9 -]*$/))
       errors.name =
         "Net name must contain only letters, numbers, spaces, and hyphens, " +
