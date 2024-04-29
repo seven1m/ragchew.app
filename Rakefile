@@ -30,6 +30,7 @@ task :runner do
 end
 
 MAX_IDLE_MONITORING_IN_SECONDS = 5 * 60 # 5 minutes
+MAX_IDLE_NET_IN_SECONDS = 30 * 60 # 30 minutes
 
 # Runs every 5 minutes
 task :cleanup do
@@ -51,6 +52,17 @@ task :cleanup do
     count += 1
   end
   puts "#{count} user(s) stopped monitoring"
+
+  # nets close if they have no updates in a while
+  count = 0
+  Tables::Net.where.not(logger_user_id: nil).find_each do |net|
+    if net.checkins.maximum(:updated_at) < Time.now - MAX_IDLE_NET_IN_SECONDS
+      logger = NetLogger.new(NetInfo.new(id: net.id), user: net.logger_user)
+      logger.close_net!
+      count += 1
+    end
+  end
+  puts "#{count} net(s) closed"
 end
 
 # Runs every 10 minutes
