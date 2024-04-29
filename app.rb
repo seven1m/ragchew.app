@@ -278,6 +278,11 @@ post '/create-net' do
                'and must start with a letter or number.</p>'
   end
 
+  if Tables::Net.where(name: params[:name]).exists?
+    status 400
+    return erb "<p class='error'>A net with this name is already in progress.</p>"
+  end
+
   NetLogger.create_net!(
     name: params[:name],
     password: params[:password],
@@ -300,7 +305,6 @@ patch '/log/:id/:num' do
   @params = params.merge(JSON.parse(request.body.read))
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
-
   logger.update!(params.fetch(:num).to_i, params)
 
   content_type 'application/json'
@@ -314,7 +318,6 @@ delete '/log/:id/:num' do
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
-
   logger.delete!(params.fetch(:num).to_i)
 
   return { success: true }.to_json
@@ -327,7 +330,6 @@ patch '/highlight/:id/:num' do
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
-
   logger.highlight!(params.fetch(:num).to_i)
 
   return { success: true }.to_json
@@ -340,7 +342,6 @@ post '/close-net/:id' do
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
-
   logger.close_net!
 
   session.delete(:started_net)
