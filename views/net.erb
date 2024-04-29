@@ -6,7 +6,7 @@
   <div class="header-col-grow">
     <%= erb :_club_breadcrumb, locals: { net: @net } %>
 
-    <h1><%== @net.name %> (<%== @net.id %>)</h1>
+    <h1><%== @net.name %></h1>
 
     <% if @net.logger_user == @user %>
       <form action="/close-net/<%== @net.id %>" method="POST" onsubmit="if (!confirm('Are you sure?')) return false">
