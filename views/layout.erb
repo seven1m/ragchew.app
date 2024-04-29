@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/images/logo.svg" type="image/svg">
     <link rel="stylesheet" href="/typesafe.css">
-    <link rel="stylesheet" href="/main.css">
+    <%= style_tag 'main.css' %>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"/>
     <script src="/main.js?_ts=<%== File.stat('public/main.js').mtime.to_i %>"></script>

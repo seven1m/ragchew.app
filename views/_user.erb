@@ -8,12 +8,15 @@
     <% if @user.admin? %>
       <a href="/admin">admin</a> |
     <% end %>
-    <% if @user.net_logger? %>
+    <% if @user.net_logger? && !@user.logging_net %>
       <a href="/create-net">create net</a> |
     <% end %>
     <a href="/logout" onclick="document.getElementById('logout-form').submit(); return false">log out</a>
     <form id="logout-form" style="display:none;" action="/logout" method="post"><input type="submit"/></form>
   <% else %>
     <a href="/login">log in</a>
+  <% end %>
+  <% if @user.logging_net && @net != @user.logging_net %>
+    | <span class="warning"><a href="/net/<%= CGI.escape(@user.logging_net.name) %>"><%== @user.logging_net.name %></a></span>
   <% end %>
 </div>

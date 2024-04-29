@@ -83,6 +83,11 @@ helpers do
     "<script type=\"module\" src=\"/#{filename}?_ts=#{ts}\"></script>"
   end
 
+  def style_tag(filename)
+    ts = File.stat(File.join('public', filename)).mtime.to_i
+    "<link rel=\"stylesheet\" href=\"/#{filename}?_ts=#{ts}\"/>"
+  end
+
   def pusher_url
     @pusher_url ||= URI.parse(ENV.fetch('PUSHER_URL'))
   end
