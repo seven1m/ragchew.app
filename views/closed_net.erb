@@ -48,7 +48,7 @@
 
 <% if @closed_net.show_circle? %>
   <div id="net-map"
-       data-centers='<%= [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }].to_json %>'></div>
+       data-centers='<%= json_for_html_attribute [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }]%>'></div>
 
   <script id="map-script">
     const elm = document.getElementById('net-map')

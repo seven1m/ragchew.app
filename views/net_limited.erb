@@ -30,7 +30,7 @@
 
 <% if @net.show_circle? %>
   <div id="net-map"
-       data-centers='<%= [{ latitude: @net.center_latitude, longitude: @net.center_longitude, radius: @net.center_radius }].to_json %>'></div>
+       data-centers='<%= json_for_html_attribute [{ latitude: @net.center_latitude, longitude: @net.center_longitude, radius: @net.center_radius }] %>'></div>
 <% end %>
 
 <script id="map-script">

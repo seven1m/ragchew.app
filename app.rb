@@ -295,7 +295,7 @@ post '/create-net' do
 
   NetInfo.new(name: params[:name]).monitor!(user: @user)
 
-  redirect "/net/#{CGI.escape(params[:name])}"
+  redirect "/net/#{url_escape params[:name]}"
 end
 
 patch '/log/:id/:num' do
@@ -999,7 +999,7 @@ end
 def check_if_already_started_a_net!(user)
   return unless (existing_net = Tables::Net.find_by(logger_user_id: user.id))
 
-  redirect "/net/#{CGI.escape existing_net.name}"
+  redirect "/net/#{url_escape existing_net.name}"
 end
 
 def fix_club_params(params)

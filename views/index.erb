@@ -12,7 +12,7 @@
 </p>
 
 <div id="net-map"
-     data-centers='<%= @centers.to_json %>'></div>
+     data-centers='<%= json_for_html_attribute @centers %>'></div>
 
 <p class="index-map-explanation">The above map is a rough estimation and can be comically inaccurate at times. Rely on the list of nets below for certainty. :-)</p>
 
