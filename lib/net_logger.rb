@@ -7,10 +7,14 @@ require_relative './user_presenter'
 class NetLogger
   class CouldNotCreateNetError < StandardError; end
   class CouldNotCloseNetError < StandardError; end
+  class NotAuthorizedError < StandardError; end
 
-  def initialize(net_info, password:)
+  def initialize(net_info, user:)
     @net_info = net_info
-    @password = password
+    unless user && @net_info.net.logger_user == user
+      raise NotAuthorizedError, 'You are not authorized to access this net.'
+    end
+    @password = @net_info.net.logger_password
     @fetcher = Fetcher.new(@net_info.host)
   end
 
@@ -65,7 +69,6 @@ class NetLogger
   end
 
   def self.create_net!(name:, password:, frequency:, net_control:, user:, mode:, band:, enable_messaging: true, update_interval: 20000, misc_net_parameters: nil, host: 'www.netlogger.org')
-    user = UserPresenter.new(user)
     fetcher = Fetcher.new(host)
     result = fetcher.raw_get(
       'OpenNet20.php',
@@ -73,7 +76,7 @@ class NetLogger
       'Token' => password,
       'Frequency' => frequency,
       'NetControl' => net_control,
-      'Logger' => user.name_for_logging,
+      'Logger' => UserPresenter.new(user).name_for_logging,
       'Mode' => mode,
       'Band' => band,
       'EnableMessaging' => enable_messaging ? 'Y' : 'N',
@@ -84,6 +87,9 @@ class NetLogger
       raise CouldNotCreateNetError, result
     end
     NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
+
+    net = Tables::Net.where(name:).order(:created_at).last
+    net.update!(logger_user: user, logger_password: password)
   end
 
   def close_net!

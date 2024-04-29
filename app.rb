@@ -246,7 +246,7 @@ get '/create-net' do
   @user = get_user
   require_net_logger_role!
 
-  check_started_net!
+  check_if_already_started_a_net!(@user)
 
   erb :create_net
 end
@@ -254,6 +254,8 @@ end
 post '/create-net' do
   @user = get_user
   require_net_logger_role!
+
+  check_if_already_started_a_net!(@user)
 
   missing = %i[name password frequency band mode net_control].reject do |key|
     params[key].present?
@@ -264,8 +266,6 @@ post '/create-net' do
     return erb "<p class='error'>Some required fields are missing: #{missing.join(', ')}. " \
                'Go back and try again.</p>'
   end
-
-  check_started_net!
 
   unless params[:name] =~ /\A[A-Za-z0-9][A-Za-z0-9 -]*\z/
     status 400
@@ -283,9 +283,6 @@ post '/create-net' do
     band: params[:band],
   )
 
-  session[:started_net] = params[:name]
-  session[:started_net_password] = params[:password]
-
   NetInfo.new(name: params[:name]).monitor!(user: @user)
 
   redirect "/net/#{CGI.escape(params[:name])}"
@@ -297,44 +294,56 @@ patch '/log/:id/:num' do
 
   @params = params.merge(JSON.parse(request.body.read))
 
-  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
+
   logger.update!(params.fetch(:num).to_i, params)
 
   content_type 'application/json'
   return { success: true }.to_json
+rescue NetLogger::NotAuthorizedError
+  halt 401, 'not authorized'
 end
 
 delete '/log/:id/:num' do
   @user = get_user
   require_net_logger_role!
 
-  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
+
   logger.delete!(params.fetch(:num).to_i)
 
   return { success: true }.to_json
+rescue NetLogger::NotAuthorizedError
+  halt 401, 'not authorized'
 end
 
 patch '/highlight/:id/:num' do
   @user = get_user
   require_net_logger_role!
 
-  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
+
   logger.highlight!(params.fetch(:num).to_i)
 
   return { success: true }.to_json
+rescue NetLogger::NotAuthorizedError
+  halt 401, 'not authorized'
 end
 
 post '/close-net/:id' do
   @user = get_user
   require_net_logger_role!
 
-  logger = NetLogger.new(NetInfo.new(id: params[:id]), password: session[:started_net_password])
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
+
   logger.close_net!
 
   session.delete(:started_net)
   session.delete(:started_net_password)
 
   redirect '/'
+rescue NetLogger::NotAuthorizedError
+  halt 401, 'not authorized'
 end
 
 get '/closed-nets' do
@@ -981,15 +990,10 @@ def require_net_logger_role!
   halt 401, 'not authorized'
 end
 
-def check_started_net!
-  return unless (started_net = session[:started_net])
+def check_if_already_started_a_net!(user)
+  return unless (existing_net = Tables::Net.find_by(logger_user_id: user.id))
 
-  net = Tables::Net.find_by(name: started_net)
-  if net
-    redirect "/net/#{CGI.escape net.name}"
-  else
-    session.delete(:started_net) 
-  end
+  redirect "/net/#{CGI.escape existing_net.name}"
 end
 
 def fix_club_params(params)

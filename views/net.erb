@@ -8,7 +8,7 @@
 
     <h1><%== @net.name %> (<%== @net.id %>)</h1>
 
-    <% if session[:started_net] == @net.name %>
+    <% if @net.logger_user == @user %>
       <form action="/close-net/<%== @net.id %>" method="POST" onsubmit="if (!confirm('Are you sure?')) return false">
         <input type="submit" value="Close net!"/>
       </form>
@@ -33,7 +33,7 @@
   netId: @net.id,
   updateInterval: @update_interval,
   lastUpdatedAt: @last_updated_at,
-  isLogger: is_logger?,
+  isLogger: @net.logger_user == @user,
   monitoringThisNet: @user.monitoring_net == @net,
   pusher: {
     key: pusher_key,
