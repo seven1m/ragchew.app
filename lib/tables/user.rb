@@ -8,10 +8,21 @@ module Tables
 
     scope :is_monitoring, -> { where.not(monitoring_net_id: nil) }
 
-    include FlagShihTzu
+    def admin?
+      flags & 1 == 1
+    end
 
-    has_flags 1 => :admin,
-              2 => :net_logger
+    def admin=(value)
+      self.flags = (value ? 1 : 0) + (flags & 2)
+    end
+
+    def net_logger?
+      flags & 2 == 2
+    end
+
+    def net_logger=(value)
+      self.flags = (flags & 1) + (value ? 2 : 0)
+    end
 
     # TEMPORARY: Remove this once I set myself as an admin.
     alias admin_flag? admin?

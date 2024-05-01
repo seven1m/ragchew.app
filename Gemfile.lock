@@ -29,7 +29,6 @@ GEM
     drb (2.2.0)
       ruby2_keywords
     erubis (2.7.0)
-    flag_shih_tzu (0.3.23)
     honeybadger (5.4.1)
     httpclient (2.8.3)
     i18n (1.14.1)
@@ -85,7 +84,6 @@ DEPENDENCIES
   dotenv
   dotiw
   erubis
-  flag_shih_tzu
   honeybadger
   mysql2
   nokogiri

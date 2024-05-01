@@ -22,9 +22,6 @@ env = :development
 ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if ENV['DEBUG_SQL']
 
-# must be required after ActiveRecord database connection is established
-require 'flag_shih_tzu'
-
 require_relative './lib/associate_club_with_nets'
 require_relative './lib/associate_net_with_club'
 require_relative './lib/extensions'
