@@ -103,12 +103,6 @@ include DOTIW::Methods
 
 ENV['TZ'] = 'UTC'
 
-template = Erubis::Eruby.new(File.read('config/database.yaml'))
-db_config = YAML.safe_load(template.result) 
-env = development? ? :development : :production
-ActiveRecord::Base.establish_connection(db_config[env.to_s])
-ActiveRecord::Base.logger = Logger.new($stderr) if development?
-
 MAX_FAVORITES = 50
 BASE_URL = ENV['BASE_URL'] || 'https://ragchew.app'
 SUPPORT_EMAIL = ENV['SUPPORT_EMAIL'] || 'tim@timmorgan.org'

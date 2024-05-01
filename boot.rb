@@ -18,7 +18,7 @@ require 'with_advisory_lock'
 
 template = Erubis::Eruby.new(File.read('config/database.yaml'))
 db_config = YAML.safe_load(template.result)
-env = :development
+env = ENV['RACK_ENV'] == 'production' ? :production : :development
 ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if ENV['DEBUG_SQL']
 
