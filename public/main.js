@@ -27,15 +27,27 @@ function updatePage() {
 
 function maybeUpdateNetMapCoords(coords) {
   // find new coords
-  let newCoords = []
+  const newCoords = []
+
   if (coords) {
     const existingCoords = new Set(
       window.netMapCoords.map((coord) => JSON.stringify(coord))
     )
     coords.forEach((coord) => {
-      if (!existingCoords.has(JSON.stringify(coord))) newCoords.push(coord)
+      const string = JSON.stringify(coord)
+      if (existingCoords.has(string)) existingCoords.delete(string)
+      else newCoords.push(coord)
     })
-    if (newCoords.length > 0) updateNetMapCoords(newCoords)
+
+    if (existingCoords.size > 0) {
+      // something was removed so just rebuild the whole map
+      window.netMapCoords = []
+      netMap.remove()
+      buildNetMap()
+      updateNetMapCoords(coords)
+    } else if (newCoords.length > 0) {
+      updateNetMapCoords(newCoords)
+    }
   }
 
   // redraw all centers
