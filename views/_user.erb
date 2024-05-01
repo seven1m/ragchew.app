@@ -16,7 +16,7 @@
   <% else %>
     <a href="/login">log in</a>
   <% end %>
-  <% if @user.logging_net && @net != @user.logging_net %>
+  <% if @user&.logging_net && @net != @user.logging_net %>
     | <span class="warning"><a href="/net/<%= url_escape @user.logging_net.name %>"><%== @user.logging_net.name %></a></span>
   <% end %>
 </div>
