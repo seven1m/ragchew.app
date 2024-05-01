@@ -10,7 +10,7 @@
 
 <form action="/admin/users/<%= @user_to_edit.id %>" method="POST">
   <label>
-    <input type="checkbox" name="admin" value="true" <%= @user_to_edit.admin_flag? ? 'checked' : '' %>/>
+    <input type="checkbox" name="admin" value="true" <%= @user_to_edit.admin? ? 'checked' : '' %>/>
     Admin
   </label>
   <label>
