@@ -23,11 +23,5 @@ module Tables
     def net_logger=(value)
       self.flags = (flags & 1) + (value ? 2 : 0)
     end
-
-    # TEMPORARY: Remove this once I set myself as an admin.
-    alias admin_flag? admin?
-    def admin?
-      ENV.fetch('ADMIN_CALL_SIGNS').split(',').include?(call_sign) || admin_flag?
-    end
   end
 end
