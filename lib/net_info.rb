@@ -247,6 +247,8 @@ class NetInfo
 
     records = @record.monitors.all
     monitors.each do |monitor|
+      next unless monitor[:call_sign] =~ /\A[A-Za-z0-9]+\z/
+
       if (existing = records.detect { |r| r.call_sign == monitor[:call_sign] })
         existing.update!(monitor)
         changes += 1 if existing.previous_changes.any?
