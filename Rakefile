@@ -67,7 +67,6 @@ end
 
 # Runs every 10 minutes
 task :populate do
-  ActiveRecord::Base.logger = Logger.new($stdout)
   nets = NetList.new.list
   nets.each do |net|
     begin
@@ -81,7 +80,6 @@ end
 
 # Runs nightly
 task :update_club_list do
-  ActiveRecord::Base.logger = Logger.new($stdout)
   UpdateClubList.new.call
 end
 
