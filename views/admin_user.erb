@@ -6,7 +6,58 @@
 
 <h1>User: <%== @user_to_edit.call_sign %></h1>
 
-<pre><code><%== JSON.pretty_generate(@user_to_edit.attributes) %></code></pre>
+<p><a href="https://www.qrz.com/db/<%= url_escape @user_to_edit.call_sign.upcase %>">QRZ</a></p>
+
+<dl>
+  <dt>First name:</dt>
+  <dd><%== @user_to_edit.first_name %></dd>
+  <dt>Last name:</dt>
+  <dd><%== @user_to_edit.last_name %></dd>
+  <dt>Image URL:</dt>
+  <dd>
+    <% if @user_to_edit.image.present? %>
+      <a href="<%= make_url_safe_for_html_attribute @user_to_edit.image %>"><%== @user_to_edit.image %></a><br/>
+      <a href="<%= make_url_safe_for_html_attribute @user_to_edit.image %>">
+        <img style="height:100px" src="<%= make_url_safe_for_html_attribute @user_to_edit.image %>"/>
+      </a>
+    <% else %>
+      <em>none</em>
+    <% end %>
+  </dd>
+  <dt>Last signed in:</dt>
+  <dd><%== format_time @user_to_edit.last_signed_in_at %></dd>
+  <dt>Created at:</dt>
+  <dd><%== format_time @user_to_edit.created_at %></dd>
+  <dt>Updated at:</dt>
+  <dd><%== format_time @user_to_edit.updated_at %></dd>
+  <dt>Monitoring net:</dt>
+  <dd>
+    <% if @user_to_edit.monitoring_net %>
+      <a href="/admin/nets/<%= url_escape @user_to_edit.monitoring_net.name %>"><%== @user_to_edit.monitoring_net.name %></a>
+    <% else %>
+      <em>none</em>
+    <% end %>
+  </dd>
+  <dt>Monitoring net last refreshed at:</dt>
+  <dd>
+    <% if @user_to_edit.monitoring_net_last_refreshed_at %>
+      <%== format_time @user_to_edit.monitoring_net_last_refreshed_at %>
+    <% else %>
+      <em>none</em>
+    <% end %>
+  </dd>
+  <dt>Logging net:</dt>
+  <dd>
+    <% if @user_to_edit.logging_net %>
+      <a href="/admin/nets/<%= url_escape @user_to_edit.logging_net.name %>"><%== @user_to_edit.logging_net.name %></a>
+      (last change <%== distance_of_time_in_words Time.now, @user_to_edit.logging_net.checkins.maximum(:updated_at) %> ago)
+    <% else %>
+      <em>none</em>
+    <% end %>
+  </dd>
+  <dt>Flags:</dt>
+  <dd><%== @user_to_edit.flags %></dd>
+</dl>
 
 <form action="/admin/users/<%= @user_to_edit.id %>" method="POST">
   <label>
