@@ -981,7 +981,11 @@ end
 def require_admin!
   return if is_admin?
 
-  halt 401, 'not authorized'
+  if request.get?
+    redirect '/login'
+  else
+    halt 401, 'not authorized'
+  end
 end
 
 def require_net_logger_role!
