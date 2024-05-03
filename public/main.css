@@ -58,6 +58,7 @@ td.avatar-cell { height: 64px; }
 /* Forms */
 
 form.inline { display: inline; }
+label.inline { display: inline; }
 
 form.wide input[type="text"] { width: 800px; max-width: 100%; }
 form.wide textarea { width: 800px; max-width: 100%; }

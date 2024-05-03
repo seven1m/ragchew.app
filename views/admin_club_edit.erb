@@ -7,7 +7,7 @@
 <h1><%== @club.full_name.presence || @club.name %></h1>
 
 <% if @club.persisted? && @club.about_url %>
-  <p><a href="/group/<%== make_value_safe_html_attribute(@club.name) %>">public page</a></p>
+  <p><a href="/group/<%== make_value_safe_for_html_attribute(@club.name) %>">public page</a></p>
 <% end %>
 
 <form action="<%== @url %>" method="post" class="wide">
@@ -16,22 +16,22 @@
   <% end %>
   <label>
     name:<br/>
-    <input type="text" name="club[name]" value="<%== make_value_safe_html_attribute(@club.name) %>"/>
+    <input type="text" name="club[name]" value="<%== make_value_safe_for_html_attribute(@club.name) %>"/>
   </label>
 
   <label>
     profile URL:<br/>
-    <input type="text" disabled value="<%== make_value_safe_html_attribute(@club.profile_url) %>"/>
+    <input type="text" disabled value="<%== make_value_safe_for_html_attribute(@club.profile_url) %>"/>
   </label>
 
   <label>
     full name:<br/>
-    <input type="text" name="club[full_name]" value="<%== make_value_safe_html_attribute(@club.full_name) %>"/>
+    <input type="text" name="club[full_name]" value="<%== make_value_safe_for_html_attribute(@club.full_name) %>"/>
   </label>
 
   <label>
     about URL:<br/>
-    <input type="text" name="club[about_url]" value="<%== make_value_safe_html_attribute(@club.about_url) %>"/>
+    <input type="text" name="club[about_url]" value="<%== make_value_safe_for_html_attribute(@club.about_url) %>"/>
   </label>
 
   <label class="sub">
@@ -40,7 +40,7 @@
 
   <label>
     logo URL:<br/>
-    <input type="text" name="club[logo_url]" value="<%== make_value_safe_html_attribute(@club.logo_url) %>"/>
+    <input type="text" name="club[logo_url]" value="<%== make_value_safe_for_html_attribute(@club.logo_url) %>"/>
   </label>
 
   <label class="sub">

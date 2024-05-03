@@ -37,7 +37,7 @@ helpers do
     s.to_s.gsub('"', '%22')
   end
 
-  def make_value_safe_html_attribute(s)
+  def make_value_safe_for_html_attribute(s)
     s.to_s.gsub('"', '&#34;')
   end
 
@@ -764,7 +764,18 @@ get '/admin/table/:table' do
   klass = Tables.const_get(params[:table].classify)
   scope = klass.order(:id)
   scope = scope.where('id > ?', params[:after]) if params[:after]
-  @more_pages = scope.count > per_page
+  if params[:column].present? && params[:value].present?
+    column = ActiveRecord::Base.connection.quote_column_name(params[:column])
+    if params[:like]
+      operator = 'like'
+      params[:value] = "%#{params[:value]}%" unless params[:value].include?('%')
+    else
+      operator = '='
+    end
+    scope = scope.where("#{column} #{operator} ?", params[:value])
+  end
+  @count = scope.count
+  @more_pages = @count > per_page
   scope.limit!(per_page)
   @records = scope.to_a
   @columns = klass.columns

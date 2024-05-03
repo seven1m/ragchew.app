@@ -3,7 +3,23 @@
   <a href="/admin">admin</a>
 </p>
 
-<h1><%== params[:table] %></h1>
+<h1><%== params[:table] %> (<%== @count %>)</h1>
+
+<form class="inline">
+  <select name="column">
+    <option></option>
+    <% @columns.each do |column| %>
+      <option <%= params[:column] == column.name ? 'selected' : '' %> value="<%== make_value_safe_for_html_attribute column.name %>"><%== column.name %></option>
+    <% end %>
+  </select>
+  <input type="text" name="value" value="<%== make_value_safe_for_html_attribute params[:value] %>"/>
+  <input type="submit" value="search" class="inline"/>
+  <input type="checkbox" id="like" name="like" value="true" <%= params[:like] ? 'checked' : '' %>/>
+  <label for="like" class="inline">LIKE</label>
+  <% if params[:column] %>
+    <a href="?">clear</a>
+  <% end %>
+</form>
 
 <div class="table-wrapper">
   <table>
