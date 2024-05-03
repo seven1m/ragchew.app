@@ -427,10 +427,13 @@ post '/favorite' do
     erb "<p><em>You cannot have more than #{MAX_FAVORITES} favorites.</em></p>"
   end
 
-  station = QrzAutoSession.new.lookup(params[:call_sign])
+  begin
+    station = QrzAutoSession.new.lookup(params[:call_sign])
+  rescue Qrz::Error
+  end
 
   @user.favorites.create!(
-    call_sign: station[:call_sign],
+    call_sign: station ? station[:call_sign] : params[:call_sign].upcase,
     first_name: station && station[:first_name],
     last_name: station && station[:last_name],
   )
@@ -459,11 +462,11 @@ post '/favorite/:call_sign' do
 
   begin
     station = QrzAutoSession.new.lookup(params[:call_sign])
-  rescue Error
+  rescue Qrz::Error
   end
 
   @user.favorites.create!(
-    call_sign: station[:call_sign],
+    call_sign: station ? station[:call_sign] : params[:call_sign].upcase,
     first_name: station && station[:first_name],
     last_name: station && station[:last_name],
   )
