@@ -129,10 +129,6 @@ get '/' do
   @last_updated_at = Tables::Server.maximum(:net_list_fetched_at)
   @update_interval = 30
   @update_backoff = 5
-  @coords = Tables::Checkin.order(created_at: :desc)
-              .limit(100)
-              .map { |c| GridSquare.new(c.grid_square).to_a }
-              .compact
   @centers = @nets.map do |net|
     next unless net.show_circle?
     {
@@ -208,11 +204,12 @@ get '/net/:id/details' do
   net = service.net
 
   checkins = net.checkins.order(:num).to_a
-  coords = checkins.map do |checkin|
-    GridSquare.new(checkin.grid_square).to_a.tap do |coord|
-      coord << checkin.call_sign if coord
+  coords = checkins.filter_map do |checkin|
+    lat, lon = GridSquare.new(checkin.grid_square).to_a
+    if lat && lon
+      { lat:, lon:, callSign: checkin.call_sign, name: checkin.name }
     end
-  end.compact
+  end
 
   monitoring_this_net = @user.monitoring_net == net
   if monitoring_this_net

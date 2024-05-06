@@ -84,9 +84,10 @@ function updateNetMapCoords(coords) {
   window.netMapCoords = (window.netMapCoords || []).concat(coords)
   if (coords === null) return
 
-  coords.forEach(([lat, lon, callSign]) => {
+  coords.forEach(({ lat, lon, callSign, name }) => {
     const marker = L.marker([lat, lon])
-    if (callSign) marker.desc = callSign
+    if (callSign)
+      marker.desc = `<a href="https://www.qrz.com/db/${callSign}" target="_blank">${callSign}</a> ${name}`
     netMap.addLayer(marker)
     netMapOms.addMarker(marker)
   })
