@@ -244,6 +244,8 @@ get '/create-net' do
 
   check_if_already_started_a_net!(@user)
 
+  @my_clubs = @user.club_admins.net_loggers.includes(:club).map(&:club)
+
   erb :create_net
 end
 
@@ -253,7 +255,7 @@ post '/create-net' do
 
   check_if_already_started_a_net!(@user)
 
-  missing = %i[name password frequency band mode net_control].reject do |key|
+  missing = %i[club_id name password frequency band mode net_control].reject do |key|
     params[key].present?
   end
 
@@ -274,7 +276,14 @@ post '/create-net' do
     return erb "<p class='error'>A net with this name is already in progress.</p>"
   end
 
+  club = Tables::Club.find(params[:club_id])
+  if club.club_admins.net_loggers.where(user_id: @user.id).empty?
+    status 400
+    return erb "<p class='error'>You are not a net logger for this club.</p>"
+  end
+
   NetLogger.create_net!(
+    club:,
     name: params[:name],
     password: params[:password],
     frequency: params[:frequency],

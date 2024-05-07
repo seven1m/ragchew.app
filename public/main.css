@@ -75,7 +75,8 @@ em.highlight { font-style: normal; background-color: #ffc; }
 
 .error, .danger { color: red; }
 .warning, .warning a { color: orange; }
-.danger-callout { background-color: #fcc; padding: 15px; border: 1px solid red; }
+.error-callout { background-color: #fcc; padding: 15px; border: 1px solid red; }
+.warning-callout { background-color: #fc9; padding: 15px; border: 1px solid orange; }
 
 ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
 

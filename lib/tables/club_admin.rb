@@ -3,6 +3,8 @@ module Tables
     belongs_to :club
     belongs_to :user
 
+    scope :net_loggers, -> { where('flags & 2 = 2') }
+
     def editor?
       flags & 1 == 1
     end

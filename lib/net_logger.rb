@@ -6,6 +6,7 @@ require_relative './user_presenter'
 
 class NetLogger
   class CouldNotCreateNetError < StandardError; end
+  class CouldNotFindNetAfterCreationError < StandardError; end
   class CouldNotCloseNetError < StandardError; end
   class NotAuthorizedError < StandardError; end
 
@@ -68,7 +69,7 @@ class NetLogger
     @net_info.net.checkins.not_blank.maximum(:num).to_i + 1
   end
 
-  def self.create_net!(name:, password:, frequency:, net_control:, user:, mode:, band:, enable_messaging: true, update_interval: 20000, misc_net_parameters: nil, host: 'www.netlogger.org')
+  def self.create_net!(club:, name:, password:, frequency:, net_control:, user:, mode:, band:, enable_messaging: true, update_interval: 20000, misc_net_parameters: nil, host: 'www.netlogger.org')
     fetcher = Fetcher.new(host)
     result = fetcher.raw_get(
       'OpenNet20.php',
@@ -89,7 +90,9 @@ class NetLogger
     NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
 
     net = Tables::Net.where(name:).order(:created_at).last
-    net.update!(logger_user: user, logger_password: password)
+    raise CouldNotFindNetAfterCreationError, result unless net
+
+    net.update!(club:, logger_user: user, logger_password: password)
   end
 
   def close_net!

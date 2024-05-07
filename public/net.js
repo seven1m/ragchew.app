@@ -769,6 +769,7 @@ class LogForm extends Component {
 
 class CreateNetForm extends Component {
   state = {
+    club_id: "",
     name: "",
     password: "",
     frequency: "",
@@ -811,6 +812,7 @@ class CreateNetForm extends Component {
   }
 
   requiredFields = [
+    "club_id",
     "name",
     "password",
     "frequency",
@@ -821,6 +823,7 @@ class CreateNetForm extends Component {
 
   handleSubmit(e) {
     if (this.state.submitting) return
+
     const errors = {}
     for (let i = 0; i < this.requiredFields.length; i++) {
       const key = this.requiredFields[i]
@@ -853,6 +856,19 @@ class CreateNetForm extends Component {
         method="POST"
         onsubmit=${(e) => this.handleSubmit(e)}
       >
+        <label class="${this.state.errors.club_id ? "error" : ""}">
+          Club:<br />
+          <select
+            name="club_id"
+            value=${this.state.club_id}
+            onchange=${(e) => this.setState({ club_id: e.target.value })}
+          >
+            <option value=""></option>
+            ${this.props.clubs.map(
+              (club) => html`<option value=${club.id}>${club.name}</option>`
+            )}
+          </select>
+        </label>
         <label class="${this.state.errors.name ? "error" : ""}">
           Name of Net:<br />
           <input
