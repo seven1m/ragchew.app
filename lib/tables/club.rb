@@ -8,6 +8,8 @@ module Tables
     serialize :additional_net_patterns, coder: JSON
     serialize :net_list, coder: JSON
 
+    accepts_nested_attributes_for :club_admins, allow_destroy: true
+
     def best_name
       full_name.presence || name
     end

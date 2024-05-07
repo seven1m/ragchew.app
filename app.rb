@@ -1022,4 +1022,17 @@ def fix_club_params(params)
     params[:club][param] = JSON.parse(params[:club][param]) if params[:club][param]
   end
   params[:club][:logo_url] = UpdateClubList.download_logo_url(@club, params[:club][:logo_url])
+  params[:club][:club_admins_attributes].each do |admin|
+    admin[:editor] = admin[:editor] == 'true'
+    admin[:net_logger] = admin[:net_logger] == 'true'
+    admin_before = admin.dup
+    if admin[:id].present?
+      admin.delete(:call_sign)
+    elsif admin[:call_sign].present? && (user = Tables::User.find_by(call_sign: admin.delete(:call_sign)))
+      admin[:user_id] = user.id
+    else
+      admin.clear
+      admin[:_destroy] = true
+    end
+  end
 end

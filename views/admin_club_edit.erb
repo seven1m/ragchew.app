@@ -77,7 +77,49 @@
     <input type="checkbox" name="force_update_existing_nets" value="true"> force update existing nets
   </label>
 
-  <br/>
+  <h2>Admins:</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Call Sign</th>
+        <th>Name</th>
+        <th>Editor</th>
+        <th>Net Logger</th>
+      </tr>
+    </thead>
+    <% @club.club_admins.each do |admin| %>
+      <tr>
+        <td>
+          <input type="hidden" name="club[club_admins_attributes][][call_sign]" value=""/>
+          <input type="hidden" name="club[club_admins_attributes][][id]" value="<%== admin.id %>"/>
+          <%= admin.user.call_sign %>
+        </td>
+        <td><%= admin.user.name %></td>
+        <td>
+          <input type="checkbox" name="club[club_admins_attributes][][editor]" value="true" <%= admin.editor? ? 'checked' : '' %>/>
+        </td>
+        <td>
+          <input type="checkbox" name="club[club_admins_attributes][][net_logger]" value="true" <%= admin.net_logger? ? 'checked' : '' %>/>
+        </td>
+        <td>
+          <label class="inline"><input type="checkbox" name="club[club_admins_attributes][][_destroy]" value="true"/> delete</label>
+        </td>
+      </tr>
+    <% end %>
+    <tr>
+      <td><input type="text" name="club[club_admins_attributes][][call_sign]" width="7" class="inline" placeholder="Call Sign"/></td>
+      <td></td>
+      <td>
+        <input type="checkbox" name="club[club_admins_attributes][][editor]" value="true"/>
+      </td>
+      <td>
+        <input type="checkbox" name="club[club_admins_attributes][][net_logger]" value="true"/>
+      </td>
+      <td>
+        <label class="inline"><input type="checkbox" name="club[club_admins_attributes][][_destroy]" value="true"/> delete</label>
+      </td>
+    </tr>
+  </table>
 
   <input type="submit" value="save"/>
 </form>

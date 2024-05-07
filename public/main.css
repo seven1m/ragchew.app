@@ -62,6 +62,7 @@ label.inline { display: inline; }
 
 form.wide input[type="text"] { width: 800px; max-width: 100%; }
 form.wide textarea { width: 800px; max-width: 100%; }
+form.wide input[type="text"].inline { width: auto; max-width: auto; }
 
 form label { display: block; margin-bottom: 20px; }
 form label.sub { margin-top: -20px; }

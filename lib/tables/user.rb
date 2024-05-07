@@ -9,6 +9,10 @@ module Tables
 
     scope :is_monitoring, -> { where.not(monitoring_net_id: nil) }
 
+    def name
+      [first_name, last_name].compact.join(' ')
+    end
+
     def admin?
       flags & 1 == 1
     end
