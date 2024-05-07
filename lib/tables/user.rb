@@ -5,6 +5,7 @@ module Tables
     belongs_to :monitoring_net, class_name: 'Net'
     has_many :favorites, dependent: :delete_all
     has_one :logging_net, class_name: 'Net', foreign_key: 'logger_user_id'
+    has_many :club_admins, dependent: :delete_all
 
     scope :is_monitoring, -> { where.not(monitoring_net_id: nil) }
 
