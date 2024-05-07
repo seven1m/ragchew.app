@@ -5,6 +5,14 @@ import Pusher from "https://esm.sh/pusher-js@8.4.0-rc2"
 
 const html = htm.bind(h)
 
+const BLANK_EDITING_ENTRY = {
+  num: null,
+  call_sign: "",
+  preferred_name: "",
+  remarks: "",
+  notes: "",
+}
+
 class Net extends Component {
   state = {
     checkins: [],
@@ -14,11 +22,7 @@ class Net extends Component {
     monitors: [],
     favorites: [],
     lastUpdatedAt: null,
-    editing: {
-      num: null,
-      call_sign: "",
-      remarks: "",
-    },
+    editing: { ...BLANK_EDITING_ENTRY },
     info: null,
     error: null,
     lastUpdatedAt: null,
@@ -112,7 +116,12 @@ class Net extends Component {
         info: this.state.info,
         error: this.state.error,
         onCallSignInput: this.handleCallSignInput.bind(this),
-        onRemarksInput: this.handleRemarksInput.bind(this),
+        onPreferredNameInput: this.handleEditingValueInput.bind(
+          this,
+          "preferred_name"
+        ),
+        onNotesInput: this.handleEditingValueInput.bind(this, "notes"),
+        onRemarksInput: this.handleEditingValueInput.bind(this, "remarks"),
         onSubmit: this.handleLogFormSubmit.bind(this),
         onClear: this.handleLogFormClear.bind(this),
       })}
@@ -149,12 +158,24 @@ class Net extends Component {
       if (this.state.editing.call_sign.length >= 4) {
         try {
           const response = await fetch(
-            `/station/${this.state.editing.call_sign}`
+            `/station/${this.state.editing.call_sign}?${
+              this.props.club ? `club_id=${this.props.club.id}` : ""
+            }`
           )
           if (response.status === 200) {
             const info = await response.json()
-            if (info.error) this.setState({ info: false })
-            else this.setState({ info })
+            if (info.error) {
+              this.setState({ info: false })
+            } else {
+              this.setState({
+                info,
+                editing: {
+                  ...this.state.editing,
+                  preferred_name: presence(info.preferred_name) || "",
+                  notes: presence(info.notes) || "",
+                },
+              })
+            }
           } else {
             this.setState({ info: null })
             console.error(`Error fetching station: ${error}`)
@@ -169,8 +190,8 @@ class Net extends Component {
     }, 800)
   }
 
-  handleRemarksInput(remarks) {
-    this.setState({ editing: { ...this.state.editing, remarks } })
+  handleEditingValueInput(prop, value) {
+    this.setState({ editing: { ...this.state.editing, [prop]: value } })
   }
 
   async handleLogFormSubmit() {
@@ -195,15 +216,18 @@ class Net extends Component {
       ...info,
       id: this.props.netId,
       num: this.state.editing.num,
+      preferred_name: this.state.editing.preferred_name,
       remarks: this.state.editing.remarks,
+      notes: this.state.editing.notes,
       name: `${info.first_name} ${info.last_name}`,
-      preferred_name: info.first_name,
       checked_in_at: dayjs().format(),
     }
     this.addOrUpdateCheckinInMemory(payload)
     try {
       const response = await fetch(
-        `/log/${this.props.netId}/${this.state.editing.num}`,
+        `/log/${this.props.netId}/${
+          this.state.editing.num ? this.state.editing.num : "new" // a little sloppy to pass "new" here, but it works: the :num is overwritten by the payload anyway.
+        }`,
         {
           method: "PATCH",
           headers: {
@@ -240,7 +264,10 @@ class Net extends Component {
   }
 
   handleLogFormClear() {
-    this.setState({ editing: { call_sign: "", remarks: "" }, info: null })
+    this.setState({
+      editing: { ...BLANK_EDITING_ENTRY },
+      info: null,
+    })
   }
 
   handleEditEntry(num) {
@@ -430,7 +457,7 @@ class CheckinRow extends Component {
           ${this.props.call_sign}
         </a>
       </td>
-      <td>${this.props.name}</td>
+      <td>${presence(this.props.preferred_name) || this.props.name}</td>
       <td>${formatTime(this.props.checked_in_at)}</td>
       <td>${this.props.grid_square}</td>
       <td>${this.props.status}</td>
@@ -715,6 +742,16 @@ class LogForm extends Component {
           />
         </label>
         <label>
+          Preferred Name:<br />
+          <input
+            name="preferred_name"
+            value=${this.props.preferred_name}
+            oninput=${(e) => this.props.onPreferredNameInput(e.target.value)}
+            autocomplete="off"
+            autofocus
+          />
+        </label>
+        <label>
           Remarks:<br />
           <input
             name="remarks"
@@ -723,6 +760,17 @@ class LogForm extends Component {
             autocomplete="off"
           />
         </label>
+        <!--
+        <label>
+          Notes:<br />
+          <input
+            name="notes"
+            value=${this.props.notes}
+            oninput=${(e) => this.props.onNotesInput(e.target.value)}
+            autocomplete="off"
+          />
+        </label>
+        -->
         <input type="submit" value=${this.props.num ? "Update" : "Add"} />
         ${" "}${this.renderInfo()} ${this.renderClear()}
       </form>
@@ -1018,6 +1066,12 @@ function present(value) {
   if (typeof value === "string") return value.trim().length > 0
 
   return true
+}
+
+function presence(value) {
+  if (!present(value)) return null
+
+  return value
 }
 
 function pluralize(word, count) {

@@ -31,19 +31,19 @@ class NetInfo
   def name = @record.name
   def host = @record.host
 
-  def update!
+  def update!(force_full: false)
     return unless cache_needs_updating?
 
     with_lock do
       if cache_needs_updating?
-        update_cache
+        update_cache(force_full:)
       end
     end
   end
 
-  def update_net_right_now_with_wreckless_disregard_for_the_last_update!
+  def update_net_right_now_with_wreckless_disregard_for_the_last_update!(force_full: false)
     with_lock do
-      update_cache
+      update_cache(force_full:)
     end
   end
 
@@ -142,10 +142,17 @@ class NetInfo
     )
   end
 
+  def update_station_details!(call_sign, preferred_name:, notes:)
+    @record.club
+      .club_stations
+      .find_or_initialize_by(call_sign: call_sign.upcase)
+      .update!(preferred_name:, notes:)
+  end
+
   private
 
-  def update_cache
-    data = fetch
+  def update_cache(force_full: false)
+    data = fetch(force_full:)
 
     changes = update_checkins(data[:checkins], currently_operating: data[:currently_operating])
     changes += update_monitors(data[:monitors])
@@ -285,10 +292,10 @@ class NetInfo
     !@record.fully_updated_at || @record.fully_updated_at < Time.now - @record.update_interval_in_seconds
   end
 
-  def fetch
-    data = fetch_raw
+  def fetch(force_full: false)
+    data = fetch_raw(force_full:)
 
-    checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, nickname|
+    checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, preferred_name|
       next if call_sign == 'future use 2'
       (latitude, longitude) = GridSquare.new(grid_square).to_a
 
@@ -332,7 +339,7 @@ class NetInfo
           zip:,
           status:,
           country:,
-          nickname:,
+          preferred_name:,
           latitude:,
           longitude:,
         }

@@ -40,6 +40,7 @@ class NetLogger
     entries = [entry.merge(mode:, num:)]
     send_update!(entries)
     @net_info.update_net_right_now_with_wreckless_disregard_for_the_last_update!
+    @net_info.update_station_details!(entry[:call_sign], preferred_name: entry[:preferred_name], notes: entry[:notes])
   end
 
   def delete!(num)

@@ -384,7 +384,13 @@ get '/station/:call_sign' do
     return { 'error' => e.message }.to_json
   end
 
-  return station.attributes.to_json
+  attributes = station.attributes
+
+  if (club_station = params[:club_id] && Tables::ClubStation.where(club_id: params[:club_id], call_sign: params[:call_sign]).first)
+    attributes.merge!(club_station.attributes.slice('preferred_name', 'notes'))
+  end
+
+  attributes.to_json
 end
 
 get '/station/:call_sign/image' do
