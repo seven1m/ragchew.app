@@ -151,43 +151,53 @@ class Net extends Component {
 
   handleCallSignInput(call_sign) {
     this.setState({
-      editing: { ...this.state.editing, call_sign: call_sign.toUpperCase() },
+      editing: { ...this.state.editing, call_sign },
     })
     if (window.inputTimeout) clearTimeout(window.inputTimeout)
     window.inputTimeout = setTimeout(async () => {
       if (this.state.editing.call_sign.length >= 4) {
-        try {
-          const response = await fetch(
-            `/station/${this.state.editing.call_sign}?${
-              this.props.club ? `club_id=${this.props.club.id}` : ""
-            }`
-          )
-          if (response.status === 200) {
-            const info = await response.json()
-            if (info.error) {
-              this.setState({ info: false })
-            } else {
-              this.setState({
-                info,
-                editing: {
-                  ...this.state.editing,
-                  preferred_name: presence(info.preferred_name) || "",
-                  notes: presence(info.notes) || "",
-                },
-              })
-            }
-          } else {
-            this.setState({ info: null })
-            console.error(`Error fetching station: ${error}`)
-          }
-        } catch (error) {
-          this.setState({ info: null })
-          console.error(`Error fetching station: ${error}`)
-        }
+        this.fetchStationInfo()
       } else {
-        this.setState({ info: null })
+        this.setState({
+          info: null,
+          editing: { ...this.state.editing, preferred_name: "", notes: "" },
+        })
       }
     }, 800)
+  }
+
+  async fetchStationInfo() {
+    try {
+      const response = await fetch(
+        `/station/${this.state.editing.call_sign}?${
+          this.props.club ? `club_id=${this.props.club.id}` : ""
+        }`
+      )
+      const resetEditing = {
+        ...this.state.editing,
+        preferred_name: "",
+        notes: "",
+      }
+      if (response.status === 200) {
+        const info = await response.json()
+        await this.setState({
+          info,
+          editing: {
+            ...this.state.editing,
+            preferred_name: presence(info.preferred_name) || "",
+            notes: presence(info.notes) || "",
+          },
+        })
+      } else if (response.status === 404) {
+        await this.setState({ info: false, editing: resetEditing })
+      } else {
+        await this.setState({ info: null, editing: resetEditing })
+        console.error(`Error fetching station: ${error}`)
+      }
+    } catch (error) {
+      await this.setState({ info: null, editing: resetEditing })
+      console.error(`Error fetching station: ${error}`)
+    }
   }
 
   handleEditingValueInput(prop, value) {
@@ -195,22 +205,15 @@ class Net extends Component {
   }
 
   async handleLogFormSubmit() {
+    if (window.inputTimeout) clearTimeout(window.inputTimeout)
+
     const { call_sign, remarks } = this.state.editing
     if (!present(call_sign) && !present(remarks)) return
 
     this.setState({ submitting: true, error: null })
 
+    if (!this.state.info) await this.fetchStationInfo()
     let info = this.state.info
-    if (!info) {
-      try {
-        const response = await fetch(`/station/${call_sign}`)
-        info = await response.json()
-        if (info.error) info = { call_sign }
-      } catch (error) {
-        info = { call_sign }
-        console.error(`Error fetching station: ${error}`)
-      }
-    }
 
     const payload = {
       ...info,
@@ -729,50 +732,61 @@ class LogForm extends Component {
           const success = await this.props.onSubmit(e)
           if (success) this.focus()
         }}
+        class="log-form"
       >
-        <label>
-          Call Sign:<br />
-          <input
-            ref=${this.inputRef}
-            name="call_sign"
-            value=${this.props.call_sign}
-            oninput=${(e) => this.props.onCallSignInput(e.target.value)}
-            autocomplete="off"
-            autofocus
-          />
-        </label>
-        <label>
-          Preferred Name:<br />
-          <input
-            name="preferred_name"
-            value=${this.props.preferred_name}
-            oninput=${(e) => this.props.onPreferredNameInput(e.target.value)}
-            autocomplete="off"
-            autofocus
-          />
-        </label>
-        <label>
-          Remarks:<br />
-          <input
-            name="remarks"
-            value=${this.props.remarks}
-            oninput=${(e) => this.props.onRemarksInput(e.target.value)}
-            autocomplete="off"
-          />
-        </label>
-        <!--
-        <label>
-          Notes:<br />
-          <input
-            name="notes"
-            value=${this.props.notes}
-            oninput=${(e) => this.props.onNotesInput(e.target.value)}
-            autocomplete="off"
-          />
-        </label>
-        -->
-        <input type="submit" value=${this.props.num ? "Update" : "Add"} />
-        ${" "}${this.renderInfo()} ${this.renderClear()}
+        <div class="columns">
+          <div class="column">
+            <label>
+              Call Sign:<br />
+              <input
+                ref=${this.inputRef}
+                name="call_sign"
+                value=${this.props.call_sign}
+                oninput=${(e) => this.props.onCallSignInput(e.target.value)}
+                autocomplete="off"
+                style="text-transform:uppercase"
+                autofocus
+              />
+            </label>
+            <label>
+              Preferred Name:<br />
+              <input
+                name="preferred_name"
+                value=${this.props.preferred_name}
+                oninput=${(e) =>
+                  this.props.onPreferredNameInput(e.target.value)}
+                autocomplete="off"
+                autofocus
+              />
+            </label>
+          </div>
+          <div class="column">
+            <label>
+              Remarks (saved to this net only):<br />
+              <input
+                name="remarks"
+                value=${this.props.remarks}
+                oninput=${(e) => this.props.onRemarksInput(e.target.value)}
+                autocomplete="off"
+              />
+            </label>
+            <label>
+              Station Notes (saved for next time):<br />
+              <input
+                name="notes"
+                value=${this.props.notes}
+                oninput=${(e) => this.props.onNotesInput(e.target.value)}
+                autocomplete="off"
+              />
+            </label>
+          </div>
+        </div>
+        <div>
+          <input type="submit" value=${this.props.num ? "Update" : "Add"} />
+        </div>
+        <div class="log-form-info">
+          ${" "}${this.renderInfo()} ${this.renderClear()}
+        </div>
       </form>
     `
   }
@@ -788,12 +802,16 @@ class LogForm extends Component {
       return html`<em class="error">${this.props.error}</em>`
 
     if (this.props.info === null) return null
-    if (this.props.info === false) return html`<span>not found</span>`
+    if (this.props.info === false)
+      return html`<em class="warning">not found</em>`
+
+    const name =
+      this.props.info.preferred_name ||
+      `${this.props.info.first_name} ${this.props.info.last_name}`
 
     return html`
       <span>
-        ${this.props.info.first_name} ${this.props.info.last_name},${" "}
-        ${this.props.info.city}, ${this.props.info.state}${" "}
+        ${name},${" "} ${this.props.info.city}, ${this.props.info.state}${" "}
         (${this.props.info.country})
       </span>
     `

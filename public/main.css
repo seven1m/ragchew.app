@@ -26,7 +26,7 @@ footer { margin-top: 50px; }
 footer p { font-size: smaller; color: #999; }
 footer a, footer a:visited { color: #999; }
 
-.columns { display: flex; justify-content: space-between; }
+.columns { display: flex; justify-content: space-between; gap: 20px; }
 .columns .column { flex-grow: 1; }
 
 /* Net */
@@ -66,6 +66,9 @@ form.wide input[type="text"].inline { width: auto; max-width: auto; }
 
 form label { display: block; margin-bottom: 20px; }
 form label.sub { margin-top: -20px; }
+
+form.log-form input { width: 100%; }
+div.log-form-info { margin-top: 10px; }
 
 input, select { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
 
