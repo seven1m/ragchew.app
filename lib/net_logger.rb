@@ -32,6 +32,9 @@ class NetLogger
     entries.unshift(entry.merge(mode: 'U', num: num))
     send_update!(entries)
     @net_info.update_net_right_now_with_wreckless_disregard_for_the_last_update!
+    checkin = @net_info.net.checkins.find_by(num:)
+    checkin.update!(notes: entry[:notes]) if entry[:call_sign] == checkin&.call_sign
+    @net_info.update_station_details!(entry[:call_sign], preferred_name: entry[:preferred_name], notes: entry[:notes])
   end
 
   def update!(num, entry)
@@ -40,6 +43,8 @@ class NetLogger
     entries = [entry.merge(mode:, num:)]
     send_update!(entries)
     @net_info.update_net_right_now_with_wreckless_disregard_for_the_last_update!
+    checkin = @net_info.net.checkins.find_by(num:)
+    checkin.update!(notes: entry[:notes]) if entry[:call_sign] == checkin&.call_sign
     @net_info.update_station_details!(entry[:call_sign], preferred_name: entry[:preferred_name], notes: entry[:notes])
   end
 

@@ -144,7 +144,10 @@ class Net extends Component {
 
   nextNum() {
     const checkins = this.state.checkins.filter(
-      (checkin) => present(checkin.call_sign) || present(checkin.remarks)
+      (checkin) =>
+        present(checkin.call_sign) ||
+        present(checkin.remarks) ||
+        present(checkin.notes)
     )
     return Math.max(...checkins.map((checkin) => checkin.num), 0) + 1
   }
@@ -158,12 +161,16 @@ class Net extends Component {
       if (this.state.editing.call_sign.length >= 4) {
         this.fetchStationInfo()
       } else {
-        this.setState({
-          info: null,
-          editing: { ...this.state.editing, preferred_name: "", notes: "" },
-        })
+        this.clearStationInfo()
       }
     }, 800)
+  }
+
+  async clearStationInfo(info = null) {
+    await this.setState({
+      info,
+      editing: { ...this.state.editing, preferred_name: "", notes: "" },
+    })
   }
 
   async fetchStationInfo() {
@@ -173,11 +180,6 @@ class Net extends Component {
           this.props.club ? `club_id=${this.props.club.id}` : ""
         }`
       )
-      const resetEditing = {
-        ...this.state.editing,
-        preferred_name: "",
-        notes: "",
-      }
       if (response.status === 200) {
         const info = await response.json()
         await this.setState({
@@ -189,13 +191,13 @@ class Net extends Component {
           },
         })
       } else if (response.status === 404) {
-        await this.setState({ info: false, editing: resetEditing })
+        await this.clearStationInfo(false)
       } else {
-        await this.setState({ info: null, editing: resetEditing })
+        await this.clearStationInfo(null)
         console.error(`Error fetching station: ${error}`)
       }
     } catch (error) {
-      await this.setState({ info: null, editing: resetEditing })
+      await this.clearStationInfo(null)
       console.error(`Error fetching station: ${error}`)
     }
   }
@@ -431,7 +433,7 @@ class CheckinRow extends Component {
   }
 
   render() {
-    return [this.renderDetails(), this.renderRemarks()]
+    return [this.renderDetails(), this.renderRemarksAndNotes()]
   }
 
   renderDetails() {
@@ -471,8 +473,8 @@ class CheckinRow extends Component {
     </tr>`
   }
 
-  renderRemarks() {
-    if (!present(this.props.remarks)) return null
+  renderRemarksAndNotes() {
+    if (!present(this.props.remarks) && !present(this.props.notes)) return null
 
     return html`
       <tr class="remarks ${this.rowClass()}">
@@ -480,7 +482,11 @@ class CheckinRow extends Component {
           ? html`<td></td>`
           : html`<td>${this.props.num} ${this.renderLoggerControls()}</td>`}
         <td></td>
-        <td colspan="9" class="can-wrap">${this.props.remarks}</td>
+        <td colspan="9" class="can-wrap">
+          ${this.props.remarks}
+          ${this.props.notes &&
+          html`<br /><em>Station Notes: ${this.props.notes}</em>`}
+        </td>
       </tr>
     `
   }
@@ -818,7 +824,11 @@ class LogForm extends Component {
   }
 
   renderClear() {
-    if (!present(this.props.call_sign) && !present(this.props.remarks))
+    if (
+      !present(this.props.call_sign) &&
+      !present(this.props.remarks) &&
+      !present(this.props.notes)
+    )
       return null
 
     return html`<span
