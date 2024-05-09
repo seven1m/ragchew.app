@@ -802,7 +802,7 @@ class LogForm extends Component {
           <input type="submit" value=${this.props.num ? "Update" : "Add"} />
         </div>
         <div class="log-form-info">
-          ${" "}${this.renderInfo()} ${this.renderClear()}
+          ${this.renderInfo()} ${this.renderClear()}
         </div>
       </form>
     `
@@ -826,10 +826,10 @@ class LogForm extends Component {
       this.props.info.preferred_name ||
       `${this.props.info.first_name} ${this.props.info.last_name}`
 
+    const { city, state, country } = this.props.info
     return html`
       <span>
-        ${name},${" "} ${this.props.info.city}, ${this.props.info.state}${" "}
-        (${this.props.info.country}) ${this.renderLastCheckin()}
+        ${name}, ${city}, ${state} (${country}) ${this.renderLastCheckin()}
       </span>
     `
   }
@@ -844,7 +844,7 @@ class LogForm extends Component {
     if (!lastCheckin) return null
 
     return html`<br />
-      <span class="info">
+      <span class="notice">
         Already checked in ${dayjs(lastCheckin.checked_in_at).fromNow()}
       </span>`
   }
