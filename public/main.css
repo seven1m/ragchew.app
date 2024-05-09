@@ -81,6 +81,8 @@ em.highlight { font-style: normal; background-color: #ffc; }
 .error-callout { background-color: #fcc; padding: 15px; border: 1px solid red; }
 .warning-callout { background-color: #fc9; padding: 15px; border: 1px solid orange; }
 
+.info { color: #39f; }
+
 ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
 
 .admin-only { background-color: #f9c; padding: 15px; }

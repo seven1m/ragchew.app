@@ -1,8 +1,10 @@
 import { h, render, Component, createRef } from "https://esm.sh/preact@10.20.2"
 import htm from "https://esm.sh/htm@3.1.1"
-import dayjs from "https://esm.sh/dayjs@1.11.10"
+import dayjs from "https://esm.sh/dayjs@1.11.11"
+import relativeTime from "https://esm.sh/dayjs@1.11.11/plugin/relativeTime"
 import Pusher from "https://esm.sh/pusher-js@8.4.0-rc2"
 
+dayjs.extend(relativeTime)
 const html = htm.bind(h)
 
 const BLANK_EDITING_ENTRY = {
@@ -181,9 +183,18 @@ class Net extends Component {
         }`
       )
       if (response.status === 200) {
+        const existingCheckins = this.state.checkins.filter(
+          (c) =>
+            c.call_sign.toUpperCase() ===
+            this.state.editing.call_sign.toUpperCase()
+        )
+
         const info = await response.json()
         await this.setState({
-          info,
+          info: {
+            ...info,
+            existingCheckins,
+          },
           editing: {
             ...this.state.editing,
             preferred_name: presence(info.preferred_name) || "",
@@ -818,9 +829,24 @@ class LogForm extends Component {
     return html`
       <span>
         ${name},${" "} ${this.props.info.city}, ${this.props.info.state}${" "}
-        (${this.props.info.country})
+        (${this.props.info.country}) ${this.renderLastCheckin()}
       </span>
     `
+  }
+
+  renderLastCheckin() {
+    const lastCheckin =
+      this.props.info.existingCheckins.length > 0 &&
+      this.props.info.existingCheckins[
+        this.props.info.existingCheckins.length - 1
+      ]
+
+    if (!lastCheckin) return null
+
+    return html`<br />
+      <span class="info">
+        Already checked in ${dayjs(lastCheckin.checked_in_at).fromNow()}
+      </span>`
   }
 
   renderClear() {
