@@ -56,6 +56,7 @@ class Net extends Component {
       this.startUpdatingRegularly()
     })
     channel.bind("message", ({ message }) => {
+      this.showMessageNotification(message)
       this.setState({ messages: [...this.state.messages, message] })
     })
   }
@@ -119,18 +120,20 @@ class Net extends Component {
 
     if (messages.length > this.state.messages.length) {
       const newMessages = messages.slice(this.state.messages.length)
-      newMessages.forEach((message) => {
-        let text = message.message
-        if (text.length > 50) text = `${text.substring(0, 50)}...`
-        Toastify({
-          text: `${message.call_sign}: ${text}`,
-          duration: 3000,
-          style: {
-            background: "#39f",
-          },
-        }).showToast()
-      })
+      newMessages.forEach(this.showMessageNotification.bind(this))
     }
+  }
+
+  showMessageNotification(message) {
+    let text = message.message
+    if (text.length > 50) text = `${text.substring(0, 50)}...`
+    Toastify({
+      text: `${message.call_sign}: ${text}`,
+      duration: 3000,
+      style: {
+        background: "#39f",
+      },
+    }).showToast()
   }
 
   render() {
