@@ -184,6 +184,7 @@ class Net extends Component {
         messagesCount=${this.state.messagesCount}
         netId=${this.props.netId}
         userCallSign=${this.props.userCallSign}
+        isLogger=${this.props.isLogger}
       />
 
       <h2>Monitors</h2>
@@ -740,6 +741,14 @@ class Messages extends Component {
         />
         <input type="submit" value="Send" />
       </form>
+      ${this.renderStopMonitoringForm()}
+    `
+  }
+
+  renderStopMonitoringForm() {
+    if (this.props.isLogger) return null
+
+    return html`
       <form action="/unmonitor/${this.props.netId}" method="post">
         <p>
           <button>Stop monitoring this Net</button>

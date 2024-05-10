@@ -811,6 +811,11 @@ post '/unmonitor/:net_id' do
   @user = get_user
   require_user!
 
+  if @user.monitoring_net && @user.monitoring_net == @user.logging_net
+    status 400
+    return 'you cannot stop monitoring a net you are logging'
+  end
+
   @user.update!(
     monitoring_net: nil,
     monitoring_net_last_refreshed_at: nil,
