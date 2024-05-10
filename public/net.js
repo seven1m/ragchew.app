@@ -3,6 +3,7 @@ import htm from "https://esm.sh/htm@3.1.1"
 import dayjs from "https://esm.sh/dayjs@1.11.11"
 import relativeTime from "https://esm.sh/dayjs@1.11.11/plugin/relativeTime"
 import Pusher from "https://esm.sh/pusher-js@8.4.0-rc2"
+import Toastify from "https://esm.sh/toastify-js@1.12.0"
 
 dayjs.extend(relativeTime)
 const html = htm.bind(h)
@@ -34,7 +35,7 @@ class Net extends Component {
   formRef = createRef()
 
   componentDidMount() {
-    this.updateData()
+    this.updateData(true)
     this.startUpdatingRegularly()
     const pusher = new Pusher(this.props.pusher.key, {
       channelAuthorization: {
@@ -70,7 +71,7 @@ class Net extends Component {
     )
   }
 
-  async updateData() {
+  async updateData(initialLoad = false) {
     try {
       if (this.state.fetchInFlight) return
       this.setState({ fetchInFlight: true })
@@ -81,10 +82,54 @@ class Net extends Component {
         location.reload() // show closed-net page or redirect
       } else {
         const data = await response.json()
+        if (!initialLoad) this.showNotifications(data)
         this.setState(data)
       }
     } catch (error) {
       console.error(`Error updating data: ${error}`)
+    }
+  }
+
+  showNotifications({ checkins, messages }) {
+    const existingCallSigns = this.state.checkins
+      .map((c) => c.call_sign)
+      .filter((c) => present(c))
+
+    const updatedCallSigns = checkins
+      .map((c) => c.call_sign)
+      .filter((c) => present(c))
+
+    const newCallSigns = updatedCallSigns.filter(
+      (c) => !existingCallSigns.includes(c)
+    )
+
+    if (newCallSigns.length > 0) {
+      newCallSigns.forEach((callSign) => {
+        if (present(callSign)) {
+          Toastify({
+            text: `${callSign} checked in`,
+            duration: 3000,
+            style: {
+              background: "#f93",
+            },
+          }).showToast()
+        }
+      })
+    }
+
+    if (messages.length > this.state.messages.length) {
+      const newMessages = messages.slice(this.state.messages.length)
+      newMessages.forEach((message) => {
+        let text = message.message
+        if (text.length > 50) text = `${text.substring(0, 50)}...`
+        Toastify({
+          text: `${message.call_sign}: ${text}`,
+          duration: 3000,
+          style: {
+            background: "#39f",
+          },
+        }).showToast()
+      })
     }
   }
 
