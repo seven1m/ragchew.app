@@ -344,8 +344,10 @@ post '/close-net/:id' do
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
   logger.close_net!
 
-  session.delete(:started_net)
-  session.delete(:started_net_password)
+  @user.update!(
+    monitoring_net: nil,
+    monitoring_net_last_refreshed_at: nil,
+  )
 
   redirect '/'
 rescue NetLogger::NotAuthorizedError
