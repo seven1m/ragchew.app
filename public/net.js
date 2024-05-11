@@ -56,8 +56,10 @@ class Net extends Component {
       this.startUpdatingRegularly()
     })
     channel.bind("message", ({ message }) => {
-      this.showMessageNotification(message)
-      this.setState({ messages: [...this.state.messages, message] })
+      if (this.state.monitoringThisNet) {
+        this.showMessageNotification(message)
+        this.setState({ messages: [...this.state.messages, message] })
+      }
     })
   }
 
