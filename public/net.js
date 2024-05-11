@@ -522,7 +522,12 @@ class CheckinRow extends Component {
           ${this.props.call_sign}
         </a>
       </td>
-      <td>${presence(this.props.preferred_name) || this.props.name}</td>
+      <td>
+        ${present(this.props.preferred_name)
+          ? `(${this.props.preferred_name}) `
+          : ""}
+        ${this.props.name}
+      </td>
       <td>${formatTime(this.props.checked_in_at)}</td>
       <td>${this.props.grid_square}</td>
       <td>${this.props.status}</td>
@@ -879,9 +884,9 @@ class LogForm extends Component {
     if (this.props.info === false)
       return html`<em class="warning">not found</em>`
 
-    const name =
-      this.props.info.preferred_name ||
-      `${this.props.info.first_name} ${this.props.info.last_name}`
+    let name = `${this.props.info.first_name} ${this.props.info.last_name}`
+    if (present(this.props.preferred_name))
+      name = `(${this.props.preferred_name}) ${name}`
 
     const { city, state, country } = this.props.info
     return html`
