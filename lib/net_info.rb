@@ -149,6 +149,33 @@ class NetInfo
       .update!(preferred_name:, notes:)
   end
 
+  def to_log
+    @record.checkins.order(:num).map do |checkin|
+      [
+        checkin.num,
+        checkin.call_sign,
+        checkin.state,
+        checkin.remarks,
+        checkin.qsl_info,
+        checkin.city,
+        checkin.name,
+        checkin.status,
+        '', # unknown
+        '', # unknown
+        checkin.county,
+        checkin.grid_square,
+        checkin.street,
+        checkin.zip,
+        checkin.dxcc,
+        '', # unknown
+        '', # unknown
+        '', # unknown
+        checkin.country,
+        checkin.preferred_name,
+      ].map { |cell| cell.present? ? cell.to_s.tr('|~`', ' ') : ' ' }.join('|')
+    end.join("\n")
+  end
+
   private
 
   def update_cache(force_full: false)

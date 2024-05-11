@@ -238,6 +238,17 @@ rescue NetInfo::NotFoundError
   { error: 'net not found' }.to_json
 end
 
+get '/net/:id/log' do
+  @user = get_user
+  require_user!
+
+  service = NetInfo.new(id: params[:id])
+
+  content_type 'text/plain'
+  attachment "#{service.net.name}.log"
+  service.to_log
+end
+
 get '/create-net' do
   @user = get_user
   require_net_logger_role!

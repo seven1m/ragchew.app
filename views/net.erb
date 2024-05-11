@@ -9,9 +9,14 @@
     <h1><%== @net.name %></h1>
 
     <% if @net.logger_user == @user %>
-      <form action="/close-net/<%== @net.id %>" method="POST" onsubmit="if (!confirm('Are you sure you want to CLOSE this net?')) return false">
-        <input type="submit" value="Close net!"/>
-      </form>
+      <div>
+        <form target="_blank" action="/net/<%== @net.id %>/log" method="GET" class="inline">
+          <input type="submit" value="Download Log"/>
+        </form>
+        <form action="/close-net/<%== @net.id %>" method="POST" onsubmit="if (!confirm('Are you sure you want to CLOSE this net?')) return false" class="inline">
+          <input type="submit" value="Close net!"/>
+        </form>
+      </div>
     <% end %>
 
     <p>
