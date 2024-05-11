@@ -525,7 +525,10 @@ class CheckinRow extends Component {
         </a>
       </td>
       <td>
-        ${present(this.props.preferred_name)
+        ${present(this.props.preferred_name) &&
+        this.props.name &&
+        this.props.preferred_name !==
+          this.props.name.slice(0, this.props.preferred_name.length)
           ? `(${this.props.preferred_name}) `
           : ""}
         ${this.props.name}
@@ -887,7 +890,10 @@ class LogForm extends Component {
       return html`<em class="warning">not found</em>`
 
     let name = `${this.props.info.first_name} ${this.props.info.last_name}`
-    if (present(this.props.preferred_name))
+    if (
+      present(this.props.preferred_name) &&
+      this.props.preferred_name !== this.props.info.first_name
+    )
       name = `(${this.props.preferred_name}) ${name}`
 
     const { city, state, country } = this.props.info
