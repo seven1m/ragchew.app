@@ -248,7 +248,8 @@ class Net extends Component {
           },
           editing: {
             ...this.state.editing,
-            preferred_name: presence(info.preferred_name) || "",
+            preferred_name:
+              presence(info.preferred_name) || info.first_name.split(/\s+/)[0],
             notes: presence(info.notes) || "",
           },
         })
@@ -527,8 +528,7 @@ class CheckinRow extends Component {
       <td>
         ${present(this.props.preferred_name) &&
         this.props.name &&
-        this.props.preferred_name !==
-          this.props.name.slice(0, this.props.preferred_name.length)
+        !this.props.name.match(new RegExp(`^${this.props.preferred_name} `))
           ? `(${this.props.preferred_name}) `
           : ""}
         ${this.props.name}
@@ -554,8 +554,11 @@ class CheckinRow extends Component {
         <td></td>
         <td colspan="9" class="can-wrap">
           ${this.props.remarks}
+          ${present(this.props.remarks) &&
+          present(this.props.notes) &&
+          html`<br />`}
           ${this.props.notes &&
-          html`<br /><em>Station Notes: ${this.props.notes}</em>`}
+          html`<em>Station Notes: ${this.props.notes}</em>`}
         </td>
       </tr>
     `
@@ -892,7 +895,7 @@ class LogForm extends Component {
     let name = `${this.props.info.first_name} ${this.props.info.last_name}`
     if (
       present(this.props.preferred_name) &&
-      this.props.preferred_name !== this.props.info.first_name
+      !name.match(new RegExp(`^${this.props.preferred_name} `))
     )
       name = `(${this.props.preferred_name}) ${name}`
 
