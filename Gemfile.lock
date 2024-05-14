@@ -40,7 +40,7 @@ GEM
     mutex_m (0.2.0)
     mysql2 (0.5.5)
     nio4r (2.7.0)
-    nokogiri (1.16.2-x86_64-linux)
+    nokogiri (1.16.5-x86_64-linux)
       racc (~> 1.4)
     puma (6.4.2)
       nio4r (~> 2.0)
