@@ -525,14 +525,7 @@ class CheckinRow extends Component {
           ${this.props.call_sign}
         </a>
       </td>
-      <td>
-        ${present(this.props.preferred_name) &&
-        this.props.name &&
-        !this.props.name.match(new RegExp(`^${this.props.preferred_name} `))
-          ? `(${this.props.preferred_name}) `
-          : ""}
-        ${this.props.name}
-      </td>
+      <td>${stationName(this.props)}</td>
       <td>${formatTime(this.props.checked_in_at)}</td>
       <td>${this.props.grid_square}</td>
       <td>${this.props.status}</td>
@@ -892,17 +885,11 @@ class LogForm extends Component {
     if (this.props.info === false)
       return html`<em class="warning">not found</em>`
 
-    let name = `${this.props.info.first_name} ${this.props.info.last_name}`
-    if (
-      present(this.props.preferred_name) &&
-      !name.match(new RegExp(`^${this.props.preferred_name} `))
-    )
-      name = `(${this.props.preferred_name}) ${name}`
-
     const { city, state, country } = this.props.info
     return html`
       <span>
-        ${name}, ${city}, ${state} (${country}) ${this.renderLastCheckin()}
+        ${stationName(this.props)}, ${city}, ${state} (${country})
+        ${this.renderLastCheckin()}
       </span>
     `
   }
@@ -1180,6 +1167,17 @@ class CurrentTime extends Component {
   render() {
     return formatTime(this.state.time)
   }
+}
+
+function stationName({ name, preferred_name }) {
+  if (
+    !present(preferred_name) ||
+    !present(name) ||
+    name.match(new RegExp(`^${preferred_name}( |$)`, "i"))
+  )
+    return name
+
+  return `(${preferred_name}) ${name}`
 }
 
 function formatTime(time) {
