@@ -136,7 +136,7 @@
   <% @club.closed_nets.order(:name, :started_at).each do |closed_net| %>
     <li>
       <a href="/admin/closed-net/<%== closed_net.id %>"><%== closed_net.name %></a>
-      <em><%== format_time(closed_net.started_at) %></em>
+      <em><%= format_time(closed_net.started_at) %></em>
     </li>
   <% end %>
 </ul>

@@ -25,11 +25,11 @@
     <% end %>
   </dd>
   <dt>Last signed in:</dt>
-  <dd><%== format_time @user_to_edit.last_signed_in_at %></dd>
+  <dd><%= format_time @user_to_edit.last_signed_in_at %></dd>
   <dt>Created at:</dt>
-  <dd><%== format_time @user_to_edit.created_at %></dd>
+  <dd><%= format_time @user_to_edit.created_at %></dd>
   <dt>Updated at:</dt>
-  <dd><%== format_time @user_to_edit.updated_at %></dd>
+  <dd><%= format_time @user_to_edit.updated_at %></dd>
   <dt>Monitoring net:</dt>
   <dd>
     <% if @user_to_edit.monitoring_net %>
@@ -41,7 +41,7 @@
   <dt>Monitoring net last refreshed at:</dt>
   <dd>
     <% if @user_to_edit.monitoring_net_last_refreshed_at %>
-      <%== format_time @user_to_edit.monitoring_net_last_refreshed_at %>
+      <%= format_time @user_to_edit.monitoring_net_last_refreshed_at %>
     <% else %>
       <em>none</em>
     <% end %>

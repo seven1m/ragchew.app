@@ -12,7 +12,7 @@
   <dl class="column">
     <dt>Started at:</dt>
     <dd>
-      <%== format_time(net.started_at) %>
+      <%= format_time(net.started_at) %>
       (<%= distance_of_time_in_words(net.started_at, Time.now) %> ago)
     </dd>
     <% if net.respond_to?(:ended_at) && net.ended_at %>

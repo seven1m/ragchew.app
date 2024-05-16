@@ -22,6 +22,8 @@ function updatePage() {
       if (netMapElm) {
         maybeUpdateNetMapCoords(JSON.parse(netMapElm.dataset.coords || "null"))
       }
+
+      formatTimes()
     })
 }
 
@@ -135,21 +137,41 @@ function updateNetMapCenters(centers) {
   }
 }
 
+function formatTime(time, timeOnly = false) {
+  const year = time.getFullYear()
+
+  let month = new String(time.getMonth() + 1)
+  if (month.length == 1) month = "0" + month
+
+  let day = new String(time.getDate())
+  if (day.length == 1) day = "0" + day
+
+  let hour = new String(time.getHours())
+  if (hour.length == 1) hour = "0" + hour
+
+  let minute = new String(time.getMinutes())
+  if (minute.length == 1) minute = "0" + minute
+
+  let second = new String(time.getSeconds())
+  if (second.length == 1) second = "0" + second
+
+  if (timeOnly) return `${hour}:${minute}:${second}`
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
+function formatTimes() {
+  document.querySelectorAll(".time").forEach((elm) => {
+    const time = new Date(elm.dataset.time)
+    const timeOnly = elm.classList.contains("time-only")
+    elm.innerHTML = formatTime(time, timeOnly)
+  })
+}
+
 function updateCurrentTime() {
   document.body.querySelectorAll(".current-time").forEach((elm) => {
-    const date = new Date()
-    const year = date.getUTCFullYear()
-    let month = new String(date.getUTCMonth() + 1)
-    if (month.length == 1) month = "0" + month
-    let day = new String(date.getUTCDate())
-    if (day.length == 1) day = "0" + day
-    let hour = new String(date.getUTCHours())
-    if (hour.length == 1) hour = "0" + hour
-    let minute = new String(date.getUTCMinutes())
-    if (minute.length == 1) minute = "0" + minute
-    let second = new String(date.getUTCSeconds())
-    if (second.length == 1) second = "0" + second
-    elm.innerHTML = `${year}-${month}-${day} ${hour}:${minute}:${second} UTC`
+    const time = new Date()
+    elm.innerHTML = formatTime(time)
   })
 }
 

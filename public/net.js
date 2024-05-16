@@ -144,7 +144,7 @@ class Net extends Component {
 
       <p class="timestamps">
         Current time: <${CurrentTime} /> (Last updated${" "}
-        ${formatTime(this.state.lastUpdatedAt)})
+        ${formatTimeWithDayjs(this.state.lastUpdatedAt, true)})
       </p>
 
       <h2>Log</h2>
@@ -526,7 +526,7 @@ class CheckinRow extends Component {
         </a>
       </td>
       <td>${stationName(this.props)}</td>
-      <td>${formatTime(this.props.checked_in_at)}</td>
+      <td>${formatTimeWithDayjs(this.props.checked_in_at, true)}</td>
       <td>${this.props.grid_square}</td>
       <td>${this.props.status}</td>
       <td>${this.props.city}</td>
@@ -682,14 +682,14 @@ class Messages extends Component {
                 html`<tr>
                   <td>${message.call_sign}</td>
                   <td class="can-wrap">${message.message}</td>
-                  <td>${formatTime(message.sent_at)}</td>
+                  <td>${formatTimeWithDayjs(message.sent_at, true)}</td>
                 </tr>`
             )}
             ${this.state.sendingMessage &&
             html`<tr>
               <td>${this.props.userCallSign} <em>sending...</em></td>
               <td class="can-wrap">${this.state.sendingMessage}</td>
-              <td>${formatTime(new Date())}</td>
+              <td>${formatTimeWithDayjs(new Date(), true)}</td>
             </tr>`}
           </tbody>
         </table>
@@ -1165,7 +1165,7 @@ class CurrentTime extends Component {
   }
 
   render() {
-    return formatTime(this.state.time)
+    return formatTimeWithDayjs(this.state.time)
   }
 }
 
@@ -1180,8 +1180,11 @@ function stationName({ name, preferred_name }) {
   return `(${preferred_name}) ${name}`
 }
 
-function formatTime(time) {
+function formatTimeWithDayjs(time, timeOnly) {
   if (!time) return null
+
+  if (timeOnly) return dayjs(time).format("HH:mm:ss")
+
   return dayjs(time).format("YYYY-MM-DD HH:mm:ss")
 }
 
@@ -1213,3 +1216,7 @@ document.querySelectorAll("[data-component]").forEach((elm) => {
   elm.innerHTML = ""
   render(html`<${components[name]} ...${props} />`, elm)
 })
+
+// There is a single static time on the page we'll use our old-school
+// update technique for that, for now.
+formatTimes()

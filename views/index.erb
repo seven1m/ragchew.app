@@ -40,7 +40,7 @@
             <td><%== net.frequency %></td>
             <td><%== net.mode %></td>
             <td><%== net.band %></td>
-            <td><%== format_time(net.started_at) %></td>
+            <td><%= format_time(net.started_at) %></td>
             <td><%== net.host %></td>
           </tr>
         <% end %>
@@ -95,4 +95,6 @@
     <%= @update_backoff || 5 %> * 1000,
     1 * hour
   )
+
+  formatTimes()
 </script>

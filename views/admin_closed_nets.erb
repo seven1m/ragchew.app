@@ -30,11 +30,11 @@
         <tr>
           <td><a href="/admin/closed-net/<%== closed_net.id %>"><%== closed_net.name %></a></td>
           <td>
-            <%== format_time(closed_net.started_at) %><br/>
+            <%= format_time(closed_net.started_at) %><br/>
             (<%== time_ago_in_words(closed_net.started_at) %> ago)</em>
           </td>
           <td>
-            <%== format_time(closed_net.ended_at) %><br/>
+            <%= format_time(closed_net.ended_at) %><br/>
             (<%== time_ago_in_words(closed_net.ended_at) %> ago)</em>
           </td>
           <td><%== distance_of_time_in_words(closed_net.started_at, closed_net.ended_at) %> long</td>
