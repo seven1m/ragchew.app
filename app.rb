@@ -142,6 +142,12 @@ get '/' do
   erb :index
 end
 
+get '/about' do
+  @user = get_user
+
+  erb :about
+end
+
 get '/net/:name' do
   @user = get_user
 
