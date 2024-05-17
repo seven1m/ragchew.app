@@ -173,7 +173,7 @@ function updateCurrentTime(parent) {
   parent = parent || document.body
   parent.querySelectorAll(".current-time").forEach((elm) => {
     const time = new Date()
-    elm.innerHTML = formatTime(time)
+    elm.innerHTML = formatTime(time, true)
   })
 }
 

@@ -1165,7 +1165,7 @@ class CurrentTime extends Component {
   }
 
   render() {
-    return formatTimeWithDayjs(this.state.time)
+    return formatTimeWithDayjs(this.state.time, true)
   }
 }
 
