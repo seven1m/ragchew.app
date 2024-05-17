@@ -74,7 +74,8 @@ input, select { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
 
 /* Misc */
 
-em.highlight { font-style: normal; background-color: #ffc; }
+.highlight { background-color: #ffc; }
+em.highlight { font-style: normal; }
 
 .error, .danger { color: red; }
 .warning, .warning a { color: orange; }
