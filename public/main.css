@@ -74,6 +74,8 @@ input, select { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
 
 /* Misc */
 
+.clear { clear: both; }
+
 .highlight { background-color: #ffc; }
 em.highlight { font-style: normal; }
 
