@@ -13,6 +13,8 @@ function updatePage() {
       const newDocument = new DOMParser().parseFromString(html, "text/html")
       newDocument.querySelectorAll(".update-in-place").forEach((newElm) => {
         if (newElm.id) {
+          formatTimes(newElm)
+          updateCurrentTime(newElm)
           const existingElm = document.getElementById(newElm.id)
           existingElm.parentNode.replaceChild(newElm, existingElm)
         }
@@ -22,8 +24,6 @@ function updatePage() {
       if (netMapElm) {
         maybeUpdateNetMapCoords(JSON.parse(netMapElm.dataset.coords || "null"))
       }
-
-      formatTimes()
     })
 }
 
@@ -160,16 +160,18 @@ function formatTime(time, timeOnly = false) {
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`
 }
 
-function formatTimes() {
-  document.querySelectorAll(".time").forEach((elm) => {
+function formatTimes(parent) {
+  parent = parent || document.body
+  parent.querySelectorAll(".time").forEach((elm) => {
     const time = new Date(elm.dataset.time)
     const timeOnly = elm.classList.contains("time-only")
     elm.innerHTML = formatTime(time, timeOnly)
   })
 }
 
-function updateCurrentTime() {
-  document.body.querySelectorAll(".current-time").forEach((elm) => {
+function updateCurrentTime(parent) {
+  parent = parent || document.body
+  parent.querySelectorAll(".current-time").forEach((elm) => {
     const time = new Date()
     elm.innerHTML = formatTime(time)
   })
