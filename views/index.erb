@@ -6,19 +6,15 @@
 </h1>
 
 <p>
-  This is a limited web-based user interface companion to the
-  <a href="http://netlogger.org/">NetLogger</a> desktop software
-  for participating in amateur radio (ham) nets.
+  Follow along and participate in your favorite amateur radio (ham) nets, in the browser and on mobile.
 </p>
 
 <div id="net-map"
      data-centers='<%= json_for_html_attribute @centers %>'></div>
 
-<p class="index-map-explanation">The above map is a rough estimation and can be comically inaccurate at times. Rely on the list of nets below for certainty. :-)</p>
-
 <%= erb :_timestamps %>
 
-<h2>Nets</h2>
+<h2>Active Nets</h2>
 
 <% if @nets.any? %>
   <div class="table-wrapper">
