@@ -26,7 +26,7 @@ helpers do
   def format_time(ts, time_only: false)
     return '' unless ts
 
-    "<span class='time #{time_only ? 'time-only' : ''}' data-time='#{ts.strftime('%Y-%m-%dT%H:%M:%S.000z')}'>#{ts.strftime('%Y-%m-%d %H:%M:%S UTC')}</span>"
+    "<span class='time #{time_only ? 'time-only' : ''}' data-time='#{ts.strftime('%Y-%m-%dT%H:%M:%S.000Z')}'>#{ts.strftime('%Y-%m-%d %H:%M:%S UTC')}</span>"
   end
 
   def url_escape(s)
