@@ -253,6 +253,9 @@ get '/net/:id/log' do
   content_type 'text/plain'
   attachment "#{service.net.name}.log"
   service.to_log
+rescue NetInfo::NotFoundError
+  status 404
+  erb :missing_net
 end
 
 get '/create-net' do
