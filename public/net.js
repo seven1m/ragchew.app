@@ -1169,7 +1169,9 @@ class CurrentTime extends Component {
   }
 }
 
-function stationName({ name, preferred_name }) {
+function stationName({ name, preferred_name, info }) {
+  if (!name && info) name = `${info.first_name} ${info.last_name}`
+
   if (
     !present(preferred_name) ||
     !present(name) ||
