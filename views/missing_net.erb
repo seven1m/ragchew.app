@@ -9,7 +9,8 @@
     We could not find a net with that name.
   <% end %>
   <% if @net_count && @net_count > 0 %>
-    You can visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
+    You can visit the home page where
+    <a href="/"><%= @net_count %>other <%= pluralize 'net', @net_count %></a>
     are ongoing.
   <% else %>
     You can visit the <a href="/">home page</a>.
