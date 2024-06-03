@@ -278,7 +278,9 @@ class Net extends Component {
     this.setState({ submitting: true, error: null })
 
     if (!this.state.info) await this.fetchStationInfo()
-    let info = this.state.info
+    const info = this.state.info
+
+    const name = [info.first_name, info.last_name].filter((n) => n).join(" ")
 
     const payload = {
       ...info,
@@ -287,9 +289,11 @@ class Net extends Component {
       preferred_name: this.state.editing.preferred_name,
       remarks: this.state.editing.remarks,
       notes: this.state.editing.notes,
-      name: `${info.first_name} ${info.last_name}`,
+      name: name,
       checked_in_at: dayjs().format(),
     }
+    if (!info.call_sign) payload.call_sign = this.state.editing.call_sign
+
     this.addOrUpdateCheckinInMemory(payload)
     try {
       const response = await fetch(

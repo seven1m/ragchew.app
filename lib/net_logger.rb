@@ -45,7 +45,9 @@ class NetLogger
     @net_info.update_net_right_now_with_wreckless_disregard_for_the_last_update!
     checkin = @net_info.net.checkins.find_by(num:)
     checkin.update!(notes: entry[:notes]) if entry[:call_sign] == checkin&.call_sign
-    @net_info.update_station_details!(entry[:call_sign], preferred_name: entry[:preferred_name], notes: entry[:notes])
+    if entry[:call_sign].present?
+      @net_info.update_station_details!(entry[:call_sign], preferred_name: entry[:preferred_name], notes: entry[:notes])
+    end
   end
 
   def delete!(num)
@@ -127,7 +129,7 @@ class NetLogger
       [
         mode,
         entry.fetch(:num),
-        entry.fetch(:call_sign).upcase,
+        entry[:call_sign].to_s.upcase,
         entry[:city],
         entry[:state],
         name,
