@@ -54,7 +54,7 @@ class Fetcher
     # to debug the raw server HTML...
     # ENV['DEBUG_HTML'] = true
     # NetInfo.new(name: 'foo').send(:fetch_raw, force_full: true)
-    puts html if ENV['DEBUG_HTML']
+    puts html #if ENV['DEBUG_HTML']
 
     html
   end

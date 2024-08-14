@@ -224,6 +224,7 @@ get '/net/:id/details' do
 
   messagesCount = net.messages.count
   messages = monitoring_this_net ? net.messages.order(:sent_at).to_a : []
+  messages.reject! { |m| m.blocked? && m.call_sign.upcase != @user.call_sign.upcase }
   monitors = net.monitors.order(:call_sign).to_a
   favorites = @user.favorites.pluck(:call_sign)
 

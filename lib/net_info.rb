@@ -57,12 +57,12 @@ class NetInfo
       end
     end
 
-    # 2023-05-09 17:40:45 GET http://www.netlogger.org/cgi-bin/NetLogger/SubscribeToNet.php?ProtocolVersion=2.3&NetName=Daily%20Check%20in%20Net&Callsign=KI5ZDF-TIM%20MORGAN%20-%20v3.1.7L&IMSerial=0&LastExtDataSerial=0                                                                                                                                                     
+    # 2023-05-09 17:40:45 GET http://www.netlogger.org/cgi-bin/NetLogger/SubscribeToNet.php?ProtocolVersion=2.3&NetName=Daily%20Check%20in%20Net&Callsign=KI5ZDF-TIM%20MORGAN%20-%20v3.1.7L&IMSerial=0&LastExtDataSerial=0
     #                        ← 200 OK text/html 2.15k 150ms
     #                             Request                                                          Response                                                          Detail
-    #Host:          www.netlogger.org                                                                                                                                                                 
-    #Accept:        www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript                                                     
-    #Content-Type:  application/x-www-form-urlencoded                                                                                                                                                 
+    #Host:          www.netlogger.org
+    #Accept:        www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript
+    #Content-Type:  application/x-www-form-urlencoded
     #Query                                                                                                                                                                                      [m:auto]
     #ProtocolVersion:   2.3
     #NetName:           Daily Check in Net
@@ -83,12 +83,12 @@ class NetInfo
   end
 
   def stop_monitoring!(user:)
-    # 2023-05-09 17:41:58 GET http://www.netlogger.org/cgi-bin/NetLogger/UnsubscribeFromNet.php?&Callsign=KI5ZDF-TIM%20MORGAN%20-%20v3.1.7L&NetName=Daily%20Check%20in%20Net                           
+    # 2023-05-09 17:41:58 GET http://www.netlogger.org/cgi-bin/NetLogger/UnsubscribeFromNet.php?&Callsign=KI5ZDF-TIM%20MORGAN%20-%20v3.1.7L&NetName=Daily%20Check%20in%20Net
     #                        ← 200 OK text/html 176b 143ms
     #                             Request                                                          Response                                                          Detail
-    #Host:          www.netlogger.org                                                                                                                                                                 
-    #Accept:        www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript                                                     
-    #Content-Type:  application/x-www-form-urlencoded                                                                                                                                                 
+    #Host:          www.netlogger.org
+    #Accept:        www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript
+    #Content-Type:  application/x-www-form-urlencoded
     #Query                                                                                                                                                                                      [m:auto]
     #Callsign: KI5ZDF-TIM MORGAN - v3.1.7L
     #NetName:  Daily Check in Net
@@ -100,19 +100,19 @@ class NetInfo
         'Callsign' => name_for_monitoring(user),
         'NetName' => @record.name,
       )
-    rescue Fetcher::NotFoundError => e
+    rescue Fetcher::NotFoundError
       raise NotFoundError, 'Already unsubscribed'
     end
   end
 
   def send_message!(user:, message:)
-    # 2023-05-09 17:24:31 POST http://www.netlogger.org/cgi-bin/NetLogger/SendInstantMessage.php                                                                                                       
+    # 2023-05-09 17:24:31 POST http://www.netlogger.org/cgi-bin/NetLogger/SendInstantMessage.php
     #                         ← 200 OK text/html 176b 206ms
     #                             Request                                                          Response                                                          Detail
-    #Host:            www.netlogger.org                                                                                                                                                               
-    #Accept:          www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript                                                   
-    #Content-Type:    application/x-www-form-urlencoded                                                                                                                                               
-    #Content-Length:  130                                                                                                                                                                             
+    #Host:            www.netlogger.org
+    #Accept:          www/source, text/html, video/mpeg, image/jpeg, image/x-tiff, image/x-rgb, image/x-xbm, image/gif, */*, application/postscript
+    #Content-Type:    application/x-www-form-urlencoded
+    #Content-Length:  130
     #URLEncoded form                                                                                                                                                                            [m:auto]
     #NetName:      Test net JUST TESTING
     #Callsign:     KI5ZDF-TIM MORGAN
@@ -120,11 +120,14 @@ class NetInfo
     #Message:      hello just testing https://ragchew.app
 
     with_lock do
+      blocked_stations = @record.monitors.blocked.pluck(:call_sign).map(&:upcase)
       message_record = @record.messages.create!(
         log_id: nil, # temporary messages don't have a log_id
-        call_sign: name_for_chat(user),
+        call_sign: user.call_sign,
+        name: user.first_name.upcase,
         message:,
         sent_at: Time.now,
+        blocked: blocked_stations.include?(user.call_sign.upcase),
       )
       Pusher::Client.from_env.trigger(
         "private-net-#{@record.id}",
@@ -298,12 +301,15 @@ class NetInfo
   def update_messages(messages)
     changes = 0
 
+    blocked_stations = @record.monitors.blocked.pluck(:call_sign).map(&:upcase)
+
     records = @record.messages.all
     messages.each do |message|
       if (existing = records.detect { |r| r.log_id == message[:log_id] })
         existing.update!(message)
         changes += 1 if existing.previous_changes.any?
       else
+        message[:blocked] = blocked_stations.include?(message[:call_sign].upcase)
         @record.messages.create!(message)
         changes += 1
       end
@@ -378,12 +384,13 @@ class NetInfo
       currently_operating = $1.to_i
     end
 
-    monitors = data['NetMonitors Start'].map do |call_sign_and_info, ip_address|
+    monitors = data['NetMonitors Start'].each_with_index.map do |(call_sign_and_info, ip_address), index|
       parts = call_sign_and_info.split(' - ')
       call_sign, name = parts.first.split('-')
       version = parts.grep(/v\d/).last
       status = parts.grep(/(On|Off)line/).first || 'Online'
       {
+        num: index,
         call_sign:,
         name:,
         version:,
@@ -392,7 +399,20 @@ class NetInfo
       }
     end
 
-    messages = data['IM Start'].map do |log_id, call_sign, _always_one, message, sent_at, ip_address|
+    # 2024-08-14 02:36:44|1|KI5ZDF-TIM MORGAN|1031631016|0|3138074|  # type 1 - NCO or Logger probably (not currently handled)
+    # 2024-08-14 02:38:22|3|1|3138076|                               # type 3 - block station with index 1
+    # 2024-08-14 02:41:34|3|2|3138079|                               # type 3 - block station with index 2
+    (data['Ext Data Start'] || []).each do |timestamp, type, index, _serial|
+      # I think type 1 means NCO or Logger or something.
+      # Type 3 means to block aka shadowban the station so their messages are hidden.
+      next unless type.to_i == 3
+      next unless (monitor = monitors[index.to_i])
+
+      monitor[:blocked] = true
+    end
+
+    messages = data['IM Start'].map do |log_id, call_sign_and_name, _always_one, message, sent_at, ip_address|
+      call_sign, name = call_sign_and_name.split('-', 2).map(&:strip)
       begin
         sent_at = Time.parse(sent_at)
       rescue ArgumentError, TypeError
@@ -402,6 +422,7 @@ class NetInfo
         {
           log_id: log_id.to_i,
           call_sign:,
+          name:,
           message:,
           sent_at:,
           ip_address:
@@ -424,6 +445,9 @@ class NetInfo
       update_interval: raw_info['updateinterval'],
       alt_name: raw_info['altnetname'],
     }
+    if (last_ext_data = (data['Ext Data Start'] || []).last)
+      info[:ext_data_serial] = last_ext_data.last.to_i
+    end
 
     {
       checkins:,
@@ -460,9 +484,11 @@ class NetInfo
       )
     end
 
+    params.merge!('LastExtDataSerial' => @record.ext_data_serial)
+
     begin
       fetcher.get('GetUpdates3.php', params)
-    rescue Fetcher::NotFoundError => e
+    rescue Fetcher::NotFoundError
       Tables::ClosedNet.from_net(@record).save!
       @record.destroy
       raise NotFoundError, 'Net is closed'

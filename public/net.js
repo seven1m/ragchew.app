@@ -56,7 +56,10 @@ class Net extends Component {
       this.startUpdatingRegularly()
     })
     channel.bind("message", ({ message }) => {
-      if (this.state.monitoringThisNet) {
+      console.log({ message, userCallSign: this.props.userCallSign })
+      const hidden =
+        message.blocked && message.call_sign !== this.props.userCallSign
+      if (this.state.monitoringThisNet && !hidden) {
         this.showMessageNotification(message)
         this.setState({ messages: [...this.state.messages, message] })
       }
@@ -675,7 +678,7 @@ class Messages extends Component {
         <table>
           <thead>
             <tr>
-              <th>Call Sign</th>
+              <th>Call Sign & Name</th>
               <th>Message</th>
               <th>Timestamp</th>
             </tr>
@@ -684,7 +687,7 @@ class Messages extends Component {
             ${this.props.messages.map(
               (message) =>
                 html`<tr>
-                  <td>${message.call_sign}</td>
+                  <td>${message.call_sign} - ${message.name}</td>
                   <td class="can-wrap">${message.message}</td>
                   <td>${formatTimeWithDayjs(message.sent_at, true)}</td>
                 </tr>`
