@@ -184,7 +184,7 @@ class Net extends Component {
 
       <div class="h2-with-controls">
         <h2>Messages</h2>
-        ${this.props.monitoringThisNet &&
+        ${this.state.monitoringThisNet &&
         html`<label>
           <input
             type="checkbox"
@@ -204,6 +204,7 @@ class Net extends Component {
         userCallSign=${this.props.userCallSign}
         isLogger=${this.props.isLogger}
         reverseMessages=${this.state.reverseMessages}
+        onToggleMonitorNet=${this.handleToggleMonitorNet.bind(this)}
       />
 
       <h2>Monitors</h2>
@@ -240,6 +241,10 @@ class Net extends Component {
         this.clearStationInfo()
       }
     }, 800)
+  }
+
+  async handleToggleMonitorNet() {
+    await this.updateData()
   }
 
   async clearStationInfo(info = null) {
@@ -672,19 +677,20 @@ class Messages extends Component {
   }
 
   render() {
+    if (this.state.loading) return html`<p><em>loading...</em></p>`
+
     if (!this.props.monitoringThisNet)
       return html`
         <p>
           <em>
             ${this.props.messagesCount}${" "}
-            ${pluralize("message", this.props.messagesCount)}.
-          </em>${" "}
-          Click below to participate.
-          <form action="/monitor/${
-            this.props.netId
-          }" method="post"><button>Monitor this Net</button></form>
+            ${pluralize("message", this.props.messagesCount)}. </em
+          >${" "} Click below to participate.<br />
+          <button onClick=${this.handleMonitorNet.bind(this)}>
+            Monitor this Net
+          </button>
         </p>
-        `
+      `
 
     return this.props.reverseMessages
       ? [this.renderForm(), this.renderLog(), this.renderStopMonitoringForm()]
@@ -765,6 +771,36 @@ class Messages extends Component {
     `
   }
 
+  handleMonitorNet() {
+    this.setState({ loading: true })
+    fetch(`/monitor/${this.props.netId}`, { method: "POST" })
+      .then((response) => response.json())
+      .then(async (data) => {
+        if (data.ok) {
+          await this.props.onToggleMonitorNet()
+          this.setState({ loading: false })
+        } else {
+          alert("Error monitoring net")
+          this.setState({ loading: false })
+        }
+      })
+  }
+
+  handleUnmonitorNet() {
+    this.setState({ loading: true })
+    fetch(`/unmonitor/${this.props.netId}`, { method: "POST" })
+      .then((response) => response.json())
+      .then(async (data) => {
+        if (data.ok) {
+          await this.props.onToggleMonitorNet()
+          this.setState({ loading: false })
+        } else {
+          alert("Error unmonitoring net")
+          this.setState({ loading: false })
+        }
+      })
+  }
+
   async handleSubmit(e) {
     e.preventDefault()
     this.setState({
@@ -822,11 +858,11 @@ class Messages extends Component {
     if (this.props.isLogger) return null
 
     return html`
-      <form action="/unmonitor/${this.props.netId}" method="post">
-        <p>
-          <button>Stop monitoring this Net</button>
-        </p>
-      </form>
+      <div>
+        <button onclick=${this.handleUnmonitorNet.bind(this)}>
+          Stop monitoring this Net
+        </button>
+      </div>
     `
   }
 }

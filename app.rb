@@ -819,6 +819,8 @@ get '/admin/table/:table' do
 end
 
 post '/monitor/:net_id' do
+  content_type 'application/json'
+
   @user = get_user
   require_user!
 
@@ -827,10 +829,14 @@ post '/monitor/:net_id' do
 
   @net_info.monitor!(user: @user)
 
-  redirect "/net/#{url_escape @net.name}#messages"
+  { ok: true }.to_json
+rescue NetInfo::NotFoundError
+  { error: true }.to_json
 end
 
 post '/unmonitor/:net_id' do
+  content_type 'application/json'
+
   @user = get_user
   require_user!
 
@@ -849,10 +855,9 @@ post '/unmonitor/:net_id' do
 
   @net = @net_info.net
 
-  redirect "/net/#{url_escape @net.name}#messages"
+  { ok: true }.to_json
 rescue NetInfo::NotFoundError
-  # net must have closed so just go home
-  redirect '/'
+  { error: true }.to_json
 end
 
 post '/message/:net_id' do
