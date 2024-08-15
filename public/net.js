@@ -30,6 +30,7 @@ class Net extends Component {
     error: null,
     lastUpdatedAt: null,
     monitoringThisNet: this.props.monitoringThisNet,
+    reverseMessages: localStorage.getItem("reverseMessages") === "true",
   }
 
   formRef = createRef()
@@ -181,7 +182,19 @@ class Net extends Component {
         onClear: this.handleLogFormClear.bind(this),
       })}
 
-      <h2>Messages</h2>
+      <div class="h2-with-controls">
+        <h2>Messages</h2>
+        ${this.props.monitoringThisNet &&
+        html`<label>
+          <input
+            type="checkbox"
+            id="reverse-messages"
+            checked=${this.state.reverseMessages}
+            onClick=${this.handleReverseMessagesToggle.bind(this)}
+          />
+          Reverse messages
+        </label>`}
+      </div>
 
       <${Messages}
         messages=${this.state.messages}
@@ -190,6 +203,7 @@ class Net extends Component {
         netId=${this.props.netId}
         userCallSign=${this.props.userCallSign}
         isLogger=${this.props.isLogger}
+        reverseMessages=${this.state.reverseMessages}
       />
 
       <h2>Monitors</h2>
@@ -206,6 +220,12 @@ class Net extends Component {
         present(checkin.notes)
     )
     return Math.max(...checkins.map((checkin) => checkin.num), 0) + 1
+  }
+
+  handleReverseMessagesToggle() {
+    const newValue = !this.state.reverseMessages
+    this.setState({ reverseMessages: newValue })
+    localStorage.setItem("reverseMessages", newValue.toString())
   }
 
   handleCallSignInput(call_sign) {
@@ -666,7 +686,9 @@ class Messages extends Component {
         </p>
         `
 
-    return [this.renderLog(), this.renderForm()]
+    return this.props.reverseMessages
+      ? [this.renderForm(), this.renderLog(), this.renderStopMonitoringForm()]
+      : [this.renderLog(), this.renderForm(), this.renderStopMonitoringForm()]
   }
 
   renderMessage(message, index) {
@@ -722,11 +744,13 @@ class Messages extends Component {
     if (this.props.messages.length === 0)
       return html`<p><em>no messages yet</em></p>`
 
+    const messages = this.props.reverseMessages
+      ? [...this.props.messages].reverse()
+      : this.props.messages
+
     return html`
       <div class="blue-screen">
-        ${this.props.messages.map((message, index) =>
-          this.renderMessage(message, index)
-        )}
+        ${messages.map((message, index) => this.renderMessage(message, index))}
         ${this.state.sendingMessage &&
         this.renderMessage(
           {
@@ -791,7 +815,6 @@ class Messages extends Component {
         />
         <input type="submit" value="Send" />
       </form>
-      ${this.renderStopMonitoringForm()}
     `
   }
 

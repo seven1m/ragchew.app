@@ -17,6 +17,9 @@ header { clear: both; margin-top: 50px; }
 header.flex { display: flex; justify-content: space-between; }
 header.flex .header-col-grow { flex-grow: 1; }
 
+.h2-with-controls { display: flex; justify-content: space-between; border-bottom: 3px double #999; margin: 2.5rem 0 1rem; }
+.h2-with-controls h2 { border-bottom: none; margin: 0; }
+
 h1 { margin-top: 10px; }
 h2 { border-bottom: 3px double #999; }
 
