@@ -43,6 +43,10 @@ tr.remarks { color: #777; }
 td.avatar-cell { height: 64px; }
 
 .blue-screen { background-color: #e8f4f8; }
+.chat-message { padding: 5px; margin: 5px 0; }
+.chat-odd { background-color: #d4e5ea; }
+.chat-sender { }
+.chat-timestamp { color: #888; }
 
 .favorite-star { width: 15px; height: 15px; max-width: none; cursor: pointer; }
 

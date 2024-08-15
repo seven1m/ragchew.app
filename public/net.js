@@ -666,40 +666,77 @@ class Messages extends Component {
         </p>
         `
 
-    return [this.renderTable(), this.renderForm()]
+    return [this.renderLog(), this.renderForm()]
   }
 
-  renderTable() {
+  renderMessage(message, index) {
+    const timestamp = formatTimeWithDayjs(message.sent_at, true)
+    return html`<div
+      class="chat-message ${index % 2 == 0 ? "chat-even" : "chat-odd"}"
+    >
+      <span
+        class="chat-sender"
+        style="color: ${getUniqueColor(message.call_sign)}"
+      >
+        ${message.call_sign} - ${message.name}
+      </span>
+      ${" "}
+      <span class="chat-timestamp">${timestamp}</span>
+      <br />
+      <span
+        class="chat-message-text"
+        dangerouslySetInnerHTML=${{ __html: this.formatText(message.message) }}
+      />
+    </div>`
+  }
+
+  formatText(text) {
+    const sanitized = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;")
+
+    let formatted = sanitized.replace(
+      /https?:\/\/[^\s,;()'"<>[\]{}]+(?=\s|$|[.,;!?)])?/gi,
+      (url) => {
+        return `<a href="${url}" target="_blank">${url}</a>`
+      }
+    )
+    let formattedNext
+    for (;;) {
+      formattedNext = formatted
+        .replace(/\[(p|b|u)\]([^\[]*)\[\/\1\]/, "<$1>$2</$1>")
+        .replace(
+          /\[big\]([^\[]*)\[\/big\]/,
+          "<span style='font-size:larger'>$1</span>"
+        )
+      if (formattedNext === formatted) break
+      formatted = formattedNext
+    }
+    return formatted
+  }
+
+  renderLog() {
     if (this.props.messages.length === 0)
       return html`<p><em>no messages yet</em></p>`
 
     return html`
-      <div class="table-wrapper blue-screen">
-        <table>
-          <thead>
-            <tr>
-              <th>Call Sign & Name</th>
-              <th>Message</th>
-              <th>Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${this.props.messages.map(
-              (message) =>
-                html`<tr>
-                  <td>${message.call_sign} - ${message.name}</td>
-                  <td class="can-wrap">${message.message}</td>
-                  <td>${formatTimeWithDayjs(message.sent_at, true)}</td>
-                </tr>`
-            )}
-            ${this.state.sendingMessage &&
-            html`<tr>
-              <td>${this.props.userCallSign} <em>sending...</em></td>
-              <td class="can-wrap">${this.state.sendingMessage}</td>
-              <td>${formatTimeWithDayjs(new Date(), true)}</td>
-            </tr>`}
-          </tbody>
-        </table>
+      <div class="blue-screen">
+        ${this.props.messages.map((message, index) =>
+          this.renderMessage(message, index)
+        )}
+        ${this.state.sendingMessage &&
+        this.renderMessage(
+          {
+            message: this.state.sendingMessage,
+            call_sign: this.props.userCallSign,
+            name: "sending...",
+            sent_at: new Date(),
+          },
+          this.props.messages.length
+        )}
       </div>
     `
   }
@@ -1215,6 +1252,63 @@ function pluralize(word, count) {
   if (count == 1) return word
 
   return `${word}s`
+}
+
+function hashCode(str) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash |= 0 // Convert to 32bit integer
+  }
+  return hash
+}
+
+function hashToRgb(hash) {
+  // Ensure the color is within a valid RGB range
+  const r = (hash & 0xff0000) >> 16
+  const g = (hash & 0x00ff00) >> 8
+  const b = hash & 0x0000ff
+  return [r, g, b]
+}
+
+function rgbToHex(r, g, b) {
+  return `#${[r, g, b]
+    .map((x) => {
+      const hex = x.toString(16).padStart(2, "0")
+      return hex
+    })
+    .join("")}`
+}
+
+function adjustLightness(r, g, b, targetLightness) {
+  // Convert RGB to HSL
+  const rNorm = r / 255
+  const gNorm = g / 255
+  const bNorm = b / 255
+  const max = Math.max(rNorm, gNorm, bNorm)
+  const min = Math.min(rNorm, gNorm, bNorm)
+  const lightness = (max + min) / 2
+
+  // Calculate adjustment factor
+  const factor = targetLightness / lightness
+  const adjustedR = Math.min(Math.max(Math.round(rNorm * factor * 255), 0), 255)
+  const adjustedG = Math.min(Math.max(Math.round(gNorm * factor * 255), 0), 255)
+  const adjustedB = Math.min(Math.max(Math.round(bNorm * factor * 255), 0), 255)
+
+  return [adjustedR, adjustedG, adjustedB]
+}
+
+function getUniqueColor(username, targetLightness = 0.4) {
+  const hash = hashCode(username)
+  const [r, g, b] = hashToRgb(hash)
+  const [adjustedR, adjustedG, adjustedB] = adjustLightness(
+    r,
+    g,
+    b,
+    targetLightness
+  )
+  return rgbToHex(adjustedR, adjustedG, adjustedB)
 }
 
 const components = { Net, CreateNet }
