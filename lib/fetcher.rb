@@ -24,6 +24,7 @@ class Fetcher
 
   def get(endpoint, params = {})
     html = raw_get(endpoint, params)
+    raise NotFoundError, $1 if html =~ /\*error - (.*?)\*/m
 
     {}.tap do |result|
       html.scan(/<!--(.*?)-->(.*?)<!--.*?-->/m).each do |section, data|
@@ -47,7 +48,6 @@ class Fetcher
     response = http.request(request)
 
     raise Error, response.body unless response.is_a?(Net::HTTPOK)
-    raise NotFoundError, $1 if response.body =~ /\*error - (.*?)\*/m
 
     html = response.body.force_encoding('ISO-8859-1')
 

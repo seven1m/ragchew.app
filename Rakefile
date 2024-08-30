@@ -29,8 +29,9 @@ task :runner do
   eval(ENV.fetch('CODE'))
 end
 
-MAX_IDLE_MONITORING_IN_SECONDS = 5 * 60 # 5 minutes
-MAX_IDLE_NET_IN_SECONDS = 30 * 60 # 30 minutes
+MINUTE = 60
+MAX_IDLE_MONITORING_IN_SECONDS = 5 * MINUTE
+MAX_IDLE_NET_IN_SECONDS = 45 * MINUTE
 
 # Runs every 5 minutes
 task :cleanup do
@@ -55,10 +56,12 @@ task :cleanup do
 
   # nets close if they have no updates in a while
   count = 0
-  Tables::Net.where.not(logger_password: nil).find_each do |net|
+  Tables::Net.where(created_by_ragchew: true).find_each do |net|
     if net.checkins.maximum(:updated_at) < Time.now - MAX_IDLE_NET_IN_SECONDS
-      logger = NetLogger.new(NetInfo.new(id: net.id), user: net.logging_users.first)
-      logger.close_net!
+      next unless (user = net.logging_users.first)
+
+      logger = NetLogger.new(NetInfo.new(id: net.id), user:)
+      logger.close_net! rescue nil
       count += 1
     end
   end

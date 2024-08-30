@@ -28,5 +28,11 @@ module Tables
     def net_logger=(value)
       self.flags = (flags & 1) + (value ? 2 : 0)
     end
+
+    def can_log_for_club?(club)
+      return false unless club
+
+      club_admins.net_loggers.where(club_id: club.id).exists?
+    end
   end
 end

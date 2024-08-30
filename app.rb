@@ -276,7 +276,7 @@ post '/create-net' do
 
   check_if_already_started_a_net!(@user)
 
-  missing = %i[club_id name password frequency band mode net_control].reject do |key|
+  missing = %i[club_id net_name net_password frequency band mode net_control].reject do |key|
     params[key].present?
   end
 
@@ -286,13 +286,13 @@ post '/create-net' do
                'Go back and try again.</p>'
   end
 
-  unless params[:name] =~ /\A[A-Za-z0-9][A-Za-z0-9 -]*\z/
+  unless params[:net_name] =~ /\A[A-Za-z0-9][A-Za-z0-9 \(\)-]*\z/
     status 400
-    return erb "<p class='error'>Net name must contain only letters, numbers, spaces, and/or hyphens, " \
+    return erb "<p class='error'>Net name must contain only letters, numbers, spaces, parentheses, and/or hyphens, " \
                'and must start with a letter or number.</p>'
   end
 
-  if Tables::Net.where(name: params[:name]).exists?
+  if Tables::Net.where(name: params[:net_name]).exists?
     status 400
     return erb "<p class='error'>A net with this name is already in progress.</p>"
   end
@@ -305,8 +305,8 @@ post '/create-net' do
 
   NetLogger.create_net!(
     club:,
-    name: params[:name],
-    password: params[:password],
+    name: params[:net_name],
+    password: params[:net_password],
     frequency: params[:frequency],
     net_control: params[:net_control],
     user: @user,
@@ -314,9 +314,40 @@ post '/create-net' do
     band: params[:band],
   )
 
-  NetInfo.new(name: params[:name]).monitor!(user: @user)
+  NetInfo.new(name: params[:net_name]).monitor!(user: @user)
 
-  redirect "/net/#{url_escape params[:name]}"
+  redirect "/net/#{url_escape params[:net_name]}"
+end
+
+post '/start-logging/:id' do
+  @user = get_user
+  require_net_logger_role!
+
+  if @user.logging_net
+    halt 401, 'already logging a net'
+  end
+
+  @net = Tables::Net.find(params[:id])
+  unless @user.can_log_for_club?(@net.club)
+    halt 401, 'not authorized'
+  end
+
+  net_info = NetInfo.new(id: @net.id)
+  NetLogger.start_logging(net_info, password: params[:net_password], user: @user)
+  redirect "/net/#{url_escape net_info.name}"
+rescue NetLogger::PasswordIncorrectError
+  halt 401, 'incorrect password'
+end
+
+post '/stop-logging/:id' do
+  @user = get_user
+  require_user!
+
+  @user.update!(logging_net: nil, logging_password: nil)
+  @net = Tables::Net.find(params[:id])
+  redirect "/net/#{url_escape @net.name}"
+rescue ActiveRecord::RecordNotFound
+  redirect '/'
 end
 
 patch '/log/:id/:num' do
@@ -368,11 +399,15 @@ post '/close-net/:id' do
   @user.update!(
     monitoring_net: nil,
     monitoring_net_last_refreshed_at: nil,
+    logging_net: nil,
+    logging_password: nil,
   )
 
   redirect '/'
 rescue NetLogger::NotAuthorizedError
   halt 401, 'not authorized'
+rescue NetLogger::CouldNotCloseNetError => e
+  halt 400, "there was an error closing this net: #{e.message}"
 end
 
 get '/closed-nets' do

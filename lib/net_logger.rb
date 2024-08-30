@@ -8,6 +8,7 @@ class NetLogger
   class CouldNotCreateNetError < StandardError; end
   class CouldNotFindNetAfterCreationError < StandardError; end
   class CouldNotCloseNetError < StandardError; end
+  class PasswordIncorrectError < StandardError; end
   class NotAuthorizedError < StandardError; end
 
   def initialize(net_info, user:)
@@ -15,7 +16,7 @@ class NetLogger
     unless user && user.logging_net == @net_info.net
       raise NotAuthorizedError, 'You are not authorized to access this net.'
     end
-    @password = @net_info.net.logger_password
+    @password = user.logging_password
     @fetcher = Fetcher.new(@net_info.host)
   end
 
@@ -100,8 +101,21 @@ class NetLogger
     net = Tables::Net.where(name:).order(:created_at).last
     raise CouldNotFindNetAfterCreationError, result unless net
 
-    net.update!(club:, logger_password: password)
-    user.update!(logging_net: net)
+    net.update!(club:, created_by_ragchew: true)
+    user.update!(logging_net: net, logging_password: password)
+  end
+
+  def self.start_logging(net_info, password:, user:)
+    fetcher = Fetcher.new(net_info.host)
+    result = fetcher.raw_get(
+      'CheckToken.php',
+      'NetName' => net_info.name,
+      'Token' => password,
+    )
+    unless result =~ /\*success\*/
+      raise PasswordIncorrectError, result
+    end
+    user.update!(logging_net: net_info.net, logging_password: password)
   end
 
   def close_net!

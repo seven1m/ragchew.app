@@ -144,6 +144,22 @@ class Net extends Component {
 
   render() {
     return html`
+      <header class="flex">
+        <div class="header-col-grow">
+          ${this.renderClubBreadcrumbs()}
+
+          <h1>${this.props.net.name}</h1>
+
+          ${this.renderNetControls()} ${this.renderNetDetails()}
+        </div>
+
+        <div class="header-col">
+          <a href=${this.props.clubUrl}>
+            <img class="net-logo" src=${this.props.clubLogo} />
+          </a>
+        </div>
+      </header>
+
       <${Map} coords=${this.state.coords} />
 
       <p class="timestamps">
@@ -210,6 +226,126 @@ class Net extends Component {
       <h2>Monitors</h2>
 
       <${Monitors} monitors=${this.state.monitors} />
+    `
+  }
+
+  renderClubBreadcrumbs() {
+    if (!this.props.club) return ""
+    if (!this.props.club.about_url) return ""
+
+    const name = this.props.club.full_name
+    if (!name) name = this.props.club.name
+
+    return html`
+      <div class="breadcrumbs">
+        <a href=${this.props.clubUrl}>${name}</a>
+      </div>
+    `
+  }
+
+  renderNetControls() {
+    if (this.state.closingNet) {
+      return html`closing net...`
+    }
+
+    if (this.props.isLogger) {
+      return html`
+        <div>
+          <button
+            onClick=${() => {
+              location.href = `/net/${this.props.netId}/log`
+            }}
+          >
+            Download log</button
+          >${" "}
+          <button
+            onClick=${() => {
+              if (confirm("Are you sure you want to CLOSE this net?")) {
+                this.setState({ closingNet: true })
+                fetch(`/close-net/${this.props.netId}`, {
+                  method: "POST",
+                }).then((response) => {
+                  if (response.ok) location.href = "/"
+                  else response.text().then((text) => alert(text))
+                })
+              }
+            }}
+          >
+            Close net!</button
+          >${" "}
+          <button
+            onClick=${() => {
+              if (
+                confirm(
+                  "Wait! Only use this button if someone else is taking over logging for the net. (If you are the only logger for this net, then you should 'Close net' when you are done.)"
+                )
+              ) {
+                fetch(`/stop-logging/${this.props.netId}`, {
+                  method: "POST",
+                }).then((response) => {
+                  if (response.ok) location.reload()
+                  else response.text().then((text) => alert(text))
+                })
+              }
+            }}
+          >
+            Stop logging
+          </button>
+        </div>
+      `
+    }
+
+    if (
+      !this.props.isLogger &&
+      this.props.canLogForClub &&
+      this.state.wantsToLogThisNet
+    ) {
+      return html`
+        <form
+          action="/start-logging/${this.props.netId}"
+          method="POST"
+          class="inline"
+        >
+          <input
+            type="password"
+            name="net_password"
+            placeholder="password"
+            required
+          />
+          <input type="submit" value="Start logging" />
+          <br />
+          <span
+            class="linkish"
+            onClick=${() => this.setState({ wantsToLogThisNet: false })}
+            >cancel</span
+          >
+        </form>
+      `
+    }
+
+    return ""
+  }
+
+  renderNetDetails() {
+    return html`
+      <p>
+        ${[
+          this.props.net.frequency,
+          this.props.net.mode,
+          this.props.net.band,
+          `started at ${formatTimeWithDayjs(this.props.net.started_at)}`,
+          this.props.net.host,
+        ].join(" | ")}
+        ${!this.props.isLogger &&
+        this.props.canLogForClub &&
+        !this.state.wantsToLogThisNet &&
+        html`${" "}|${" "}
+          <span
+            class="linkish"
+            onClick=${() => this.setState({ wantsToLogThisNet: true })}
+            >start logging</span
+          >`}
+      </p>
     `
   }
 
@@ -1137,7 +1273,7 @@ class CreateNetForm extends Component {
         <label class="${this.state.errors.name ? "error" : ""}">
           Name of Net:<br />
           <input
-            name="name"
+            name="net_name"
             value=${this.state.name}
             onchange=${(e) => this.setState({ name: e.target.value })}
           />
@@ -1148,7 +1284,7 @@ class CreateNetForm extends Component {
           Password:<br />
           <input
             type="password"
-            name="password"
+            name="net_password"
             placeholder="something secure"
             value=${this.state.password}
             onchange=${(e) => this.setState({ password: e.target.value })}
