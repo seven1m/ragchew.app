@@ -8,7 +8,7 @@
 
     <h1><%== @net.name %></h1>
 
-    <% if @net.logger_user == @user %>
+    <% if @user.logging_net == @net %>
       <div>
         <form target="_blank" action="/net/<%== @net.id %>/log" method="GET" class="inline">
           <input type="submit" value="Download Log"/>
@@ -39,7 +39,7 @@
   netId: @net.id,
   updateInterval: @update_interval,
   lastUpdatedAt: @last_updated_at,
-  isLogger: @net.logger_user == @user,
+  isLogger: @user.logging_net == @net,
   monitoringThisNet: @user.monitoring_net == @net,
   pusher: {
     key: pusher_key,

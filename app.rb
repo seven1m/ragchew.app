@@ -1054,7 +1054,7 @@ def require_net_logger_role!
 end
 
 def check_if_already_started_a_net!(user)
-  return unless (existing_net = Tables::Net.find_by(logger_user_id: user.id))
+  return unless (existing_net = user.logging_net)
 
   redirect "/net/#{url_escape existing_net.name}"
 end

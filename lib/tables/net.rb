@@ -6,7 +6,7 @@ module Tables
 
     belongs_to :server
     belongs_to :club, optional: true
-    belongs_to :logger_user, optional: true, class_name: 'User'
+    has_many :logging_users, class_name: 'User', foreign_key: 'logging_net_id'
     has_many :checkins, dependent: :delete_all
     has_many :monitors, dependent: :delete_all
     has_many :messages, dependent: :delete_all

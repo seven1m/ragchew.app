@@ -12,7 +12,7 @@ class NetLogger
 
   def initialize(net_info, user:)
     @net_info = net_info
-    unless user && @net_info.net.logger_user == user
+    unless user && user.logging_net == @net_info.net
       raise NotAuthorizedError, 'You are not authorized to access this net.'
     end
     @password = @net_info.net.logger_password
@@ -100,7 +100,8 @@ class NetLogger
     net = Tables::Net.where(name:).order(:created_at).last
     raise CouldNotFindNetAfterCreationError, result unless net
 
-    net.update!(club:, logger_user: user, logger_password: password)
+    net.update!(club:, logger_password: password)
+    user.update!(logging_net: net)
   end
 
   def close_net!

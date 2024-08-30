@@ -55,9 +55,9 @@ task :cleanup do
 
   # nets close if they have no updates in a while
   count = 0
-  Tables::Net.where.not(logger_user_id: nil).find_each do |net|
+  Tables::Net.where.not(logger_password: nil).find_each do |net|
     if net.checkins.maximum(:updated_at) < Time.now - MAX_IDLE_NET_IN_SECONDS
-      logger = NetLogger.new(NetInfo.new(id: net.id), user: net.logger_user)
+      logger = NetLogger.new(NetInfo.new(id: net.id), user: net.logging_users.first)
       logger.close_net!
       count += 1
     end
