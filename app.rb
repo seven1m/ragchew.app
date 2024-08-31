@@ -568,6 +568,24 @@ post '/unfavorite/:call_sign' do
   }.to_json
 end
 
+get '/preferences' do
+  @user = get_user
+  require_user!
+
+  @page_title = 'Preferences'
+  erb :preferences
+end
+
+post '/preferences' do
+  @user = get_user
+  require_user!
+
+  @user.time_format = params[:time_format]
+  @user.save!
+
+  redirect '/'
+end
+
 get '/login' do
   @page_title = 'Log in'
   erb :login

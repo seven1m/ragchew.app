@@ -34,9 +34,13 @@
 <% end %>
 
 <script id="map-script">
-  const elm = document.getElementById('net-map')
-  const centers = JSON.parse(elm.getAttribute('data-centers'))
-  buildNetMap()
-  updateNetMapCenters(centers)
-  formatTimes()
+  document.addEventListener("DOMContentLoaded", () => {
+    const elm = document.getElementById('net-map')
+    if (elm) {
+      const centers = JSON.parse(elm.getAttribute('data-centers'))
+      buildNetMap()
+      updateNetMapCenters(centers)
+      formatTimes()
+    }
+  })
 </script>

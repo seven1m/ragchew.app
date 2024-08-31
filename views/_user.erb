@@ -2,6 +2,7 @@
   <% if @user %>
     <a href="https://www.qrz.com/db/<%== url_escape(@user.call_sign) %>"><%== @user.call_sign %></a> |
     <a href="/favorites">favorites</a> |
+    <a href="/preferences">preferences</a> |
     <% if @user.admin? %>
       <a href="/admin">admin</a> |
     <% end %>

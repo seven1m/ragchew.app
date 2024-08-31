@@ -19,11 +19,11 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"/>
     <link rel="stylesheet" href="https://esm.sh/toastify-js@1.12.0/src/toastify.min.css"/>
-    <script src="/main.js?_ts=<%== File.stat('public/main.js').mtime.to_i %>"></script>
+    <%= script_tag 'net.js' %>
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"></script>
   </head>
-  <body>
+  <body data-time-format="<%= @user&.time_format %>">
     <%= yield %>
     <footer>
       <p>

@@ -51,13 +51,13 @@
        data-centers='<%= json_for_html_attribute [{ latitude: @closed_net.center_latitude, longitude: @closed_net.center_longitude, radius: @closed_net.center_radius }]%>'></div>
 
   <script id="map-script">
-    const elm = document.getElementById('net-map')
-    const centers = JSON.parse(elm.getAttribute('data-centers'))
-    buildNetMap()
-    updateNetMapCenters(centers)
+    document.addEventListener("DOMContentLoaded", () => {
+      const elm = document.getElementById('net-map')
+      if (elm) {
+        const centers = JSON.parse(elm.getAttribute('data-centers'))
+        buildNetMap()
+        updateNetMapCenters(centers)
+      }
+    })
   </script>
 <% end %>
-
-<script>
-  formatTimes()
-</script>

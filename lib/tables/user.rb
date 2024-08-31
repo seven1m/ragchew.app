@@ -9,6 +9,12 @@ module Tables
 
     scope :is_monitoring, -> { where.not(monitoring_net_id: nil) }
 
+    enum :time_format, {
+      local_24: 0,
+      local_12: 1,
+      utc_24: 2,
+    }
+
     def name
       [first_name, last_name].compact.join(' ')
     end

@@ -62,6 +62,9 @@
 </p>
 
 <dl>
+  <dt>2024-08-31</dt>
+  <dd>You can now change the displayed time format from the <%- if @user %><a href="/preferences">preferences</a><%- else %>preferences<%- end %> page. (Suggested by <a href="https://www.qrz.com/db/AI7YU">AI7YU</a>.)</dd>
+
   <dt>2024-08-15</dt>
   <dd>The AIM / "blue screen" messages section has been reformatted for better viewing on mobile. You can also view messages in reverse order, meaning the newest message is at the top, near the latest check-in.</dd>
 
@@ -85,19 +88,21 @@
 </dl>
 
 <script id="map-script">
-  const elm = document.getElementById('net-map')
-  const centers = JSON.parse(elm.getAttribute('data-centers'))
-  buildNetMap()
-  updateNetMapCenters(centers)
+  document.addEventListener("DOMContentLoaded", () => {
+    const elm = document.getElementById('net-map')
+    const centers = JSON.parse(elm.getAttribute('data-centers'))
+    buildNetMap()
+    updateNetMapCenters(centers)
 
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  setIntervalWithBackoff(
-    updatePage,
-    <%= @update_interval || 30 %> * 1000,
-    <%= @update_backoff || 5 %> * 1000,
-    1 * hour
-  )
+    const minute = 60 * 1000
+    const hour = 60 * minute
+    setIntervalWithBackoff(
+      updatePage,
+      <%= @update_interval || 30 %> * 1000,
+      <%= @update_backoff || 5 %> * 1000,
+      1 * hour
+    )
 
-  formatTimes()
+    formatTimes()
+  })
 </script>
