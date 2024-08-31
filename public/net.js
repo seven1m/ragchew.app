@@ -1179,6 +1179,7 @@ class CreateNetForm extends Component {
     net_control: this.props.net_control,
     submitting: false,
     errors: {},
+    closedNets: [],
   }
 
   guessStuffFromFrequency(frequencyValue) {
@@ -1250,6 +1251,12 @@ class CreateNetForm extends Component {
     else this.setState({ submitting: true })
   }
 
+  fetchClosedNets() {
+    fetch(`/group/${this.state.club_id}/nets.json`)
+      .then((r) => r.json())
+      .then((nets) => this.setState({ closedNets: nets }))
+  }
+
   render() {
     return html`
       <form
@@ -1262,7 +1269,11 @@ class CreateNetForm extends Component {
           <select
             name="club_id"
             value=${this.state.club_id}
-            onchange=${(e) => this.setState({ club_id: e.target.value })}
+            onchange=${(e) => {
+              this.setState({ club_id: e.target.value }, () => {
+                this.fetchClosedNets()
+              })
+            }}
           >
             <option value=""></option>
             ${this.props.clubs.map(
@@ -1279,6 +1290,26 @@ class CreateNetForm extends Component {
           />
           ${typeof this.state.errors.name === "string" &&
           html`<br /><span class="error">${this.state.errors.name}</span>`}
+          ${this.state.closedNets.length > 0 &&
+          html`<p>Chose a previously-used net name:</p>
+            <ul>
+              ${this.state.closedNets.map(
+                (net) =>
+                  html`<li>
+                    <span
+                      class="linkish"
+                      onClick=${() =>
+                        this.setState({
+                          name: net.name,
+                          frequency: net.frequency,
+                          band: net.band,
+                          mode: net.mode,
+                        })}
+                      >${net.name}</span
+                    >${" "} (${net.frequency})
+                  </li>`
+              )}
+            </ul>`}
         </label>
         <label class="${this.state.errors.password ? "error" : ""}">
           Password:<br />

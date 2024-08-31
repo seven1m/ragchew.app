@@ -951,6 +951,26 @@ rescue ActiveRecord::RecordNotFound
   erb :missing_club
 end
 
+get '/group/:id/nets.json' do
+  @user = get_user
+  require_user!
+
+  club = Tables::Club.find(params[:id])
+
+  look_back_period = Time.now - (90 * 24 * 60 * 60) # 90 days, so typos will fall off eventually
+  nets = club.closed_nets
+             .where('started_at > ?', look_back_period)
+             .order(:name, :frequency)
+             .distinct
+             .select(:name, :frequency, :band, :mode)
+
+  content_type 'application/json'
+  nets.to_json
+rescue ActiveRecord::RecordNotFound
+  status 404
+  erb :missing_club
+end
+
 post '/admin/block_net' do
   @user = get_user
   require_admin!
