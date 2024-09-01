@@ -5,45 +5,52 @@
 
 <h1>Nets</h1>
 
-<div class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th>Club</th>
-        <th>Name</th>
-        <th>Frequency</th>
-        <th>Mode</th>
-        <th>Band</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @nets.each do |net| %>
+<form action="/admin/batch-edit-nets" method="POST">
+  <div class="table-wrapper">
+    <table>
+      <thead>
         <tr>
-          <td>
-            <% if net.club %>
-              <a href="/group/<%== url_escape(net.club.name) %>"><%== net.club.name %></a>
-            <% end %>
-          </td>
-          <td>
-            <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a>
-          </td>
-          <td><%== net.frequency %></td>
-          <td><%== net.mode %></td>
-          <td><%== net.band %></td>
-          <td>
-            <form action="/admin/nets/<%== net.id %>" method="post" onsubmit="if (!confirm('Sure?')) return false">
-              <input type="hidden" name="_method" value="delete"/>
-              <button>delete</button>
-            </form>
-          </td>
+          <th></th>
+          <th>Club</th>
+          <th>Name</th>
+          <th>Frequency</th>
+          <th>Mode</th>
+          <th>Band</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        <% @nets.each do |net| %>
+          <tr>
+            <td>
+              <input type="checkbox" name="net_ids[]" value="<%== net.id %>"/>
+            </td>
+            <td>
+              <% if net.club %>
+                <a href="/group/<%== url_escape(net.club.name) %>"><%== net.club.name %></a>
+              <% end %>
+            </td>
+            <td>
+              <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a>
+            </td>
+            <td><%== net.frequency %></td>
+            <td><%== net.mode %></td>
+            <td><%== net.band %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <select name="club_id">
+    <option value="">(no club)</option>
+    <% @clubs.each do |club| %>
+      <option value="<%== club.id %>"><%== club.name %> - <%== club.full_name %></option>
+    <% end %>
+  </select>
+  <input type="submit" name="action" value="associate club"/>
+  <input type="submit" name="action" value="delete nets" onclick="if (!confirm('Are you sure?')) return false" style="background-color: pink"/>
+</form>
 
 <p>
   <form class="inline" action="/admin/refresh-net-list" method="post"><button>refresh net list</button></form>
-  <form class="inline" action="/admin/associate-clubs" method="post"><button>associate clubs</button></form>
+  <form class="inline" action="/admin/associate-clubs" method="post"><button>auto-associate clubs</button></form>
 </p>

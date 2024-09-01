@@ -807,6 +807,7 @@ get '/admin/nets' do
   require_admin!
 
   @nets = Tables::Net.includes(:club).order(:name).to_a
+  @clubs = Tables::Club.order(:name).to_a
 
   erb :admin_nets
 end
@@ -825,6 +826,28 @@ post '/admin/refresh-net-list' do
   require_admin!
 
   NetList.new.list
+
+  redirect '/admin/nets'
+end
+
+post '/admin/batch-edit-nets' do
+  @user = get_user
+  require_admin!
+
+  nets = Tables::Net.where(id: params[:net_ids])
+  case params[:action]
+  when 'associate club'
+    if params[:club_id].blank?
+      nets.update_all(club_id: nil)
+    else
+      club = Tables::Club.find(params[:club_id])
+      nets.update_all(club_id: club.id)
+    end
+  when 'delete nets'
+    nets.delete_all
+  else
+    raise "unexpected batch action: #{params[:action]}"
+  end
 
   redirect '/admin/nets'
 end
