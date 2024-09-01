@@ -1,10 +1,4 @@
-<%= erb :_user %>
-
-<p><a href="/">home</a></p>
-
-<div style="margin-top:70px;clear:both;">
-  <%= club_logo_image_tag(@club) %>
-</div>
+<%= club_logo_image_tag(@club) %>
 
 <h1><%== @club.full_name.presence || @club.name %></h1>
 

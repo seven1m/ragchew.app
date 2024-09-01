@@ -4,7 +4,9 @@
 
 .right { float: right; }
 
-.user-nav { float: right; text-align: right; }
+nav { display: flex; justify-content: space-between; }
+.nav-right { text-align: right; padding-left: 25px; }
+nav a { white-space: nowrap; }
 
 .index-map-explanation { color: #999; font-size: smaller; font-style: italic; }
 
@@ -13,7 +15,7 @@
 
 /* Layout */
 
-header { clear: both; margin-top: 50px; }
+header { clear: both; margin-top: 0; }
 header.flex { display: flex; justify-content: space-between; }
 header.flex .header-col-grow { flex-grow: 1; }
 
@@ -33,6 +35,9 @@ footer a, footer a:visited { color: #999; }
 .columns .column { flex-grow: 1; }
 
 /* Net */
+
+.net-breadcrumbs { margin-top: 25px; }
+.net-logo { margin-top: 25px; }
 
 span.Offline { color: #ccc; }
 
@@ -87,7 +92,7 @@ input, select { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
 em.highlight { font-style: normal; }
 
 .error, .danger { color: red; }
-.warning, .warning a { color: orange; }
+.warning, .warning a { color: orange !important; }
 .error-callout { background-color: #fcc; padding: 15px; border: 1px solid red; }
 .warning-callout { background-color: #fc9; padding: 15px; border: 1px solid orange; }
 
@@ -109,4 +114,5 @@ ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
   .columns .column { flex-grow: 0; }
   header.flex { flex-direction: column-reverse; }
   header.flex img { margin: 20px 0; }
+  .no-wrap-on-mobile { white-space: nowrap; }
 }

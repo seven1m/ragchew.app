@@ -1,9 +1,3 @@
-<p>
-  <a href="/">home</a> |
-  <a href="/admin">admin</a> |
-  <a href="/admin/clubs">clubs</a>
-</p>
-
 <h1><%== @club.full_name.presence || @club.name %></h1>
 
 <% if @club.persisted? && @club.about_url %>

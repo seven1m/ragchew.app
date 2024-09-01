@@ -23,6 +23,27 @@ if development?
 end
 
 helpers do
+  def nav
+    if @user
+      links = [
+        @user.call_sign,
+        "<a href='/favorites'>favorites</a>",
+        "<a href='/preferences'>preferences</a>",
+        @user.admin? ? "<a href='/admin'>admin</a>" : nil,
+        @user.net_logger? && !@user.logging_net ? "<a href='/create-net'>create net</a>" : nil,
+        "<a href='/logout' data-method='post'>log out</a>"
+      ].compact
+    else
+      links = [
+        "<a href='/login'>log in</a>"
+      ]
+    end
+    if @user&.logging_net && @net != @user.logging_net
+      links << "logging: <a href='/net/#{url_escape @user.logging_net.name}' class='warning'>#{erb "<%== @user.logging_net.name %>"}</a>"
+    end
+    erb :_nav, locals: { links: }
+  end
+
   def format_time(ts, time_only: false)
     return '' unless ts
 
@@ -109,6 +130,7 @@ SUPPORT_EMAIL = ENV['SUPPORT_EMAIL'] || 'tim@timmorgan.org'
 ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__))
 
 get '/' do
+  @homepage = true
   @user = get_user
   frequency_order_cast = Arel.sql('CAST(frequency AS DOUBLE)')
   band_order_cast = Arel.sql("CAST(REPLACE(REPLACE(band, '70cm', '0'), 'm', '') AS UNSIGNED)")

@@ -265,7 +265,7 @@ class Net extends Component {
     if (!name) name = this.props.club.name
 
     return html`
-      <div class="breadcrumbs">
+      <div class="net-breadcrumbs">
         <a href=${this.props.clubUrl}>${name}</a>
       </div>
     `
@@ -1768,3 +1768,17 @@ window.updatePage = updatePage
 window.formatTimes = formatTimes
 
 formatTimes()
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log(document.querySelectorAll("a[data-method]"))
+  document.querySelectorAll("a[data-method]").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      const form = document.createElement("form")
+      form.method = link.dataset.method
+      form.action = link.href
+      document.querySelector("body").appendChild(form)
+      form.submit()
+    })
+  })
+})
