@@ -1,7 +1,45 @@
-<h1>Closed Nets</h1>
+<h1>Closed Nets (<%= @total_count %>)</h1>
 
-<ul>
-  <% @closed_nets.each do |name| %>
-    <li><a href="/net/<%== url_escape(name) %>"><%== name %></a></li>
+<p>
+  last:
+  <% [7, 30, 365, 'all'].each do |count| %>
+    <% if params[:days] == count.to_s %>
+      <strong><%= count %> days</strong>
+    <% else %>
+      <a href="?days=<%= count %>&sort=<%= url_escape(params[:sort]) %>"><%= count %> days</a>
+    <% end %>
+    <%= count == 'all' ? '' : '|' %>
   <% end %>
-</ul>
+</p>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th><a href="?days=<%= url_escape(params[:days]) %>&sort=name">Name</a></th>
+        <th><a href="?days=<%= url_escape(params[:days]) %>&sort=frequency">Frequency</a></th>
+        <th><a href="?days=<%= url_escape(params[:days]) %>&sort=started_at">Started at</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @closed_nets.each do |net| %>
+        <% next if Tables::BlockedNet.blocked?(net.name) %>
+        <tr>
+          <td><a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a></td>
+          <td><%= net.frequency %></td>
+          <td><%= format_time(net.started_at) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  <% if params[:offset] %>
+    <a href="?days=<%= url_escape(params[:days]) %>&sort=<%= url_escape(params[:sort]) %>">start</a>
+  <% end %>
+  <% if params[:offset] && @more_pages %>|<% end %>
+  <% if @more_pages %>
+    <a href="?days=<%= url_escape(params[:days]) %>&sort=<%= url_escape(params[:sort]) %>&offset=<%== params[:offset].to_i + @per_page %>">more</a>
+  <% end %>
+</p>
