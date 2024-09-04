@@ -16,6 +16,16 @@ set :static_cache_control, [:public, max_age: 60]
 
 set :bind, '0.0.0.0'
 
+CREATE_NET_REQUIRED_PARAMS = {
+  club_id: {},
+  net_name: { length: 32, format: /\A[A-Za-z0-9][A-Za-z0-9 \(\)-]*\z/, message: 'Net name must contain only letters, numbers, spaces, parentheses, and/or hyphens, and must start with a letter or number.' },
+  net_password: { length: 20 },
+  frequency: { length: 16 },
+  band: { length: 10 },
+  mode: { length: 10 },
+  net_control: { length: 20 },
+}
+
 if development?
   Dir['./lib/**/*.rb'].each do |path|
     also_reload(path)
@@ -298,31 +308,45 @@ post '/create-net' do
 
   check_if_already_started_a_net!(@user)
 
-  missing = %i[club_id net_name net_password frequency band mode net_control].reject do |key|
-    params[key].present?
+  content_type 'application/json'
+  @params = params.merge(JSON.parse(request.body.read))
+
+  missing = CREATE_NET_REQUIRED_PARAMS.keys.reject do |param|
+    params[param].present?
   end
 
   if missing.any?
     status 400
-    return erb "<p class='error'>Some required fields are missing: #{missing.join(', ')}. " \
-               'Go back and try again.</p>'
-  end
-
-  unless params[:net_name] =~ /\A[A-Za-z0-9][A-Za-z0-9 \(\)-]*\z/
-    status 400
-    return erb "<p class='error'>Net name must contain only letters, numbers, spaces, parentheses, and/or hyphens, " \
-               'and must start with a letter or number.</p>'
-  end
-
-  if Tables::Net.where(name: params[:net_name]).exists?
-    status 400
-    return erb "<p class='error'>A net with this name is already in progress.</p>"
+    return { error: "Some required fields are missing: #{missing.join(', ')}.", fields: missing }.to_json
   end
 
   club = Tables::Club.find(params[:club_id])
   if club.club_admins.net_loggers.where(user_id: @user.id).empty?
     status 400
-    return erb "<p class='error'>You are not a net logger for this club.</p>"
+    return { error: 'You are not a net logger for this club.' }.to_json
+  end
+
+  CREATE_NET_REQUIRED_PARAMS.each do |param, requirements|
+    next unless (length = requirements[:length])
+
+    if params[param].size > length
+      status 400
+      return { error: "#{param} is too long.", fields: [param] }.to_json
+    end
+  end
+
+  CREATE_NET_REQUIRED_PARAMS.each do |param, requirements|
+    next unless (format = requirements[:format])
+
+    if params[param] !~ format
+      status 400
+      return { error: "#{param} contains characters not allowed.", fields: [param] }.to_json
+    end
+  end
+
+  if Tables::Net.where(name: params[:net_name]).exists?
+    status 400
+    return { error: 'A net with this name is already in progress.', fields: [:net_name] }.to_json
   end
 
   NetLogger.create_net!(

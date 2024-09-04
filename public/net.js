@@ -339,6 +339,7 @@ class Net extends Component {
             name="net_password"
             placeholder="password"
             required
+            maxlength="20"
           />
           <input type="submit" value="Start logging" />
           <br />
@@ -1199,14 +1200,15 @@ class LogForm extends Component {
 class CreateNetForm extends Component {
   state = {
     club_id: "",
-    name: "",
-    password: "",
+    net_name: "",
+    net_password: "",
     frequency: "",
     band: "",
     mode: "",
     net_control: this.props.net_control,
     submitting: false,
-    errors: {},
+    errorFields: {},
+    errorMessage: null,
     closedNets: [],
   }
 
@@ -1241,42 +1243,41 @@ class CreateNetForm extends Component {
     if (mode !== "") this.setState({ mode })
   }
 
-  requiredFields = [
-    "club_id",
-    "name",
-    "password",
-    "frequency",
-    "band",
-    "mode",
-    "net_control",
-  ]
-
   handleSubmit(e) {
+    e.preventDefault()
+
     if (this.state.submitting) return
+    this.setState({ submitting: true })
 
-    const errors = {}
-    for (let i = 0; i < this.requiredFields.length; i++) {
-      const key = this.requiredFields[i]
-      const value = this.state[key]
-      if (value.trim().length === 0) errors[key] = true
-    }
-
-    if (!errors.name && !this.state.name.match(/^[A-Za-z0-9][A-Za-z0-9 -]*$/))
-      errors.name =
-        "Net name must contain only letters, numbers, spaces, and hyphens, " +
-        "and must start with a letter or number."
-
-    if (
-      !errors.password &&
-      (this.state.password.length > 50 ||
-        !this.state.password.match(/^[A-Za-z0-9_-]+$/))
-    )
-      errors.password =
-        "Password cannot be more than 50 characters and must contain only letters, numbers, hyphen, and/or underscore."
-
-    this.setState({ errors })
-    if (Object.keys(errors).length > 0) e.preventDefault()
-    else this.setState({ submitting: true })
+    fetch("/create-net", {
+      method: "POST",
+      body: JSON.stringify({
+        club_id: this.state.club_id,
+        net_name: this.state.net_name,
+        net_password: this.state.net_password,
+        frequency: this.state.frequency,
+        band: this.state.band,
+        mode: this.state.mode,
+        net_control: this.state.net_control,
+      }),
+    })
+      .then((response) => {
+        if (response.redirected) {
+          window.location.href = response.url
+        }
+        return response.json()
+      })
+      .then((data) => {
+        if (data.error) {
+          const errorFields = {}
+          data.fields.forEach((field) => (errorFields[field] = true))
+          this.setState({
+            errorMessage: data.error,
+            errorFields,
+            submitting: false,
+          })
+        }
+      })
   }
 
   fetchClosedNets() {
@@ -1287,12 +1288,8 @@ class CreateNetForm extends Component {
 
   render() {
     return html`
-      <form
-        action="/create-net"
-        method="POST"
-        onsubmit=${(e) => this.handleSubmit(e)}
-      >
-        <label class="${this.state.errors.club_id ? "error" : ""}">
+      <form onsubmit=${(e) => this.handleSubmit(e)}>
+        <label class="${this.state.errorFields.club_id ? "error" : ""}">
           Club:<br />
           <select
             name="club_id"
@@ -1309,15 +1306,15 @@ class CreateNetForm extends Component {
             )}
           </select>
         </label>
-        <label class="${this.state.errors.name ? "error" : ""}">
+        <label class="${this.state.errorFields.net_name ? "error" : ""}">
           Name of Net:<br />
           <input
             name="net_name"
-            value=${this.state.name}
-            onchange=${(e) => this.setState({ name: e.target.value })}
+            value=${this.state.net_name}
+            onchange=${(e) => this.setState({ net_name: e.target.value })}
+            required
+            maxlength="32"
           />
-          ${typeof this.state.errors.name === "string" &&
-          html`<br /><span class="error">${this.state.errors.name}</span>`}
           ${this.state.closedNets.length > 0 &&
           html`<p>Chose a previously-used net name:</p>
             <ul>
@@ -1328,7 +1325,7 @@ class CreateNetForm extends Component {
                       class="linkish"
                       onClick=${() =>
                         this.setState({
-                          name: net.name,
+                          net_name: net.name,
                           frequency: net.frequency,
                           band: net.band,
                           mode: net.mode,
@@ -1339,17 +1336,19 @@ class CreateNetForm extends Component {
               )}
             </ul>`}
         </label>
-        <label class="${this.state.errors.password ? "error" : ""}">
+        <label class="${this.state.errorFields.net_password ? "error" : ""}">
           Password:<br />
           <input
             type="password"
             name="net_password"
             placeholder="something secure"
-            value=${this.state.password}
-            onchange=${(e) => this.setState({ password: e.target.value })}
+            value=${this.state.net_password}
+            onchange=${(e) => this.setState({ net_password: e.target.value })}
+            required
+            maxlength="20"
           />
         </label>
-        <label class="${this.state.errors.frequency ? "error" : ""}">
+        <label class="${this.state.errorFields.frequency ? "error" : ""}">
           Frequency in MHz:<br />
           <input
             id="frequency"
@@ -1360,9 +1359,11 @@ class CreateNetForm extends Component {
               this.setState({ frequency: e.target.value })
               this.guessStuffFromFrequency(e.target.value)
             }}
+            required
+            maxlength="16"
           />
         </label>
-        <label class="${this.state.errors.band ? "error" : ""}">
+        <label class="${this.state.errorFields.band ? "error" : ""}">
           Band:<br />
           <select
             id="band"
@@ -1388,9 +1389,11 @@ class CreateNetForm extends Component {
             <option>(Custom)</option></select
           ><br />
           ${this.state.band == "(Custom)" &&
-          html` <input name="band" placeholder="Band" /> `}
+          html`
+            <input name="band" placeholder="Band" required maxlength="10" />
+          `}
         </label>
-        <label class="${this.state.errors.mode ? "error" : ""}">
+        <label class="${this.state.errorFields.mode ? "error" : ""}">
           Mode:<br />
           <select
             id="mode"
@@ -1407,15 +1410,19 @@ class CreateNetForm extends Component {
             <option>(Custom)</option></select
           ><br />
           ${this.state.mode == "(Custom)" &&
-          html` <input name="mode" placeholder="Mode" /> `}
+          html`
+            <input name="mode" placeholder="Mode" required maxlength="10" />
+          `}
         </label>
-        <label class="${this.state.errors.net_control ? "error" : ""}">
+        <label class="${this.state.errorFields.net_control ? "error" : ""}">
           Net Control:<br />
           <input
             name="net_control"
             value=${this.state.net_control}
             onchange=${(e) => this.setState({ net_control: e.target.value })}
-            placeholder="KI5ZDF"
+            placeholder="your call sign"
+            required
+            maxlength="20"
           />
         </label>
         <input
@@ -1423,6 +1430,10 @@ class CreateNetForm extends Component {
           value="START NET NOW"
           disabled=${this.state.submitting}
         />
+        ${this.state.errorMessage &&
+        html`<p class="error">
+          ${this.state.errorMessage.replace(/_/g, " ")}
+        </p>`}
       </form>
     `
   }
