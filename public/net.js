@@ -1757,7 +1757,7 @@ document.addEventListener("readystatechange", (event) => {
 })
 
 function favorite(call_sign, elm, unfavorite) {
-  func = unfavorite ? "unfavorite" : "favorite"
+  const func = unfavorite ? "unfavorite" : "favorite"
   fetch(`/${func}/${call_sign}`, {
     method: "POST",
     headers: {
@@ -1772,6 +1772,7 @@ function favorite(call_sign, elm, unfavorite) {
     .catch(console.error)
 }
 
+window.favorite = favorite
 window.buildNetMap = buildNetMap
 window.updateNetMapCenters = updateNetMapCenters
 window.setIntervalWithBackoff = setIntervalWithBackoff
@@ -1781,7 +1782,6 @@ window.formatTimes = formatTimes
 formatTimes()
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log(document.querySelectorAll("a[data-method]"))
   document.querySelectorAll("a[data-method]").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault()
