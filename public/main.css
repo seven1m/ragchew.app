@@ -100,7 +100,7 @@ em.highlight { font-style: normal; }
 
 ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
 
-.admin-only { background-color: #f9c; padding: 15px; }
+.admin-only { background-color: #dedede; padding: 15px; margin: 25px 0; }
 
 .linkish { text-decoration: underline; cursor: pointer; }
 .linkish:hover { color: dodgerblue; }

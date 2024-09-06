@@ -2,37 +2,41 @@
 
 <p>
   last:
-  <% [7, 30, 365, 'all'].each do |count| %>
+  <% [1, 7, 30, 365, 'all'].each do |count| %>
     <% if params[:days] == count.to_s %>
-      <strong><%= count %> days</strong>
+      <strong><%= count %> <%= pluralize 'day', count %></strong>
     <% else %>
-      <a href="?days=<%= count %>&sort=<%= url_escape(params[:sort]) %>"><%= count %> days</a>
+      <a href="?days=<%= count %>&sort=<%= url_escape(params[:sort]) %>"><%= count %> <%= pluralize 'day', count %></a>
     <% end %>
     <%= count == 'all' ? '' : '|' %>
   <% end %>
 </p>
 
-<div class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th><a href="?days=<%= url_escape(params[:days]) %>&sort=name">Name</a></th>
-        <th><a href="?days=<%= url_escape(params[:days]) %>&sort=frequency">Frequency</a></th>
-        <th><a href="?days=<%= url_escape(params[:days]) %>&sort=started_at">Started at</a></th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @closed_nets.each do |net| %>
-        <% next if Tables::BlockedNet.blocked?(net.name) %>
+<% if @closed_nets.any? %>
+  <div class="table-wrapper">
+    <table>
+      <thead>
         <tr>
-          <td><a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a></td>
-          <td><%= net.frequency %></td>
-          <td><%= format_time(net.started_at) %></td>
+          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=name">Name</a></th>
+          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=frequency">Frequency</a></th>
+          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=started_at">Started at</a></th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        <% @closed_nets.each do |closed_net| %>
+          <% next if Tables::BlockedNet.blocked?(closed_net.name) %>
+          <tr>
+            <td><a href="/closed-net/<%= closed_net.id %>"><%== closed_net.name %></a></td>
+            <td><%= closed_net.frequency %></td>
+            <td><%= format_time(closed_net.started_at) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p><em>no nets for this period</em></p>
+<% end %>
 
 <p>
   <% if params[:offset] %>

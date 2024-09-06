@@ -457,7 +457,7 @@ rescue NetLogger::CouldNotCloseNetError => e
 end
 
 get '/closed-nets' do
-  params[:days] ||= '7'
+  params[:days] ||= '1'
 
   scope = Tables::ClosedNet.all
   if params[:days] != 'all'
@@ -466,7 +466,13 @@ get '/closed-nets' do
   end
 
   params[:sort] = 'name' unless %w[name frequency band mode started_at].include?(params[:sort])
-  @closed_nets = scope.order(params[:sort])
+  if params[:sort] == 'started_at'
+    sort = [params[:sort], :started_at]
+  else
+    sort = [params[:sort], :name]
+  end
+
+  @closed_nets = scope.order(sort)
 
   @total_count = @closed_nets.count
   @closed_nets = @closed_nets.offset(params[:offset])
@@ -475,6 +481,22 @@ get '/closed-nets' do
   @closed_nets = @closed_nets.limit(@per_page)
 
   erb :closed_nets
+end
+
+get '/closed-net/:id' do
+  @user = get_user
+
+  @closed_net = Tables::ClosedNet.find(params[:id])
+  @page_title = @name = @closed_net&.name
+  @checkin_count = @closed_net.checkin_count
+  @message_count = @closed_net.message_count
+  @monitor_count = @closed_net.monitor_count
+  @net_count = Tables::Net.count
+
+  erb :closed_net
+rescue ActiveRecord::RecordNotFound
+  status 404
+  erb :missing_net
 end
 
 get '/groups' do
