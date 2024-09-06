@@ -457,6 +457,8 @@ rescue NetLogger::CouldNotCloseNetError => e
 end
 
 get '/closed-nets' do
+  @user = get_user
+
   params[:days] ||= '1'
 
   scope = Tables::ClosedNet.all
