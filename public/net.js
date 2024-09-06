@@ -1420,7 +1420,7 @@ class CreateNetForm extends Component {
             name="net_control"
             value=${this.state.net_control}
             onchange=${(e) => this.setState({ net_control: e.target.value })}
-            placeholder="your call sign"
+            placeholder="call sign here"
             required
             maxlength="20"
           />
