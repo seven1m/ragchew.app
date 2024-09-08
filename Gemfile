@@ -15,3 +15,7 @@ gem 'redcarpet'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'with_advisory_lock'
+
+group :development do
+  gem 'rubocop'
+end

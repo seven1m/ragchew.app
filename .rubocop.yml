@@ -1,0 +1,3 @@
+AllCops:
+  DisabledByDefault: true
+  SuggestExtensions: false
