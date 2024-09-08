@@ -1016,6 +1016,7 @@ post '/monitor/:net_id' do
 
   { ok: true }.to_json
 rescue NetInfo::NotFoundError
+  status 404
   { error: true }.to_json
 end
 
@@ -1030,11 +1031,6 @@ post '/unmonitor/:net_id' do
     return 'you cannot stop monitoring a net you are logging'
   end
 
-  @user.update!(
-    monitoring_net: nil,
-    monitoring_net_last_refreshed_at: nil,
-  )
-
   @net_info = NetInfo.new(id: params[:net_id])
   @net_info.stop_monitoring!(user: @user)
 
@@ -1042,6 +1038,7 @@ post '/unmonitor/:net_id' do
 
   { ok: true }.to_json
 rescue NetInfo::NotFoundError
+  status 404
   { error: true }.to_json
 end
 

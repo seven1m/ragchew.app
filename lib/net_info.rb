@@ -71,15 +71,22 @@ class NetInfo
     #LastExtDataSerial: 0
 
     fetcher = Fetcher.new(@record.host)
-    fetcher.get(
-      'SubscribeToNet.php',
-      'ProtocolVersion' => '2.3',
-      'NetName' => @record.name,
-      'Callsign' => name_for_monitoring(user),
-      'IMSerial' => '0',
-      'LastExtDataSerial' => '0',
-    )
-    user.update!(monitoring_net: @record)
+    begin
+      fetcher.get(
+        'SubscribeToNet.php',
+        'ProtocolVersion' => '2.3',
+        'NetName' => @record.name,
+        'Callsign' => name_for_monitoring(user),
+        'IMSerial' => '0',
+        'LastExtDataSerial' => '0',
+      )
+      user.update!(
+        monitoring_net: @record,
+        monitoring_net_last_refreshed_at: Time.now,
+      )
+    rescue Fetcher::NotFoundError
+      raise NotFoundError, 'Net gone'
+    end
   end
 
   def stop_monitoring!(user:)
@@ -101,7 +108,12 @@ class NetInfo
         'NetName' => @record.name,
       )
     rescue Fetcher::NotFoundError
-      raise NotFoundError, 'Already unsubscribed'
+      raise NotFoundError, 'Net gone'
+    ensure
+      user.update!(
+        monitoring_net: nil,
+        monitoring_net_last_refreshed_at: nil,
+      )
     end
   end
 

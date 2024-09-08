@@ -944,6 +944,8 @@ class Messages extends Component {
         if (data.ok) {
           await this.props.onToggleMonitorNet()
           this.setState({ loading: false })
+        } else if (data.status === 404) {
+          location.reload()
         } else {
           alert("Error monitoring net")
           this.setState({ loading: false })
@@ -959,6 +961,8 @@ class Messages extends Component {
         if (data.ok) {
           await this.props.onToggleMonitorNet()
           this.setState({ loading: false })
+        } else if (data.status === 404) {
+          location.reload()
         } else {
           alert("Error unmonitoring net")
           this.setState({ loading: false })
