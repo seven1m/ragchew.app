@@ -128,6 +128,14 @@ helpers do
   def pusher_cluster
     @pusher_cluster ||= pusher_url.host.split('.').first.split('-').last
   end
+
+  def club_noun
+    if @club && @club.full_name.to_s =~ /club/i
+      'club'
+    else
+      'group'
+    end
+  end
 end
 
 include DOTIW::Methods
@@ -297,7 +305,7 @@ get '/create-net' do
 
   check_if_already_started_a_net!(@user)
 
-  @my_clubs = @user.club_admins.net_loggers.includes(:club).map(&:club)
+  @my_clubs = @user.clubs
 
   erb :create_net
 end
@@ -321,9 +329,9 @@ post '/create-net' do
   end
 
   club = Tables::Club.find(params[:club_id])
-  if club.club_admins.net_loggers.where(user_id: @user.id).empty?
+  unless club.club_members.where(user_id: @user.id).any?
     status 400
-    return { error: 'You are not a net logger for this club.' }.to_json
+    return { error: 'You are not a member for this club.' }.to_json
   end
 
   CREATE_NET_REQUIRED_PARAMS.each do |param, requirements|
@@ -502,9 +510,29 @@ rescue ActiveRecord::RecordNotFound
 end
 
 get '/groups' do
-  @clubs = Tables::Club.order(:full_name, :name).pluck(:name, :full_name)
+  @clubs = Tables::Club.order(Arel.sql('coalesce(full_name, name)')).pluck(:name, :full_name)
 
   erb :clubs
+end
+
+post '/join-group/:id' do
+  @user = get_user
+  require_user!
+
+  @club = Tables::Club.find(params[:id])
+  @club.club_members.create!(user: @user)
+
+  redirect "/group/#{url_escape @club.name}"
+end
+
+post '/leave-group/:id' do
+  @user = get_user
+  require_user!
+
+  @club = Tables::Club.find(params[:id])
+  @club.club_members.where(user_id: @user.id).delete_all
+
+  redirect "/group/#{url_escape @club.name}"
 end
 
 get '/station/:call_sign' do

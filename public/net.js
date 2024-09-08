@@ -1289,23 +1289,7 @@ class CreateNetForm extends Component {
   render() {
     return html`
       <form onsubmit=${(e) => this.handleSubmit(e)}>
-        <label class="${this.state.errorFields.club_id ? "error" : ""}">
-          Club:<br />
-          <select
-            name="club_id"
-            value=${this.state.club_id}
-            onchange=${(e) => {
-              this.setState({ club_id: e.target.value }, () => {
-                this.fetchClosedNets()
-              })
-            }}
-          >
-            <option value=""></option>
-            ${this.props.clubs.map(
-              (club) => html`<option value=${club.id}>${club.name}</option>`
-            )}
-          </select>
-        </label>
+        ${this.renderClubSelect()}
         <label class="${this.state.errorFields.net_name ? "error" : ""}">
           Name of Net:<br />
           <input
@@ -1437,12 +1421,48 @@ class CreateNetForm extends Component {
       </form>
     `
   }
+
+  renderClubSelect() {
+    return html`
+      <label class="${this.state.errorFields.club_id ? "error" : ""}">
+        Group or Club:<br />
+        <select
+          name="club_id"
+          value=${this.state.club_id}
+          onchange=${(e) => {
+            this.setState({ club_id: e.target.value }, () => {
+              this.fetchClosedNets()
+            })
+          }}
+        >
+          <option value=""></option>
+          ${this.props.clubs.map(
+            (club) => html`<option value=${club.id}>${club.name}</option>`
+          )}
+        </select>
+      </label>
+      <p>
+        <em
+          >If your club is not listed above, you may find it${" "}
+          <a href="/groups">here</a>.</em
+        >
+      </p>
+    `
+  }
 }
 
 class CreateNet extends Component {
   state = { formVisible: false }
 
   render() {
+    if (this.props.clubs.length === 0)
+      return html`<p>
+        <em
+          >You are not a member of any groups or clubs. Please go find and join
+          one${" "} <a href="/groups">here</a>.</em
+        >
+      </p>`
+
     return html`
       <p>
         <input

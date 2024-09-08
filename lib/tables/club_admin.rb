@@ -13,6 +13,8 @@ module Tables
       self.flags = (value ? 1 : 0) + (flags & 2)
     end
 
+    # TODO: remove this flag...
+
     def net_logger?
       flags & 2 == 2
     end

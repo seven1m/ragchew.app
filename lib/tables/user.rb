@@ -6,6 +6,8 @@ module Tables
     has_many :favorites, dependent: :delete_all
     belongs_to :logging_net, class_name: 'Net', optional: true
     has_many :club_admins, dependent: :delete_all
+    has_many :club_members, dependent: :delete_all
+    has_many :clubs, through: :club_members
 
     scope :is_monitoring, -> { where.not(monitoring_net_id: nil) }
 

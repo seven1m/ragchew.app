@@ -10,6 +10,17 @@
   <%= Redcarpet::Markdown.new(Redcarpet::Render::HTML, autolink: true).render(@club.description) %>
 <% end %>
 
+<% if @club.club_members.where(user_id: @user.id).any? %>
+  <div>
+    <em>You are a member of this <%= club_noun %>.</em>
+    <form class="inline" action="/leave-group/<%= @club.id %>" method="post"><button>Leave <%= club_noun %></button></form>
+  </div>
+<% else %>
+  <div>
+    <form class="inline" action="/join-group/<%= @club.id %>" method="post"><button>Join <%= club_noun %></button></form>
+  </div>
+<% end %>
+
 <% if @net_names.any? %>
   <h2>Nets</h2>
 

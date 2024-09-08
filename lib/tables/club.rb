@@ -4,6 +4,8 @@ module Tables
     has_many :closed_nets, dependent: :nullify
     has_many :club_admins, dependent: :delete_all
     has_many :club_stations, dependent: :delete_all
+    has_many :club_members, dependent: :delete_all
+    has_many :users, through: :club_members
 
     serialize :net_patterns, coder: JSON
     serialize :additional_net_patterns, coder: JSON
