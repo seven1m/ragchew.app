@@ -1,4 +1,40 @@
-<h1>Favorite Stations (<%= @favorites.size %>)</h1>
+<h2>Preferences</h2>
+
+<p>These settings change how the site works for you.</p>
+
+<form action="/preferences" method="post">
+  <label>
+    Time format:<br />
+    <select name="time_format">
+      <% {
+        local_24: "Local 24-hour",
+        local_12: "Local 12-hour",
+        utc_24: "UTC",
+      }.each do |value, label| %>
+        <option value="<%= value %>" <%- if @user.time_format.to_sym == value %>selected<%- end %>><%= label %></option>
+      <% end %>
+    </select>
+  </label>
+  <p><input type="submit" value="Save" /></p>
+</form>
+
+<h2>My Groups and Clubs (<%= @my_clubs.size %>)</h2>
+
+<% if @my_clubs.any? %>
+  <ul>
+    <% @my_clubs.each do |club| %>
+      <li>
+        <a href="/group/<%== url_escape(club.name) %>"><%= club.best_name %></a>
+        <form class="inline" action="/leave-group/<%= club.id %>?return=/user" method="post" onclick="if (!confirm('Are you sure?')) return false"><button>Leave</button></form>
+      </li>
+    <% end %>
+  </ul>
+  <p><em>You can find groups and clubs <a href="/groups">here</a>.</em></p>
+<% else %>
+  <p><em>You have not joined any clubs yet. You can find them <a href="/groups">here</a>.</em></p>
+<% end %>
+
+<h2>Favorite Stations (<%= @favorites.size %>)</h1>
 
 <p>Favorite stations allow you to easily spot friends if they have checked in on a net. You can add up to <%== MAX_FAVORITES %> favorite stations.</p>
 

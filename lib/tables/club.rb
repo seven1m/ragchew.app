@@ -13,6 +13,8 @@ module Tables
 
     accepts_nested_attributes_for :club_admins, allow_destroy: true
 
+    scope :order_by_name, -> { order(Arel.sql('coalesce(full_name, name)')) }
+
     def best_name
       full_name.presence || name
     end

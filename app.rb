@@ -36,9 +36,7 @@ helpers do
   def nav
     if @user
       links = [
-        @user.call_sign,
-        "<a href='/favorites'>favorites</a>",
-        "<a href='/preferences'>preferences</a>",
+        "<a href='/user'>#{erb "<%== @user.call_sign %>"}</a>",
         @user.admin? ? "<a href='/admin'>admin</a>" : nil,
         @user.net_logger? && !@user.logging_net ? "<a href='/create-net'>create net</a>" : nil,
         "<a href='/logout' data-method='post'>log out</a>"
@@ -510,7 +508,7 @@ rescue ActiveRecord::RecordNotFound
 end
 
 get '/groups' do
-  @clubs = Tables::Club.order(Arel.sql('coalesce(full_name, name)')).pluck(:name, :full_name)
+  @clubs = Tables::Club.order_by_name.pluck(:name, :full_name)
 
   erb :clubs
 end
@@ -532,7 +530,11 @@ post '/leave-group/:id' do
   @club = Tables::Club.find(params[:id])
   @club.club_members.where(user_id: @user.id).delete_all
 
-  redirect "/group/#{url_escape @club.name}"
+  if params[:return] == '/user'
+    redirect '/user'
+  else
+    redirect "/group/#{url_escape @club.name}"
+  end
 end
 
 get '/station/:call_sign' do
@@ -586,16 +588,6 @@ get '/station/:call_sign/image' do
   redirect image_url
 end
 
-get '/favorites' do
-  @page_title = 'Favorites'
-  @user = get_user
-  require_user!
-
-  @favorites = @user.favorites.order(:call_sign).to_a
-
-  erb :favorites
-end
-
 # from form
 post '/favorite' do
   @user = get_user
@@ -617,9 +609,9 @@ post '/favorite' do
     last_name: station && station[:last_name],
   )
 
-  redirect '/favorites'
+  redirect '/user'
 rescue ActiveRecord::RecordNotUnique
-  redirect '/favorites'
+  redirect '/user'
 rescue Qrz::NotFound
   status 400
   erb "<p><em>That call sign was not found in QRZ.</em></p>"
@@ -677,12 +669,15 @@ post '/unfavorite/:call_sign' do
   }.to_json
 end
 
-get '/preferences' do
+get '/user' do
   @user = get_user
   require_user!
 
-  @page_title = 'Preferences'
-  erb :preferences
+  @my_clubs = @user.clubs.order_by_name
+  @favorites = @user.favorites.order(:call_sign).to_a
+
+  @page_title = 'User Profile and Settings'
+  erb :user
 end
 
 post '/preferences' do

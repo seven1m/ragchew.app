@@ -105,6 +105,8 @@ ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
 .linkish { text-decoration: underline; cursor: pointer; }
 .linkish:hover { color: dodgerblue; }
 
+a.btn { padding: 4px; background-color: #eee; border: 1px solid #ccc; border-radius: 5px; text-decoration: none; color: #333; font-family: sans-serif; }
+
 /* Mobile */
 
 @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
