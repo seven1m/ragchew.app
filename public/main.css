@@ -37,7 +37,8 @@ footer a, footer a:visited { color: #999; }
 /* Net */
 
 .net-breadcrumbs { margin-top: 25px; }
-.net-logo { margin-top: 25px; }
+.club-logo { margin-top: 25px; max-height: 125px; }
+.small-club-logo { max-height: 50px; }
 
 span.Offline { color: #ccc; }
 
@@ -58,7 +59,6 @@ td.avatar-cell { height: 64px; }
 
 .favorite-star { width: 15px; height: 15px; max-width: none; cursor: pointer; }
 
-.net-logo { max-height: 125px; }
 #net-map { height: 500px; }
 
 .logger-control, .logger-control .material-symbols-outlined { font-size: 1.0em; }

@@ -183,7 +183,7 @@ class Net extends Component {
 
         <div class="header-col">
           <a href=${this.props.clubUrl}>
-            <img class="net-logo" src=${this.props.clubLogo} />
+            <img class="club-logo" src=${this.props.clubLogo} />
           </a>
         </div>
       </header>

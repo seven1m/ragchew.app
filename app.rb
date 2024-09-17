@@ -86,11 +86,11 @@ helpers do
     end
   end
 
-  def club_logo_image_tag(club)
+  def club_logo_image_tag(club, class_name: nil)
     return unless club&.logo_url.present?
 
     "<a href=\"/group/#{url_escape(club.name)}\">" \
-      "<img class='net-logo'" \
+      "<img class='club-logo #{class_name}'" \
       "src=\"#{make_url_safe_for_html_attribute(club.logo_url)}\"/>" \
       '</a>'
   end
