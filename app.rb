@@ -329,7 +329,7 @@ post '/create-net' do
   club = Tables::Club.find(params[:club_id])
   unless club.club_members.where(user_id: @user.id).any?
     status 400
-    return { error: 'You are not a member for this club.' }.to_json
+    return { error: 'You are not a member of this club.' }.to_json
   end
 
   CREATE_NET_REQUIRED_PARAMS.each do |param, requirements|
@@ -772,9 +772,9 @@ get '/admin/users/:id' do
   @user = get_user
   require_admin!
 
-  @club_members = @user.club_members.includes(:club).order('clubs.name').to_a
   @page_title = 'Admin - User'
   @user_to_edit = Tables::User.find(params[:id])
+  @club_members = @user_to_edit.club_members.includes(:club).order('clubs.name').to_a
   erb :admin_user
 end
 
@@ -914,8 +914,8 @@ post '/admin/clubs/:id/members' do
   require_admin!
 
   @club = Tables::Club.find(params[:id])
-  @user = Tables::User.find_by!(call_sign: params[:call_sign])
-  @club.club_members.create!(user: @user)
+  user_to_add = Tables::User.find_by!(call_sign: params[:call_sign])
+  @club.club_members.create!(user: user_to_add)
 
   redirect "/admin/clubs/#{@club.id}/edit#members"
 rescue ActiveRecord::RecordNotFound
