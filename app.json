@@ -17,6 +17,7 @@
     "web": [
       {
         "type": "startup",
+        "name": "content check",
         "path": "/",
         "content": "RagChew.app",
         "attempts": 3
