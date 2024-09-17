@@ -80,7 +80,7 @@
       <tbody>
         <% @club_members.each do |club_member| %>
           <tr>
-            <td><a href="/admin/clubs/<%== club_member.user_id %>/edit"><%== club_member.club.name %></a></td>
+            <td><a href="/admin/clubs/<%== club_member.club_id %>/edit"><%== club_member.club.name %></a></td>
             <td><%== club_member.club.full_name %></td>
             <td><%= format_time(club_member.created_at) %></td>
           </tr>
