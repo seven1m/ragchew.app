@@ -12,5 +12,15 @@
       "command": "bundle exec rake update_club_list",
       "schedule": "9 0 * * *"
     }
-  ]
+  ],
+  "healthchecks": {
+    "web": [
+      {
+        "type": "startup",
+        "path": "/",
+        "content": "RagChew.app",
+        "attempts": 3
+      }
+    ]
+  }
 }
