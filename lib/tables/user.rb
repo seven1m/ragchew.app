@@ -5,7 +5,6 @@ module Tables
     belongs_to :monitoring_net, class_name: 'Net'
     has_many :favorites, dependent: :delete_all
     belongs_to :logging_net, class_name: 'Net', optional: true
-    has_many :club_admins, dependent: :delete_all
     has_many :club_members, dependent: :delete_all
     has_many :clubs, through: :club_members
 
@@ -39,8 +38,9 @@ module Tables
 
     def can_log_for_club?(club)
       return false unless club
+      return false unless net_logger?
 
-      club_admins.net_loggers.where(club_id: club.id).exists?
+      club_members.where(club_id: club.id).exists?
     end
   end
 end

@@ -64,3 +64,30 @@
   </label>
   <input type="submit" value="Save"/>
 </form>
+
+<h2>Clubs</h2>
+
+<% if @club_members.any? %>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Full Name</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @club_members.each do |club_member| %>
+          <tr>
+            <td><a href="/admin/clubs/<%== club_member.user_id %>/edit"><%== club_member.club.name %></a></td>
+            <td><%== club_member.club.full_name %></td>
+            <td><%= format_time(club_member.created_at) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p><em>none</em></p>
+<% end %>

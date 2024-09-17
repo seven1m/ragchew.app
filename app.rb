@@ -772,6 +772,7 @@ get '/admin/users/:id' do
   @user = get_user
   require_admin!
 
+  @club_members = @user.club_members.includes(:club).order('clubs.name').to_a
   @page_title = 'Admin - User'
   @user_to_edit = Tables::User.find(params[:id])
   erb :admin_user
@@ -855,6 +856,8 @@ get '/admin/clubs/:id/edit' do
   require_admin!
 
   @club = Tables::Club.find(params[:id])
+  @club_members = @club.club_members.includes(:user).order('users.call_sign').to_a
+
   @url = "/admin/clubs/#{@club.id}"
 
   erb :admin_club_edit
@@ -904,6 +907,34 @@ delete '/admin/clubs/:id' do
   @club.destroy
 
   redirect '/admin/clubs'
+end
+
+post '/admin/clubs/:id/members' do
+  @user = get_user
+  require_admin!
+
+  @club = Tables::Club.find(params[:id])
+  @user = Tables::User.find_by!(call_sign: params[:call_sign])
+  @club.club_members.create!(user: @user)
+
+  redirect "/admin/clubs/#{@club.id}/edit#members"
+rescue ActiveRecord::RecordNotFound
+  status 404
+  'user not found'
+end
+
+delete '/admin/clubs/:id/members/:user_id' do
+  @user = get_user
+  require_admin!
+
+  @club = Tables::Club.find(params[:id])
+  @member = @club.club_members.find_by!(user_id: params[:user_id])
+  @member.destroy
+
+  redirect "/admin/clubs/#{@club.id}/edit#members"
+rescue ActiveRecord::RecordNotFound
+  status 404
+  'user not found'
 end
 
 get '/admin/nets' do
@@ -1267,17 +1298,4 @@ def fix_club_params(params)
     params[:club][param] = JSON.parse(params[:club][param]) if params[:club][param]
   end
   params[:club][:logo_url] = UpdateClubList.download_logo_url(@club, params[:club][:logo_url])
-  params[:club][:club_admins_attributes].each do |admin|
-    admin[:editor] = admin[:editor] == 'true'
-    admin[:net_logger] = admin[:net_logger] == 'true'
-    admin_before = admin.dup
-    if admin[:id].present?
-      admin.delete(:call_sign)
-    elsif admin[:call_sign].present? && (user = Tables::User.find_by(call_sign: admin.delete(:call_sign)))
-      admin[:user_id] = user.id
-    else
-      admin.clear
-      admin[:_destroy] = true
-    end
-  end
 end

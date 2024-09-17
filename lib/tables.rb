@@ -1,6 +1,5 @@
 require_relative './tables/blocked_net'
 require_relative './tables/club'
-require_relative './tables/club_admin'
 require_relative './tables/club_member'
 require_relative './tables/club_station'
 require_relative './tables/checkin'

@@ -71,56 +71,49 @@
     <input type="checkbox" name="force_update_existing_nets" value="true"> force update existing nets
   </label>
 
-  <h2>Admins:</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Call Sign</th>
-        <th>Name</th>
-        <th>Editor</th>
-        <th>Net Logger</th>
-      </tr>
-    </thead>
-    <% @club.club_admins.each do |admin| %>
-      <tr>
-        <td>
-          <input type="hidden" name="club[club_admins_attributes][][call_sign]" value=""/>
-          <input type="hidden" name="club[club_admins_attributes][][id]" value="<%== admin.id %>"/>
-          <%= admin.user.call_sign %>
-        </td>
-        <td><%= admin.user.name %></td>
-        <td>
-          <input type="checkbox" name="club[club_admins_attributes][][editor]" value="true" <%= admin.editor? ? 'checked' : '' %>/>
-        </td>
-        <td>
-          <input type="checkbox" name="club[club_admins_attributes][][net_logger]" value="true" <%= admin.net_logger? ? 'checked' : '' %>/>
-        </td>
-        <td>
-          <label class="inline"><input type="checkbox" name="club[club_admins_attributes][][_destroy]" value="true"/> delete</label>
-        </td>
-      </tr>
-    <% end %>
-    <tr>
-      <td><input type="text" name="club[club_admins_attributes][][call_sign]" width="7" class="inline" placeholder="Call Sign"/></td>
-      <td></td>
-      <td>
-        <input type="checkbox" name="club[club_admins_attributes][][editor]" value="true"/>
-      </td>
-      <td>
-        <input type="checkbox" name="club[club_admins_attributes][][net_logger]" value="true"/>
-      </td>
-      <td>
-        <label class="inline"><input type="checkbox" name="club[club_admins_attributes][][_destroy]" value="true"/> delete</label>
-      </td>
-    </tr>
-  </table>
+<a name="members"></a>
+<h2>Members</h2>
 
-  <input type="submit" value="save"/>
+<% if @club_members.any? %>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Call Sign</th>
+          <th>Name</th>
+          <th>Joined</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @club_members.each do |club_member| %>
+          <tr>
+            <td><a href="/admin/users/<%== club_member.user.id %>"><%== club_member.user.call_sign %></a></td>
+            <td><%== club_member.user.name %></td>
+            <td><%= format_time(club_member.created_at) %></td>
+            <td>
+              <form class="inline" action="/admin/clubs/<%== @club.id %>/members/<%== club_member.user.id %>" method="post" onclick="if (!confirm('Are you sure?')) return false"><input type="hidden" name="_method" value="delete"/><button>Remove</button></form>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p><em>none</em></p>
+<% end %>
+
+<form action="/admin/clubs/<%== @club.id %>/members" method="post">
+  <label>
+    Call Sign:<br/>
+    <input type="text" name="call_sign"/>
+  </label>
+  <input type="submit" value="Add"/>
 </form>
 
 <h2>Nets</h2>
 
-<ul>
+<ol>
   <% @club.nets.order(:name).each do |net| %>
     <li>
       <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a>
@@ -133,4 +126,4 @@
       <em><%= format_time(closed_net.started_at) %></em>
     </li>
   <% end %>
-</ul>
+</ol>

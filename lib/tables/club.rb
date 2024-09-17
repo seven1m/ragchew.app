@@ -2,7 +2,6 @@ module Tables
   class Club < ActiveRecord::Base
     has_many :nets, dependent: :nullify
     has_many :closed_nets, dependent: :nullify
-    has_many :club_admins, dependent: :delete_all
     has_many :club_stations, dependent: :delete_all
     has_many :club_members, dependent: :delete_all
     has_many :users, through: :club_members
@@ -10,8 +9,6 @@ module Tables
     serialize :net_patterns, coder: JSON
     serialize :additional_net_patterns, coder: JSON
     serialize :net_list, coder: JSON
-
-    accepts_nested_attributes_for :club_admins, allow_destroy: true
 
     scope :order_by_name, -> { order(Arel.sql('coalesce(full_name, name)')) }
 
