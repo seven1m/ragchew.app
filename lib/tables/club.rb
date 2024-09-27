@@ -12,6 +12,8 @@ module Tables
 
     scope :order_by_name, -> { order(Arel.sql('coalesce(full_name, name)')) }
 
+    validates :name, presence: true
+
     def best_name
       full_name.presence || name
     end

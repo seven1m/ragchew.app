@@ -879,6 +879,9 @@ post '/admin/clubs' do
 rescue JSON::ParserError
   status 400
   'error parsing JSON'
+rescue ActiveRecord::RecordInvalid => e
+  status 400
+  e.message
 end
 
 patch '/admin/clubs/:id' do
