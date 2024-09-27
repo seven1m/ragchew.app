@@ -71,7 +71,10 @@
     <input type="checkbox" name="force_update_existing_nets" value="true"> force update existing nets
   </label>
 
-<% if @club_members %>
+  <input type="submit" value="Save"/>
+</form>
+
+<% if @club.persisted? %>
   <a name="members"></a>
   <h2>Members</h2>
 
@@ -103,29 +106,29 @@
   <% else %>
     <p><em>none</em></p>
   <% end %>
+
+  <form action="/admin/clubs/<%== @club.id %>/members" method="post">
+    <label>
+      Call Sign:<br/>
+      <input type="text" name="call_sign"/>
+    </label>
+    <input type="submit" value="Add"/>
+  </form>
+
+  <h2>Nets</h2>
+
+  <ol>
+    <% @club.nets.order(:name).each do |net| %>
+      <li>
+        <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a>
+        (open)
+      </li>
+    <% end %>
+    <% @club.closed_nets.order(:name, :started_at).each do |closed_net| %>
+      <li>
+        <a href="/admin/closed-net/<%== closed_net.id %>"><%== closed_net.name %></a>
+        <em><%= format_time(closed_net.started_at) %></em>
+      </li>
+    <% end %>
+  </ol>
 <% end %>
-
-<form action="/admin/clubs/<%== @club.id %>/members" method="post">
-  <label>
-    Call Sign:<br/>
-    <input type="text" name="call_sign"/>
-  </label>
-  <input type="submit" value="Add"/>
-</form>
-
-<h2>Nets</h2>
-
-<ol>
-  <% @club.nets.order(:name).each do |net| %>
-    <li>
-      <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a>
-      (open)
-    </li>
-  <% end %>
-  <% @club.closed_nets.order(:name, :started_at).each do |closed_net| %>
-    <li>
-      <a href="/admin/closed-net/<%== closed_net.id %>"><%== closed_net.name %></a>
-      <em><%= format_time(closed_net.started_at) %></em>
-    </li>
-  <% end %>
-</ol>
