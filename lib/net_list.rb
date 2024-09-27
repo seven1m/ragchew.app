@@ -140,7 +140,7 @@ class NetList
       fetcher = Fetcher.new(server.host)
       data = fetcher.get('GetNetsInProgress20.php', 'ProtocolVersion' => '2.3')['NetLogger Start Data']
       data.map do |name, frequency, net_logger, net_control, started_at, mode, band, im_enabled, update_interval, alt_name, _blank, subscribers|
-        {
+        details = {
           name:,
           alt_name:,
           frequency:,
@@ -155,7 +155,16 @@ class NetList
           server:,
           host: server.host,
         }
-      end
+        if started_at.present?
+          details
+        else
+          Honeybadger.notify(
+            'Skipping a net without a start time.', 
+            context: details
+          )
+          nil
+        end
+      end.compact
     end
   end
 end
