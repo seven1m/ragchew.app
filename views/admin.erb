@@ -28,6 +28,11 @@
         <td><%= format_time Tables::Club.maximum(:updated_at) %></td>
       </tr>
       <tr>
+        <td><a href="/admin/table/club_members">clubs members</a></td>
+        <td><%= Tables::ClubMember.count %></td>
+        <td><%= format_time Tables::ClubMember.maximum(:updated_at) %></td>
+      </tr>
+      <tr>
         <td><a href="/admin/table/favorites">favorites</a></td>
         <td><%= Tables::Favorite.count %></td>
         <td></td>

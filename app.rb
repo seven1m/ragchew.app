@@ -950,6 +950,14 @@ get '/admin/nets' do
   erb :admin_nets
 end
 
+get '/admin/nets/:id' do
+  @user = get_user
+  require_admin!
+
+  net = Tables::Net.find(params[:id])
+  redirect "/net/#{url_escape net.name}"
+end
+
 delete '/admin/nets/:id' do
   @user = get_user
   require_admin!
