@@ -11,6 +11,22 @@
     {
       "command": "bundle exec rake update_club_list",
       "schedule": "9 0 * * *"
+    },
+    {
+      "command": "bundle exec rake stats:hourly",
+      "schedule": "1 * * * *"
+    },
+    {
+      "command": "bundle exec rake stats:daily",
+      "schedule": "1 1 * * *"
+    },
+    {
+      "command": "bundle exec rake stats:weekly",
+      "schedule": "1 1 * * 1"
+    },
+    {
+      "command": "bundle exec rake stats:monthly",
+      "schedule": "1 1 1 * *"
     }
   ],
   "healthchecks": {
