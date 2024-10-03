@@ -20,6 +20,16 @@ namespace :db do
   end
 
   namespace :migrate do
+    task :down do
+      context = ActiveRecord::MigrationContext.new(
+        File.expand_path('lib/migrations', __dir__),
+        ActiveRecord::SchemaMigration
+      )
+      raise 'not at latest' if context.needs_migration?
+      latest = context.current_version
+      context.migrate(latest - 1)
+    end
+
     task :redo do
       context = ActiveRecord::MigrationContext.new(
         File.expand_path('lib/migrations', __dir__),
