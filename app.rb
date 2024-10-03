@@ -1108,6 +1108,9 @@ post '/message/:net_id' do
 
   status 201
   { status: 'sent' }.to_json
+rescue NetInfo::ServerError => e
+  status 500
+  { error: e.message }.to_json
 end
 
 get '/group/:slug' do

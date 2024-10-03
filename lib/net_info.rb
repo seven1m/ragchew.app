@@ -14,6 +14,7 @@ class NetInfo
   LOCK_TIMEOUT = 2
 
   class NotFoundError < StandardError; end
+  class ServerError < StandardError; end
 
   def initialize(name: nil, id: nil)
     if id
@@ -155,6 +156,8 @@ class NetInfo
       'Callsign' => name_for_chat(user),
       'Message' => message,
     )
+  rescue Socket::ResolutionError, Net::OpenTimeout, Net::ReadTimeout
+    raise ServerError, 'There was an error with the server. Please try again later.'
   end
 
   def update_station_details!(call_sign, preferred_name:, notes:)
@@ -194,7 +197,12 @@ class NetInfo
   private
 
   def update_cache(force_full: false)
-    data = fetch(force_full:)
+    begin
+      data = fetch(force_full:)
+    rescue Socket::ResolutionError, Net::OpenTimeout, Net::ReadTimeout => error
+      Honeybadger.notify(error, message: 'Rescued network/server error fetching data')
+      return
+    end
 
     changes = update_checkins(data[:checkins], currently_operating: data[:currently_operating])
     changes += update_monitors(data[:monitors])
