@@ -32,7 +32,7 @@ footer p { font-size: smaller; color: #999; }
 footer a, footer a:visited { color: #999; }
 
 .columns { display: flex; justify-content: space-between; gap: 20px; }
-.columns .column { flex-grow: 1; }
+.columns .column { flex: 1; flex-grow: 1; }
 
 /* Net */
 
@@ -113,7 +113,7 @@ a.btn { padding: 4px; background-color: #eee; border: 1px solid #ccc; border-rad
   .table-wrapper { overflow-x: auto; }
   #net-map { height: 300px; }
   .columns { display: block; }
-  .columns .column { flex-grow: 0; }
+  .columns .column { flex: 0; flex-grow: 0; }
   header.flex { flex-direction: column-reverse; }
   header.flex img { margin: 20px 0; }
   .no-wrap-on-mobile { white-space: nowrap; }

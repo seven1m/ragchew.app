@@ -132,6 +132,13 @@ helpers do
       'group'
     end
   end
+
+  def stat_values_by_date(date_range, name)
+    records = Tables::Stat.where(name:, period: date_range).to_a
+    date_range.map do |date|
+      records.detect { |r| r.period == date.beginning_of_day }&.value || 0
+    end
+  end
 end
 
 include DOTIW::Methods
@@ -730,6 +737,28 @@ get '/admin' do
   require_admin!
 
   @page_title = 'Admin'
+
+  date_range = 30.days.ago.to_date..Date.today
+  dates = date_range.to_a
+
+  Time.zone = 'America/Chicago'
+  @new_user_stats = {
+    x: dates,
+    y: stat_values_by_date(date_range, 'new_users_per_day'),
+    name: 'new',
+    type: 'bar'
+  }
+  @active_user_stats = {
+    x: dates,
+    y: stat_values_by_date(date_range, 'active_users_per_day'),
+    name: 'active',
+    type: 'bar'
+  }
+  @net_stats = {
+    x: dates,
+    y: stat_values_by_date(date_range, 'nets_per_day'),
+    type: 'bar'
+  }
   erb :admin
 end
 
