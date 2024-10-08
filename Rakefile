@@ -116,34 +116,25 @@ task :update_club_list do
 end
 
 namespace :stats do
+  def build_stats(range, period_name,  period)
+    nets = Tables::Net.where(created_at: range).count
+    closed_nets = Tables::ClosedNet.where(created_at: range).count
+    Tables::Stat.find_or_initialize_by(name: "nets_per_#{period_name}", period:).update!(value: nets + closed_nets)
+
+    new_users = Tables::User.where(created_at: range).count
+    Tables::Stat.find_or_initialize_by(name: "new_users_per_#{period_name}", period:).update!(value: new_users)
+
+    active_users = Tables::User.where(last_signed_in_at: range).count
+    Tables::Stat.find_or_initialize_by(name: "active_users_per_#{period_name}", period:).update!(value: active_users)
+  end
+
   task :hourly do
     Time.zone = 'America/Chicago'
 
     last_hour = (Time.now - 1.hour).beginning_of_hour
     range = last_hour..last_hour.end_of_hour
 
-    nets = Tables::Net.where(created_at: range).count
-    closed_nets = Tables::ClosedNet.where(created_at: range).count
-    Tables::Stat.find_or_initialize_by(name: 'nets_per_hour', period: last_hour).update!(value: nets + closed_nets)
-
-    new_users = Tables::User.where(created_at: range).count
-    Tables::Stat.find_or_initialize_by(name: 'new_users_per_hour', period: last_hour).update!(value: new_users)
-
-    active_users = Tables::User.where(last_signed_in_at: range).count
-    Tables::Stat.find_or_initialize_by(name: 'active_users_per_hour', period: last_hour).update!(value: active_users)
-  end
-
-  def rollup_stats(range:, period:, from_name:, to_name:)
-    Time.zone = 'America/Chicago'
-
-    nets = Tables::Stat.where(name: "nets_per_#{from_name}", period: range).pluck(:value).sum
-    Tables::Stat.find_or_initialize_by(name: "nets_per_#{to_name}", period:).update!(value: nets)
-
-    new_users = Tables::Stat.where(name: "new_users_per_#{from_name}", period: range).pluck(:value).sum
-    Tables::Stat.find_or_initialize_by(name: "new_users_per_#{to_name}", period:).update!(value: new_users)
-
-    active_users = Tables::Stat.where(name: "active_users_per_#{from_name}", period: range).pluck(:value).sum
-    Tables::Stat.find_or_initialize_by(name: "active_users_per_#{to_name}", period:).update!(value: active_users)
+    build_stats(range, 'hour', last_hour)
   end
 
   task :daily do
@@ -151,7 +142,8 @@ namespace :stats do
 
     last_day = (Time.now - 1.day).beginning_of_day
     range = last_day..last_day.end_of_day
-    rollup_stats(range:, period: last_day, from_name: 'hour', to_name: 'day')
+
+    build_stats(range, 'day', last_day)
   end
 
   task :weekly do
@@ -159,7 +151,8 @@ namespace :stats do
 
     last_week = (Time.now - 7.days).beginning_of_week
     range = last_week..last_week.end_of_week
-    rollup_stats(range:, period: last_week, from_name: 'day', to_name: 'week')
+
+    build_stats(range, 'week', last_week)
   end
 
   task :monthly do
@@ -167,6 +160,7 @@ namespace :stats do
 
     last_month = (Time.now - 15.days).beginning_of_month
     range = last_month..last_month.end_of_month
-    rollup_stats(range:, period: last_month, from_name: 'week', to_name: 'month')
+
+    build_stats(range, 'month', last_month)
   end
 end
