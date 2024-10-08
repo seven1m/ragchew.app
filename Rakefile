@@ -131,7 +131,7 @@ namespace :stats do
   task :hourly do
     Time.zone = 'America/Chicago'
 
-    last_hour = (Time.now - 1.hour).beginning_of_hour
+    last_hour = (Time.zone.now - 1.hour).beginning_of_hour
     range = last_hour..last_hour.end_of_hour
 
     build_stats(range, 'hour', last_hour)
@@ -140,7 +140,7 @@ namespace :stats do
   task :daily do
     Time.zone = 'America/Chicago'
 
-    last_day = (Time.now - 1.day).beginning_of_day
+    last_day = (Time.zone.now - 1.day).beginning_of_day
     range = last_day..last_day.end_of_day
 
     build_stats(range, 'day', last_day)
@@ -149,7 +149,7 @@ namespace :stats do
   task :weekly do
     Time.zone = 'America/Chicago'
 
-    last_week = (Time.now - 7.days).beginning_of_week
+    last_week = (Time.zone.now - 7.days).beginning_of_week
     range = last_week..last_week.end_of_week
 
     build_stats(range, 'week', last_week)
@@ -158,7 +158,7 @@ namespace :stats do
   task :monthly do
     Time.zone = 'America/Chicago'
 
-    last_month = (Time.now - 15.days).beginning_of_month
+    last_month = (Time.zone.now - 15.days).beginning_of_month
     range = last_month..last_month.end_of_month
 
     build_stats(range, 'month', last_month)
