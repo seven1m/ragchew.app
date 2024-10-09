@@ -133,10 +133,20 @@ helpers do
     end
   end
 
-  def stat_values_by_date(date_range, name)
-    records = Tables::Stat.where(name:, period: date_range).to_a
-    date_range.map do |date|
-      records.detect { |r| r.period == date.beginning_of_day }&.value || 0
+  def hours_in_range(range)
+    return to_enum(__method__, range) unless block_given?
+
+    t = range.begin.beginning_of_hour
+    while t < range.end
+      yield t
+      t += 1.hour
+    end
+  end
+
+  def stat_values_by_hour(hours, name)
+    records = Tables::Stat.where(name:, period: hours).to_a
+    hours.map do |hour|
+      records.detect { |r| r.period == hour }&.value || 0
     end
   end
 end
@@ -738,25 +748,25 @@ get '/admin' do
 
   @page_title = 'Admin'
 
-  date_range = 30.days.ago.to_date..Date.today
-  dates = date_range.to_a
-
   Time.zone = 'America/Chicago'
+  time_range = 24.hours.ago..Time.zone.now
+  times = hours_in_range(time_range).to_a
+
   @new_user_stats = {
-    x: dates,
-    y: stat_values_by_date(date_range, 'new_users_per_day'),
+    x: times,
+    y: stat_values_by_hour(times, 'new_users_per_hour'),
     name: 'new',
     type: 'bar'
   }
   @active_user_stats = {
-    x: dates,
-    y: stat_values_by_date(date_range, 'active_users_per_day'),
+    x: times,
+    y: stat_values_by_hour(times, 'active_users_per_hour'),
     name: 'active',
     type: 'bar'
   }
   @net_stats = {
-    x: dates,
-    y: stat_values_by_date(date_range, 'nets_per_day'),
+    x: times,
+    y: stat_values_by_hour(times, 'nets_per_hour'),
     type: 'bar'
   }
   erb :admin
