@@ -1817,3 +1817,44 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 })
+
+function buildStatCharts() {
+  let elm = document.getElementById("user_chart_hourly")
+  if (elm) {
+    const user_data_hourly = JSON.parse(elm.dataset.data)
+    const active_user_data_hourly = user_data_hourly.active_users
+    const new_user_data_hourly = user_data_hourly.new_users
+    Plotly.newPlot(
+      "user_chart_hourly",
+      [active_user_data_hourly, new_user_data_hourly],
+      { title: "users", barmode: "stack" }
+    )
+  }
+
+  elm = document.getElementById("net_chart_hourly")
+  if (elm) {
+    const net_data_hourly = JSON.parse(elm.dataset.data)
+    net_data_hourly.marker = { color: "orange" }
+    Plotly.newPlot("net_chart_hourly", [net_data_hourly], { title: "nets" })
+  }
+
+  elm = document.getElementById("user_chart_daily")
+  if (elm) {
+    const user_data_daily = JSON.parse(elm.dataset.data)
+    const active_user_data_daily = user_data_daily.active_users
+    const new_user_data_daily = user_data_daily.new_users
+    Plotly.newPlot(
+      "user_chart_daily",
+      [active_user_data_daily, new_user_data_daily],
+      { title: "users", barmode: "stack" }
+    )
+  }
+
+  elm = document.getElementById("net_chart_daily")
+  if (elm) {
+    const net_data_daily = JSON.parse(elm.dataset.data)
+    net_data_daily.marker = { color: "orange" }
+    Plotly.newPlot("net_chart_daily", [net_data_daily], { title: "nets" })
+  }
+}
+window.buildStatCharts = buildStatCharts

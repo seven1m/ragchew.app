@@ -143,10 +143,27 @@ helpers do
     end
   end
 
+  def dates_in_range(range)
+    return to_enum(__method__, range) unless block_given?
+
+    t = range.begin.beginning_of_day
+    while t < range.end
+      yield t
+      t = (t + 1.day).beginning_of_day
+    end
+  end
+
   def stat_values_by_hour(hours, name)
     records = Tables::Stat.where(name:, period: hours).to_a
     hours.map do |hour|
       records.detect { |r| r.period == hour }&.value || 0
+    end
+  end
+
+  def stat_values_by_date(dates, name)
+    records = Tables::Stat.where(name:, period: dates).to_a
+    dates.map do |date|
+      records.detect { |r| r.period == date.beginning_of_day }&.value || 0
     end
   end
 end
@@ -749,27 +766,88 @@ get '/admin' do
   @page_title = 'Admin'
 
   Time.zone = 'America/Chicago'
+
+  time_range = 30.days.ago..Time.zone.now
+  dates = dates_in_range(time_range).to_a
+
+  @user_stats_daily = {
+    new_users: {
+      x: dates,
+      y: stat_values_by_date(dates, 'new_users_per_day'),
+      name: 'new',
+      type: 'bar'
+    },
+    active_users: {
+      x: dates,
+      y: stat_values_by_date(dates, 'active_users_per_day'),
+      name: 'active',
+      type: 'bar'
+    }
+  }
+  @net_stats_daily = {
+    x: dates,
+    y: stat_values_by_date(dates, 'nets_per_day'),
+    type: 'bar'
+  }
+
+  erb :admin
+end
+
+get '/admin/stats' do
+  @user = get_user
+  require_admin!
+
+  @page_title = 'Admin'
+
+  Time.zone = 'America/Chicago'
+
   time_range = 24.hours.ago..Time.zone.now
   times = hours_in_range(time_range).to_a
 
-  @new_user_stats = {
-    x: times,
-    y: stat_values_by_hour(times, 'new_users_per_hour'),
-    name: 'new',
-    type: 'bar'
+  @user_stats_hourly = {
+    new_users: {
+      x: times,
+      y: stat_values_by_hour(times, 'new_users_per_hour'),
+      name: 'new',
+      type: 'bar'
+    },
+    active_users: {
+      x: times,
+      y: stat_values_by_hour(times, 'active_users_per_hour'),
+      name: 'active',
+      type: 'bar'
+    }
   }
-  @active_user_stats = {
-    x: times,
-    y: stat_values_by_hour(times, 'active_users_per_hour'),
-    name: 'active',
-    type: 'bar'
-  }
-  @net_stats = {
+  @net_stats_hourly = {
     x: times,
     y: stat_values_by_hour(times, 'nets_per_hour'),
     type: 'bar'
   }
-  erb :admin
+
+  time_range = 30.days.ago..Time.zone.now
+  dates = dates_in_range(time_range).to_a
+
+  @user_stats_daily = {
+    new_users: {
+      x: dates,
+      y: stat_values_by_date(dates, 'new_users_per_day'),
+      name: 'new',
+      type: 'bar'
+    },
+    active_users: {
+      x: dates,
+      y: stat_values_by_date(dates, 'active_users_per_day'),
+      name: 'active',
+      type: 'bar'
+    }
+  }
+  @net_stats_daily = {
+    x: dates,
+    y: stat_values_by_date(dates, 'nets_per_day'),
+    type: 'bar'
+  }
+
+  erb :admin_stats
 end
 
 get '/admin/users' do

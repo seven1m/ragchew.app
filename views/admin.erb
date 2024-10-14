@@ -1,9 +1,18 @@
 <h1>Admin</h1>
 
 <div class="columns">
-  <div class="column" id="chart1"></div>
-  <div class="column" id="chart2"></div>
+  <div class="column" id="user_chart_daily" data-data="<%= json_for_html_attribute @user_stats_daily %>"></div>
+  <div class="column" id="net_chart_daily" data-data="<%= json_for_html_attribute @net_stats_daily %>"></div>
 </div>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  buildStatCharts()
+})
+</script>
+
+<p><a href="/admin/stats">More stats</a></p>
 
 <h2>Data</h2>
 
@@ -116,13 +125,3 @@
 </form>
 
 <p>You can use <code>/regex/</code> syntax for the name. All regexps are case insensitive.</p>
-
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
-<script>
-  const new_user_data = <%= @new_user_stats.to_json %>
-  const active_user_data = <%= @active_user_stats.to_json %>
-  Plotly.newPlot('chart1', [active_user_data, new_user_data], { title: 'users', barmode: 'stack' })
-  const net_data = <%= @net_stats.to_json %>
-  net_data.marker = { color: 'orange' }
-  Plotly.newPlot('chart2', [net_data], { title: 'nets' })
-</script>
