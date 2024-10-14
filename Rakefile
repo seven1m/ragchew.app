@@ -140,7 +140,7 @@ namespace :stats do
   task :daily do
     Time.zone = 'America/Chicago'
 
-    last_day = 1.day.ago
+    last_day = 1.day.ago.beginning_of_day
     range = last_day..Time.zone.now
 
     build_stats(range, 'day', last_day)
@@ -166,5 +166,14 @@ namespace :stats do
 
   task :clear do
     Tables::Stat.delete_all
+  end
+
+  task :fix_daily do
+    Time.zone = 'America/Chicago'
+
+    Tables::Stat.where("name like '%per_day'").find_each do |stat|
+      stat.period = stat.period.beginning_of_hour
+      stat.save!
+    end
   end
 end
