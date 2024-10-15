@@ -1827,7 +1827,7 @@ function buildStatCharts() {
     Plotly.newPlot(
       "user_chart_hourly",
       [active_user_data_hourly, new_user_data_hourly],
-      { title: "users", barmode: "stack" }
+      { title: "active users", barmode: "stack" }
     )
   }
 
@@ -1846,7 +1846,7 @@ function buildStatCharts() {
     Plotly.newPlot(
       "user_chart_daily",
       [active_user_data_daily, new_user_data_daily],
-      { title: "users", barmode: "stack" }
+      { title: "active users", barmode: "stack" }
     )
   }
 
