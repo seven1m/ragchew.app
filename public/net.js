@@ -915,23 +915,29 @@ class Messages extends Component {
     if (this.props.messages.length === 0)
       return html`<p><em>no messages yet</em></p>`
 
-    const messages = this.props.reverseMessages
-      ? [...this.props.messages].reverse()
-      : this.props.messages
+    const messages = (
+      this.props.reverseMessages
+        ? [...this.props.messages].reverse()
+        : this.props.messages
+    ).map((message, index) => this.renderMessage(message, index))
+
+    const sendingMessage =
+      this.state.sendingMessage &&
+      this.renderMessage(
+        {
+          message: this.state.sendingMessage,
+          call_sign: this.props.userCallSign,
+          name: "sending...",
+          sent_at: new Date(),
+        },
+        this.props.messages.length
+      )
 
     return html`
       <div class="blue-screen">
-        ${messages.map((message, index) => this.renderMessage(message, index))}
-        ${this.state.sendingMessage &&
-        this.renderMessage(
-          {
-            message: this.state.sendingMessage,
-            call_sign: this.props.userCallSign,
-            name: "sending...",
-            sent_at: new Date(),
-          },
-          this.props.messages.length
-        )}
+        ${this.props.reverseMessages
+          ? [sendingMessage, ...messages]
+          : [...messages, sendingMessage]}
       </div>
     `
   }
