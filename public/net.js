@@ -1324,7 +1324,8 @@ class CreateNetForm extends Component {
                           mode: net.mode,
                         })}
                       >${net.name}</span
-                    >${" "} (${net.frequency})
+                    >${" "} (${net.frequency}, ${" "}
+                    ${dayjs().to(dayjs(net.started_at))})
                   </li>`
               )}
             </ul>`}
