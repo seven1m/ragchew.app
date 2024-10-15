@@ -27,6 +27,8 @@ class StationUpdater
         .extend_expiration
         .update!(not_found: true)
       raise NotFound, "#{@call_sign} not found on QRZ"
+    rescue Qrz::NotACallSign
+      raise NotFound, "#{@call_sign} not a call sign"
     end
 
     @station

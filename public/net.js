@@ -422,7 +422,7 @@ class Net extends Component {
   async fetchStationInfo() {
     try {
       const response = await fetch(
-        `/station/${this.state.editing.call_sign}?${
+        `/station/${encodeURIComponent(this.state.editing.call_sign)}?${
           this.props.club ? `club_id=${this.props.club.id}` : ""
         }`
       )
@@ -1096,7 +1096,6 @@ class LogForm extends Component {
                 value=${this.props.call_sign}
                 oninput=${(e) => this.props.onCallSignInput(e.target.value)}
                 autocomplete="off"
-                style="text-transform:uppercase"
                 autofocus
               />
             </label>

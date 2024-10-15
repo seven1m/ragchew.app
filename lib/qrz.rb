@@ -7,6 +7,7 @@ class Qrz
   BASE_URL = "https://xmldata.qrz.com/xml/current/"
 
   class Error < StandardError; end
+  class NotACallSign < Error; end
   class NotFound < Error; end
   class WrongUsernamePassword < Error; end
   class SessionTimeout < Error; end
@@ -18,7 +19,9 @@ class Qrz
   attr_reader :session
 
   def lookup(call_sign)
-    result = self.class.call(s: @session, callsign: call_sign)
+    raise NotACallSign if call_sign.strip !~ /\A[A-Z]+\d[A-Z]+\z/
+
+    result = self.class.call(s: @session, callsign: call_sign.strip)
     if result =~ /<Error>(.*?)<\/Error>/
       message = $1.strip
       case message

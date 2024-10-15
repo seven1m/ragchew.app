@@ -144,7 +144,7 @@ class NetLogger
       [
         mode,
         entry.fetch(:num),
-        entry[:call_sign].to_s.upcase,
+        entry[:call_sign].to_s,
         entry[:city],
         entry[:state],
         name,

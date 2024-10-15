@@ -577,9 +577,9 @@ get '/station/:call_sign' do
 
   begin
     station = StationUpdater.new(params[:call_sign]).call
-  rescue StationUpdater::NotFound
+  rescue StationUpdater::NotFound => e
     status 404
-    return { 'error' => 'not found' }.to_json
+    return { 'error' => e.message }.to_json
   rescue Qrz::Error => e
     status 500
     return { 'error' => e.message }.to_json
@@ -1250,12 +1250,12 @@ get '/group/:id/nets.json' do
 
   club = Tables::Club.find(params[:id])
 
-  look_back_period = Time.now - (90 * 24 * 60 * 60) # 90 days, so typos will fall off eventually
   nets = club.closed_nets
-             .where('started_at > ?', look_back_period)
+             .where('started_at > ?', 60.days.ago)
              .order(:name, :frequency)
-             .distinct
-             .select(:name, :frequency, :band, :mode)
+             .select(:id, :name, :frequency, :band, :mode, :started_at)
+             .to_a
+             .uniq { |n| [n.name.downcase, n.frequency] }
 
   content_type 'application/json'
   nets.to_json
