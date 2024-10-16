@@ -23,7 +23,7 @@
     <tbody>
       <% @closed_nets.each do |closed_net| %>
         <tr>
-          <td><a href="/admin/closed-net/<%== closed_net.id %>"><%== closed_net.name %></a></td>
+          <td><a href="/closed-net/<%== closed_net.id %>"><%== closed_net.name %></a></td>
           <td>
             <%= format_time(closed_net.started_at) %><br/>
             (<%== time_ago_in_words(closed_net.started_at) %> ago)</em>

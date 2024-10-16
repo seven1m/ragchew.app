@@ -914,19 +914,6 @@ get '/admin/closed-nets' do
   erb :admin_closed_nets
 end
 
-get '/admin/closed-net/:id' do
-  @user = get_user
-  require_admin!
-
-  @net_count = Tables::Net.count
-  @closed_net = Tables::ClosedNet.find(params[:id])
-  @name = @closed_net&.name
-  @checkin_count = @closed_net.checkin_count
-  @message_count = @closed_net.message_count
-  @monitor_count = @closed_net.monitor_count
-  erb :closed_net
-end
-
 delete '/admin/closed-net/:id' do
   @user = get_user
   require_admin!
@@ -1290,7 +1277,7 @@ post '/admin/remove_closed_net_from_club' do
   closed_net = Tables::ClosedNet.find(params[:id])
   closed_net.update!(club: nil)
 
-  redirect "/admin/closed-net/#{closed_net.id}"
+  redirect "/closed-net/#{closed_net.id}"
 end
 
 get '/admin/clubs.json' do
