@@ -52,16 +52,15 @@ task :runner do
   eval(ENV.fetch('CODE'))
 end
 
-MINUTE = 60
-MAX_IDLE_MONITORING_IN_SECONDS = 5 * MINUTE
-MAX_IDLE_NET_IN_SECONDS = 45 * MINUTE
+MAX_IDLE_MONITORING = 5.minutes
+MAX_IDLE_NET = 30.minutes
 
 # Runs every 5 minutes
 task :cleanup do
   # users stop monitoring if they have not refreshed the page in a while
   scope = Tables::User
     .is_monitoring
-    .where('monitoring_net_last_refreshed_at < ?', Time.now - MAX_IDLE_MONITORING_IN_SECONDS)
+    .where('monitoring_net_last_refreshed_at < ?', MAX_IDLE_MONITORING.ago)
   count = 0
   scope.find_each do |user|
     next if user.logging_net == user.monitoring_net
@@ -80,9 +79,11 @@ task :cleanup do
   # nets close if they have no updates in a while
   count = 0
   Tables::Net.where(created_by_ragchew: true).find_each do |net|
-    if net.checkins.maximum(:updated_at) < Time.now - MAX_IDLE_NET_IN_SECONDS
-      next unless (user = net.logging_users.first)
+    # If the logger clicks 'stop logging' then we don't have a user to close the net with.
+    next unless (user = net.logging_users.first)
 
+    last_activity = [net.checkins.maximum(:updated_at), net.messages.maximum(:created_at)].compact.max
+    if last_activity < MAX_IDLE_NET.ago
       logger = NetLogger.new(NetInfo.new(id: net.id), user:)
       logger.close_net! rescue nil
       count += 1
