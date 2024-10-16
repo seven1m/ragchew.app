@@ -533,6 +533,9 @@ get '/closed-net/:id' do
   @monitor_count = @closed_net.monitor_count
   @net_count = Tables::Net.count
 
+  @more_recent_closed_net = Tables::ClosedNet.where(name: @closed_net.name).where('started_at > ?', @closed_net.started_at).order(started_at: :desc).first
+  @open_net = Tables::Net.find_by(name: @closed_net.name)
+
   erb :closed_net
 rescue ActiveRecord::RecordNotFound
   status 404

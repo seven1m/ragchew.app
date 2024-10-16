@@ -12,13 +12,25 @@
   </div>
 </header>
 
-<p>
-  <strong>This net is closed.</strong> Please check back later,
-  <% if @net_count > 0 %>
-    or visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
-    are ongoing.
+
+<p class="info-callout">
+  <% if @open_net %>
+    <strong>This net is closed.</strong>
+    <a href="/net/<%= url_escape @open_net.name %>">
+      There is an ongoing net with this same name.
+    </a>
+  <% elsif @more_recent_closed_net %>
+    <strong>This net is closed.</strong>
+    You are viewing a historical record, and not the most recent one.
+    This net last operated <a href="/net/<%= url_escape @more_recent_closed_net.name %>"><%= format_time(@more_recent_closed_net.started_at) %></a>.
   <% else %>
-    or visit the <a href="/">home page</a>.
+    <strong>This net is closed.</strong> Please check back later,
+    <% if @net_count > 0 %>
+      or visit the home page where <a href="/"><%= @net_count %> other net<%= @net_count == 1 ? '' : 's' %></a>
+      are ongoing.
+    <% else %>
+      or visit the <a href="/">home page</a>.
+    <% end %>
   <% end %>
 </p>
 

@@ -93,6 +93,7 @@ em.highlight { font-style: normal; }
 
 .error, .danger { color: red; }
 .warning, .warning a { color: orange !important; }
+.info-callout { background-color: #9cf; padding: 15px; border: 1px solid #39f; }
 .error-callout { background-color: #fcc; padding: 15px; border: 1px solid red; }
 .warning-callout { background-color: #fc9; padding: 15px; border: 1px solid orange; }
 
