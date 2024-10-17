@@ -433,6 +433,8 @@ class NetInfo
     end
 
     messages = data['IM Start'].map do |log_id, call_sign_and_name, _always_one, message, sent_at, ip_address|
+      next if call_sign_and_name.nil?
+
       call_sign, name = call_sign_and_name.split('-', 2).map(&:strip)
       begin
         sent_at = Time.parse(sent_at)
