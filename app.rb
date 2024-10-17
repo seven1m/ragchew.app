@@ -763,7 +763,7 @@ post '/logout' do
 end
 
 def gather_hourly_stats
-  time_range = 24.hours.ago..Time.zone.now
+  time_range = 7.days.ago..Time.zone.now
   times = hours_in_range(time_range).to_a
 
   new_user_values = stat_values_by_hour(times, 'new_users_per_hour')
