@@ -111,7 +111,7 @@ class UpdateClubList
       URI.open(uri, 'rb') do |file|
         File.write(path, file.read)
       end
-    rescue OpenURI::HTTPError
+    rescue OpenURI::HTTPError, Socket::ResolutionError
       return nil
     end
 
