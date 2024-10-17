@@ -350,6 +350,7 @@ class NetInfo
 
     checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, preferred_name|
       next if call_sign == 'future use 2'
+
       (latitude, longitude) = GridSquare.new(grid_square).to_a
 
       begin

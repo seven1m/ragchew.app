@@ -3,7 +3,7 @@ class GridSquare
   class BadGridSquareString < Error; end
 
   def initialize(string, error: false)
-    if string.strip =~ /\A[A-R][A-R][0-9][0-9]($|[a-x][a-x])/i
+    if string.to_s.strip =~ /\A[A-R][A-R][0-9][0-9]($|[a-x][a-x])/i
       @string = $~.to_s
     elsif error
       raise BadGridSquareString
