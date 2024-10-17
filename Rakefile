@@ -66,7 +66,11 @@ task :cleanup do
     next if user.logging_net == user.monitoring_net
 
     if (net = user.monitoring_net)
-      NetInfo.new(id: net.id).stop_monitoring!(user:)
+      begin
+        NetInfo.new(id: net.id).stop_monitoring!(user:)
+      rescue NetInfo::NotFoundError
+        # no problem
+      end
     end
     user.update!(
       monitoring_net: nil,
