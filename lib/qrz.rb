@@ -19,9 +19,10 @@ class Qrz
   attr_reader :session
 
   def lookup(call_sign)
-    raise NotACallSign if call_sign.strip !~ /\A[A-Z]+\d[A-Z]+\z/
+    call_sign = call_sign.upcase.strip
+    raise NotACallSign if call_sign !~ /\A[A-Z]+\d[A-Z]+\z/
 
-    result = self.class.call(s: @session, callsign: call_sign.strip)
+    result = self.class.call(s: @session, callsign: call_sign)
     if result =~ /<Error>(.*?)<\/Error>/
       message = $1.strip
       case message
