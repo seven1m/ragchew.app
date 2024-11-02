@@ -12,8 +12,7 @@ ActiveRecord::Base.establish_connection(db_config[env])
 namespace :db do
   task :migrate do
     context = ActiveRecord::MigrationContext.new(
-      File.expand_path('lib/migrations', __dir__),
-      ActiveRecord::SchemaMigration
+      File.expand_path('lib/migrations', __dir__)
     )
     version = ENV['TO_VERSION']&.to_i
     context.migrate(version)
