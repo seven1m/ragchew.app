@@ -199,7 +199,7 @@ class NetInfo
   def update_cache(force_full: false)
     begin
       data = fetch(force_full:)
-    rescue Socket::ResolutionError, Net::OpenTimeout, Net::ReadTimeout => error
+    rescue Socket::ResolutionError, Net::OpenTimeout, Net::ReadTimeout, Errno::EHOSTUNREACH => error
       Honeybadger.notify(error, message: 'Rescued network/server error fetching data')
       return
     end
