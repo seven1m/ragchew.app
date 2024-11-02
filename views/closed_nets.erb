@@ -1,25 +1,35 @@
 <h1>Closed Nets (<%= @total_count %>)</h1>
 
-<p>
-  last:
-  <% [1, 7, 30, 365, 'all'].each do |count| %>
-    <% if params[:days] == count.to_s %>
-      <strong><%= count %> <%= pluralize 'day', count %></strong>
-    <% else %>
-      <a href="?days=<%= count %>&sort=<%= url_escape(params[:sort]) %>"><%= count %> <%= pluralize 'day', count %></a>
+<div class="columns vertically-centered">
+  <div class="column">
+    last:
+    <% [1, 7, 30, 365, 'all'].each do |count| %>
+      <% if params[:days] == count.to_s %>
+        <strong><%= count %> <%= pluralize 'day', count %></strong>
+      <% else %>
+        <a href="?days=<%= count %>&sort=<%= url_escape(params[:sort]) %>&name=<%= url_escape(params[:name]) %>"><%= count %> <%= pluralize 'day', count %></a>
+      <% end %>
+      <%= count == 'all' ? '' : '|' %>
     <% end %>
-    <%= count == 'all' ? '' : '|' %>
-  <% end %>
-</p>
+  </div>
+  <div class="column column-right">
+    <form method="get">
+      <input type="hidden" name="days" value="<%= make_value_safe_for_html_attribute params[:days] %>"/>
+      <input type="hidden" name="sort" value="<%= make_value_safe_for_html_attribute params[:sort] %>"/>
+      <input name="name" placeholder="search by name" value="<%= make_value_safe_for_html_attribute params[:name] %>"/>
+      <a href="?days=<%= url_escape(params[:days]) %>&sort=<%= url_escape(params[:sort]) %>">clear</a>
+    </form>
+  </div>
+</div>
 
 <% if @closed_nets.any? %>
   <div class="table-wrapper">
     <table>
       <thead>
         <tr>
-          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=name">Name</a></th>
-          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=frequency">Frequency</a></th>
-          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=started_at">Started at</a></th>
+          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=name&name=<%= url_escape(params[:name]) %>">Name</a></th>
+          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=frequency&name=<%= url_escape(params[:name]) %>">Frequency</a></th>
+          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=started_at&name=<%= url_escape(params[:name]) %>">Started at</a></th>
         </tr>
       </thead>
       <tbody>

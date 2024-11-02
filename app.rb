@@ -511,8 +511,13 @@ get '/closed-nets' do
   else
     sort = [params[:sort], :name]
   end
+  scope = scope.order(sort)
 
-  @closed_nets = scope.order(sort)
+  if params[:name].present?
+    scope = scope.where('name like ?', "%#{params[:name].gsub(/%/, '%%')}%")
+  end
+
+  @closed_nets = scope
 
   @total_count = @closed_nets.count
   @closed_nets = @closed_nets.offset(params[:offset])
