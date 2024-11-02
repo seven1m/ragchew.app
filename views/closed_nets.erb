@@ -16,7 +16,7 @@
     <form method="get">
       <input type="hidden" name="days" value="<%= make_value_safe_for_html_attribute params[:days] %>"/>
       <input type="hidden" name="sort" value="<%= make_value_safe_for_html_attribute params[:sort] %>"/>
-      <input name="name" placeholder="search by name" value="<%= make_value_safe_for_html_attribute params[:name] %>"/>
+      <input name="name" placeholder="search by name or frequency" value="<%= make_value_safe_for_html_attribute params[:name] %>"/>
       <a href="?days=<%= url_escape(params[:days]) %>&sort=<%= url_escape(params[:sort]) %>">clear</a>
     </form>
   </div>
@@ -27,9 +27,9 @@
     <table>
       <thead>
         <tr>
-          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=name&name=<%= url_escape(params[:name]) %>">Name</a></th>
-          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=frequency&name=<%= url_escape(params[:name]) %>">Frequency</a></th>
-          <th><a href="?days=<%= url_escape(params[:days]) %>&sort=started_at&name=<%= url_escape(params[:name]) %>">Started at</a></th>
+          <th><%= sort_heading 'name', 'Name', %i[days name] %></th>
+          <th><%= sort_heading 'frequency', 'Frequency', %i[days name] %></th>
+          <th><%= sort_heading 'started_at', 'Started at', %i[days name] %></th>
         </tr>
       </thead>
       <tbody>

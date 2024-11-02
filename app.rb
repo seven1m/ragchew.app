@@ -166,6 +166,17 @@ helpers do
       records.detect { |r| r.period == date.beginning_of_day }&.value || 0
     end
   end
+
+  def sort_heading(column, label, other_attributes = [])
+    query = other_attributes.map do |attr|
+      "#{attr}=#{url_escape params[attr]}"
+    end.join('&')
+    direction = params[:sort].to_s =~ /^#{column}(?! desc)/ ? 'desc' : 'asc'
+    if params[:sort].to_s.start_with?(column)
+      arrow = direction == 'asc' ? '↑' : '↓'
+    end
+    "<a href=\"?#{query}&sort=#{column} #{direction}\">#{label}</a> #{arrow}"
+  end
 end
 
 include DOTIW::Methods
@@ -505,16 +516,20 @@ get '/closed-nets' do
     scope = scope.where('started_at > ?', Time.now - (days * 24 * 60 * 60))
   end
 
-  params[:sort] = 'name' unless %w[name frequency band mode started_at].include?(params[:sort])
-  if params[:sort] == 'started_at'
-    sort = [params[:sort], :started_at]
+  sort_name, sort_direction = params[:sort].to_s.split(' ', 2)
+  sort_name = 'name' unless %w[name frequency band mode started_at].include?(sort_name)
+  sort_direction = 'asc' unless %w[asc desc].include?(sort_direction)
+  sort = { sort_name => sort_direction }
+  if sort_name == 'started_at'
+    sort[:name] = 'asc'
   else
-    sort = [params[:sort], :name]
+    sort[:started_at] = 'asc'
   end
+  params[:sort] = "#{sort_name} #{sort_direction}"
   scope = scope.order(sort)
 
   if params[:name].present?
-    scope = scope.where('name like ?', "%#{params[:name].gsub(/%/, '%%')}%")
+    scope = scope.where('name like :name or frequency like :name', { name: "%#{params[:name].gsub(/%/, '%%')}%" })
   end
 
   @closed_nets = scope
