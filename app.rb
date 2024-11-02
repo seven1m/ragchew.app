@@ -529,7 +529,7 @@ get '/closed-nets' do
   scope = scope.order(sort)
 
   if params[:name].present?
-    scope = scope.where('name like :name or frequency like :name', { name: "%#{params[:name].gsub(/%/, '%%')}%" })
+    scope = scope.where('name like :name or frequency like :name', { name: "%#{params[:name].gsub(/%/, '\%')}%" })
   end
 
   @closed_nets = scope
