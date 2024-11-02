@@ -5,9 +5,11 @@
     last:
     <% [1, 7, 30, 365, 'all'].each do |count| %>
       <% if params[:days] == count.to_s %>
-        <strong><%= count %> <%= pluralize 'day', count %></strong>
+        <strong><%= count == 'all' ? @total_days : count %> <%= pluralize 'day', count %></strong>
       <% else %>
-        <a href="?days=<%= count %>&sort=<%= url_escape(params[:sort]) %>&name=<%= url_escape(params[:name]) %>"><%= count %> <%= pluralize 'day', count %></a>
+        <a href="?days=<%= count %>&sort=<%= url_escape(params[:sort]) %>&name=<%= url_escape(params[:name]) %>">
+          <%= count == 'all' ? @total_days : count %> <%= pluralize 'day', count %>
+        </a>
       <% end %>
       <%= count == 'all' ? '' : '|' %>
     <% end %>

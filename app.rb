@@ -534,6 +534,7 @@ get '/closed-nets' do
 
   @closed_nets = scope
 
+  @total_days = ((Time.now - Tables::ClosedNet.order(:started_at).first.started_at) / 60 / 60 / 24).ceil
   @total_count = @closed_nets.count
   @closed_nets = @closed_nets.offset(params[:offset])
   @per_page = 100
