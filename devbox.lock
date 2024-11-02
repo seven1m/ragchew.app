@@ -1,0 +1,316 @@
+{
+  "lockfile_version": "1",
+  "packages": {
+    "gcc@latest": {
+      "last_modified": "2024-10-13T23:44:06Z",
+      "resolved": "github:NixOS/nixpkgs/d4f247e89f6e10120f911e2e2d2254a050d0f732#gcc14",
+      "source": "devbox-search",
+      "version": "14.2.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/i7xyzzqixlsyq6dagdldkdflps0d4lw9-gcc-wrapper-14.2.0",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/g2sls67kga8y4vb6097kpdb3zpmqdxpy-gcc-wrapper-14.2.0-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/d85ya5fs8z8kyydq2dawhxpx85kpxlyq-gcc-wrapper-14.2.0-info"
+            }
+          ],
+          "store_path": "/nix/store/i7xyzzqixlsyq6dagdldkdflps0d4lw9-gcc-wrapper-14.2.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/91w4jfrvvvnwiy8h5vvwl5ki1miysp0m-gcc-wrapper-14.2.0",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/n128szf2n94kbdw498x554gnqk62mggi-gcc-wrapper-14.2.0-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/jk5p5xjpxlc0w06mcfm6apqvaasa4y6j-gcc-wrapper-14.2.0-info"
+            }
+          ],
+          "store_path": "/nix/store/91w4jfrvvvnwiy8h5vvwl5ki1miysp0m-gcc-wrapper-14.2.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/ax2r7y06m9inrnwr2vh4qla9wf5nyl5s-gcc-wrapper-14.2.0",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/1mglmkihmxlnyx68hnnlfd95pp7ljihx-gcc-wrapper-14.2.0-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/dmm3vkf6f8vnlb3q0l3p5g8lrbj8dwyq-gcc-wrapper-14.2.0-info"
+            }
+          ],
+          "store_path": "/nix/store/ax2r7y06m9inrnwr2vh4qla9wf5nyl5s-gcc-wrapper-14.2.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/wc33h9gzwcb1z68m4jvyilpp99pvr82x-gcc-wrapper-14.2.0",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/flv3pqxd5p5wd0xhd8afqan2iqj9b5q1-gcc-wrapper-14.2.0-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/siwbfhvqra6p787j77r0wrs16gr5i4n9-gcc-wrapper-14.2.0-info"
+            }
+          ],
+          "store_path": "/nix/store/wc33h9gzwcb1z68m4jvyilpp99pvr82x-gcc-wrapper-14.2.0"
+        }
+      }
+    },
+    "gnumake@latest": {
+      "last_modified": "2024-10-26T22:05:23Z",
+      "resolved": "github:NixOS/nixpkgs/86e78d3d2084ff87688da662cf78c2af085d8e73#gnumake",
+      "source": "devbox-search",
+      "version": "4.4.1",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/xqd18p6bfh63xgy6r27ryj43m05sygfd-gnumake-4.4.1",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/rh9jd0cb2nffh6f98pi1cdi2iixca7i7-gnumake-4.4.1-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/zh15911aagmnppcm5f1pv3jaqp1lcn88-gnumake-4.4.1-info"
+            }
+          ],
+          "store_path": "/nix/store/xqd18p6bfh63xgy6r27ryj43m05sygfd-gnumake-4.4.1"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/7vavvidkcwpkcv7vl2k695w1sj3d0v6d-gnumake-4.4.1",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/xg73m3ymam05ing6fiz336lv88x5iilb-gnumake-4.4.1-man",
+              "default": true
+            },
+            {
+              "name": "debug",
+              "path": "/nix/store/kpa131lv51q4sy4156szlbnjkjbbl6wa-gnumake-4.4.1-debug"
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/gsxac0p40xmzdhj64y7587p7z1r0l5my-gnumake-4.4.1-info"
+            }
+          ],
+          "store_path": "/nix/store/7vavvidkcwpkcv7vl2k695w1sj3d0v6d-gnumake-4.4.1"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/1f90m5f11kfyyg198qblv1x7blycfvfd-gnumake-4.4.1",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/rd7fdldb5rax7qfz9bm2xci86qkg41n4-gnumake-4.4.1-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/v3wv3dyvqfyjjnibpd51hll279wgq7xr-gnumake-4.4.1-info"
+            }
+          ],
+          "store_path": "/nix/store/1f90m5f11kfyyg198qblv1x7blycfvfd-gnumake-4.4.1"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/w44ahngg3y69rpq62f4agzl747y872as-gnumake-4.4.1",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/pqfxsx89dr0pywim8cc18cgm67cld692-gnumake-4.4.1-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/00gsp1x5r22pkl8zszl7fgfknmshrqs9-gnumake-4.4.1-info"
+            },
+            {
+              "name": "debug",
+              "path": "/nix/store/651fp76vcmw4kzrmpinszwkk6jn8d4y3-gnumake-4.4.1-debug"
+            }
+          ],
+          "store_path": "/nix/store/w44ahngg3y69rpq62f4agzl747y872as-gnumake-4.4.1"
+        }
+      }
+    },
+    "libmysqlclient@latest": {
+      "last_modified": "2024-10-13T23:44:06Z",
+      "resolved": "github:NixOS/nixpkgs/d4f247e89f6e10120f911e2e2d2254a050d0f732#libmysqlclient",
+      "source": "devbox-search",
+      "version": "3.3.5",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/i8i4kaxajvxhvisyg16sb1fhd5j2h1qy-mariadb-connector-c-3.3.5",
+              "default": true
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/qpwk9qmpw0z51z7ysgzpaldydzwc9jpc-mariadb-connector-c-3.3.5-dev"
+            }
+          ],
+          "store_path": "/nix/store/i8i4kaxajvxhvisyg16sb1fhd5j2h1qy-mariadb-connector-c-3.3.5"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/za2mhyg36sk35l4130wi2dkm594vfyin-mariadb-connector-c-3.3.5",
+              "default": true
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/nbqlwsqkkpv43l8j0pkqd7nwdpyc1v1v-mariadb-connector-c-3.3.5-dev"
+            }
+          ],
+          "store_path": "/nix/store/za2mhyg36sk35l4130wi2dkm594vfyin-mariadb-connector-c-3.3.5"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/4dbh8vszh7jzdn1r60nkfd3ggh1sghfl-mariadb-connector-c-3.3.5",
+              "default": true
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/sk18649jn5lhalb9fm9ihw3siha8l6r2-mariadb-connector-c-3.3.5-dev"
+            }
+          ],
+          "store_path": "/nix/store/4dbh8vszh7jzdn1r60nkfd3ggh1sghfl-mariadb-connector-c-3.3.5"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/631cmaqrd49jv2fln82w7zmmpbw41qcq-mariadb-connector-c-3.3.5",
+              "default": true
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/m42ss98mpzwmf86gbzknh4nckn5igvmw-mariadb-connector-c-3.3.5-dev"
+            }
+          ],
+          "store_path": "/nix/store/631cmaqrd49jv2fln82w7zmmpbw41qcq-mariadb-connector-c-3.3.5"
+        }
+      }
+    },
+    "mysql-client@latest": {
+      "last_modified": "2023-02-24T09:01:09Z",
+      "resolved": "github:NixOS/nixpkgs/7d0ed7f2e5aea07ab22ccb338d27fbe347ed2f11#mysql-client",
+      "source": "devbox-search",
+      "version": "10.6.12"
+    },
+    "ruby_3_3@latest": {
+      "last_modified": "2024-09-10T15:01:03Z",
+      "plugin_version": "0.0.2",
+      "resolved": "github:NixOS/nixpkgs/5ed627539ac84809c78b2dd6d26a5cebeb5ae269#ruby",
+      "source": "devbox-search",
+      "version": "3.3.4",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/zsngi7cq7asxc6kb0lcmbyydasfrmai6-ruby-3.3.4",
+              "default": true
+            },
+            {
+              "name": "devdoc",
+              "path": "/nix/store/c0zmjmfw5pp00slwy842bd8zzy74pava-ruby-3.3.4-devdoc"
+            }
+          ],
+          "store_path": "/nix/store/zsngi7cq7asxc6kb0lcmbyydasfrmai6-ruby-3.3.4"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/8vri7d6b75gspvnfrdpqnagfi5bbvis9-ruby-3.3.4",
+              "default": true
+            },
+            {
+              "name": "devdoc",
+              "path": "/nix/store/bfrwr1n6pxd3hz31h589j317g290p0r5-ruby-3.3.4-devdoc"
+            }
+          ],
+          "store_path": "/nix/store/8vri7d6b75gspvnfrdpqnagfi5bbvis9-ruby-3.3.4"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/hksac0axpx3savrgmy75rid3smv0d9nj-ruby-3.3.4",
+              "default": true
+            },
+            {
+              "name": "devdoc",
+              "path": "/nix/store/3564jxjgp9dk8vzjwb7i3fpzkpw74z3m-ruby-3.3.4-devdoc"
+            }
+          ],
+          "store_path": "/nix/store/hksac0axpx3savrgmy75rid3smv0d9nj-ruby-3.3.4"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/2vg3asd3rmhng3wqvp781a1q5dhrr4yn-ruby-3.3.4",
+              "default": true
+            },
+            {
+              "name": "devdoc",
+              "path": "/nix/store/2vgrf69lcz8ipawxipza3w7gsqdnbbnk-ruby-3.3.4-devdoc"
+            }
+          ],
+          "store_path": "/nix/store/2vg3asd3rmhng3wqvp781a1q5dhrr4yn-ruby-3.3.4"
+        }
+      }
+    }
+  }
+}
