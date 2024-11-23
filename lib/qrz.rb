@@ -11,6 +11,7 @@ class Qrz
   class NotFound < Error; end
   class WrongUsernamePassword < Error; end
   class SessionTimeout < Error; end
+  class ServerError < Error; end
 
   def initialize(session:)
     @session = session
@@ -60,6 +61,8 @@ class Qrz
     url = "#{BASE_URL}?#{params_string}"
     puts "GET #{url.sub(/password=[^;]+/, 'password=***')}"
     Net::HTTP.get(URI(url))
+  rescue Net::OpenTimeout
+    raise ServerError, 'server connection issue'
   end
 
   private
