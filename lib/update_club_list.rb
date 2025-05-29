@@ -7,10 +7,12 @@ class UpdateClubList
     clubs.each do |club_name, url|
       begin
         raw = club_info(url)
-      rescue SocketError => e
+      rescue SocketError, Errno::EBUSY => e
         puts "error: could not get #{url} (#{e.message})"
       else
         config = parse_config(raw)
+        next unless config['Variables']
+
         variables = config['Variables'].each_with_object({}) do |line, hash|
           name, value = line.split(/\s*=\s*/, 2)
           hash[name] = value
