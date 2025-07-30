@@ -65,6 +65,7 @@
   <input type="submit" value="Save"/>
 </form>
 
+<a name="clubs"></a>
 <h2>Clubs</h2>
 
 <% if @club_members.any? %>
@@ -75,6 +76,7 @@
           <th>Name</th>
           <th>Full Name</th>
           <th>Joined</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -83,6 +85,12 @@
             <td><a href="/admin/clubs/<%== club_member.club_id %>/edit"><%== club_member.club.name %></a></td>
             <td><%== club_member.club.full_name %></td>
             <td><%= format_time(club_member.created_at) %></td>
+            <td>
+              <form class="inline" action="/admin/users/<%== @user_to_edit.id %>/clubs/<%== club_member.club_id %>" method="post" onclick="if (!confirm('Are you sure?')) return false">
+                <input type="hidden" name="_method" value="delete"/>
+                <button>Remove</button>
+              </form>
+            </td>
           </tr>
         <% end %>
       </tbody>
@@ -91,3 +99,84 @@
 <% else %>
   <p><em>none</em></p>
 <% end %>
+
+<div id="club-search-form" style="position: relative;">
+  <label>
+    Search for club to add:<br/>
+    <input type="text" id="club-search" placeholder="Type club name..." autocomplete="off" style="width: 300px;"/>
+  </label>
+  <div id="club-search-results" style="display: none; border: 1px solid #ccc; max-height: 200px; overflow-y: auto; background: white; position: absolute; z-index: 1000; width: 300px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></div>
+</div>
+
+<script>
+let searchTimeout;
+const searchInput = document.getElementById('club-search');
+const resultsDiv = document.getElementById('club-search-results');
+
+searchInput.addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  const query = this.value.trim();
+
+  if (query.length < 2) {
+    resultsDiv.style.display = 'none';
+    return;
+  }
+
+  searchTimeout = setTimeout(() => {
+    fetch(`/admin/clubs/search?q=${encodeURIComponent(query)}`)
+      .then(response => response.json())
+      .then(clubs => {
+        if (clubs.length === 0) {
+          resultsDiv.innerHTML = '<div style="padding: 10px; color: #666;">No clubs found</div>';
+        } else {
+          resultsDiv.innerHTML = clubs.map(club => 
+            `<div style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;" 
+                  onclick="addUserToClub(${club.id}, '${escapeHtml(club.name)}')"
+                  onmouseover="this.style.backgroundColor='#f5f5f5'"
+                  onmouseout="this.style.backgroundColor='white'">
+               <strong>${escapeHtml(club.name)}</strong>
+               ${club.full_name ? `<br/><small>${escapeHtml(club.full_name)}</small>` : ''}
+             </div>`
+          ).join('');
+        }
+        resultsDiv.style.display = 'block';
+      })
+      .catch(error => {
+        console.error('Search error:', error);
+        resultsDiv.innerHTML = '<div style="padding: 10px; color: red;">Search error</div>';
+        resultsDiv.style.display = 'block';
+      });
+  }, 300);
+});
+
+// Hide results when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#club-search-form')) {
+    resultsDiv.style.display = 'none';
+  }
+});
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function addUserToClub(clubId, clubName) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = `/admin/users/<%== @user_to_edit.id %>/clubs`;
+
+  const clubIdInput = document.createElement('input');
+  clubIdInput.type = 'hidden';
+  clubIdInput.name = 'club_id';
+  clubIdInput.value = clubId;
+
+  form.appendChild(clubIdInput);
+  document.body.appendChild(form);
+  form.submit();
+
+  resultsDiv.style.display = 'none';
+  searchInput.value = '';
+}
+</script>

@@ -917,6 +917,42 @@ post '/admin/users/:id' do
   redirect "/admin/users/#{params[:id]}"
 end
 
+post '/admin/users/:id/clubs' do
+  @user = get_user
+  require_admin!
+
+  @user_to_edit = Tables::User.find(params[:id])
+  @club = Tables::Club.find(params[:club_id])
+
+  # Check if user is already a member
+  existing_membership = @club.club_members.find_by(user_id: @user_to_edit.id)
+  if existing_membership
+    # User is already a member, just redirect back
+    redirect "/admin/users/#{@user_to_edit.id}#clubs"
+  else
+    @club.club_members.create!(user: @user_to_edit)
+    redirect "/admin/users/#{@user_to_edit.id}#clubs"
+  end
+rescue ActiveRecord::RecordNotFound
+  status 404
+  return { error: 'Club or user not found.' }.to_json
+end
+
+delete '/admin/users/:id/clubs/:club_id' do
+  @user = get_user
+  require_admin!
+
+  @user_to_edit = Tables::User.find(params[:id])
+  @club = Tables::Club.find(params[:club_id])
+  @member = @club.club_members.find_by!(user_id: @user_to_edit.id)
+  @member.destroy
+
+  redirect "/admin/users/#{@user_to_edit.id}#clubs"
+rescue ActiveRecord::RecordNotFound
+  status 404
+  return { error: 'Membership not found.' }.to_json
+end
+
 get '/admin/closed-nets' do
   @user = get_user
   require_admin!
@@ -953,6 +989,23 @@ get '/admin/clubs' do
   @clubs = scope.to_a
 
   erb :admin_clubs
+end
+
+get '/admin/clubs/search' do
+  @user = get_user
+  require_admin!
+
+  query = params[:q].to_s.strip
+  if query.length < 2
+    return [].to_json
+  end
+
+  clubs = Tables::Club.where(
+    'name like :query or full_name like :query',
+    query: '%' + query + '%'
+  ).order(:name).limit(10).select(:id, :name, :full_name)
+
+  clubs.to_json
 end
 
 get '/admin/clubs/new' do
@@ -1240,7 +1293,7 @@ get '/group/:slug' do
   end
 
   @page_title = @club.name
-  
+
   @net_names = (
     @club.nets.order(:name).pluck(:name) +
     @club.closed_nets.order(:name, :started_at).pluck(:name)
