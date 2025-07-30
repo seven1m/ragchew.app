@@ -351,51 +351,16 @@ function formatQrzInfo(station) {
   }
 
   // Initialize map after content is added to DOM
-  if (station.grid_square) {
-    setTimeout(() => initQrzMap(station.grid_square, station.call_sign), 100);
+  if (station.grid_square && station.latitude && station.longitude) {
+    setTimeout(() => initQrzMap(station.latitude, station.longitude, station.call_sign, station.grid_square), 100);
   }
 
   return html;
 }
 
-function gridSquareToLatLon(gridSquare) {
-  if (!gridSquare || gridSquare.length < 4) return null;
-
-  const grid = gridSquare.toUpperCase();
-
-  // Field (first two letters)
-  const fieldLon = (20 * (grid.charCodeAt(0) - 65)) - 180;
-  const fieldLat = (10 * (grid.charCodeAt(1) - 65)) - 90;
-
-  // Square (next two digits)
-  const squareLon = 2 * parseInt(grid[2]);
-  const squareLat = parseInt(grid[3]);
-
-  // Subsquare (optional last two letters)
-  let subsquareLon = 0;
-  let subsquareLat = 0;
-
-  if (grid.length >= 6) {
-    subsquareLon = (5 * (grid.charCodeAt(4) - 65)) / 60.0;
-    subsquareLat = (2.5 * (grid.charCodeAt(5) - 65)) / 60.0;
-  } else {
-    // If no subsquare, use center of square
-    subsquareLon = 1; // Center of 2-degree square
-    subsquareLat = 0.5; // Center of 1-degree square
-  }
-
-  const longitude = fieldLon + squareLon + subsquareLon;
-  const latitude = fieldLat + squareLat + subsquareLat;
-
-  return { latitude, longitude };
-}
-
-function initQrzMap(gridSquare, callSign) {
-  const coords = gridSquareToLatLon(gridSquare);
-  if (!coords) return;
-
+function initQrzMap(latitude, longitude, callSign, gridSquare) {
   // Create map
-  const map = L.map('qrz-map').setView([coords.latitude, coords.longitude], 8);
+  const map = L.map('qrz-map').setView([latitude, longitude], 8);
 
   // Add tile layer
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -404,7 +369,7 @@ function initQrzMap(gridSquare, callSign) {
   }).addTo(map);
 
   // Add marker
-  const marker = L.marker([coords.latitude, coords.longitude]).addTo(map);
+  const marker = L.marker([latitude, longitude]).addTo(map);
   marker.bindPopup(`<strong>${escapeHtml(callSign)}</strong><br/>Grid: ${escapeHtml(gridSquare)}`).openPopup();
 }
 </script>

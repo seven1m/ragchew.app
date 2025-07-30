@@ -24,11 +24,15 @@ class GridSquare
 
     if @string[4]
       subsquare = 5 * (@string[4].downcase.ord - 'a'.ord) / 60.0
+      # Center of 6-character subsquare (2.5 arcminutes wide)
+      center_offset = 2.5 / 60.0
     else
       subsquare = 0
+      # Center of 4-character square (2 degrees wide)
+      center_offset = 1.0
     end
 
-    field + square + subsquare
+    field + square + subsquare + center_offset
   end
 
   def latitude
@@ -39,10 +43,14 @@ class GridSquare
 
     if @string[5]
       subsquare = 2.5 * (@string[5].downcase.ord - 'a'.ord) / 60.0
+      # Center of 6-character subsquare (2.5 arcminutes tall)
+      center_offset = 1.25 / 60.0
     else
       subsquare = 0
+      # Center of 4-character square (1 degree tall)
+      center_offset = 0.5
     end
 
-    field + square + subsquare
+    field + square + subsquare + center_offset
   end
 end

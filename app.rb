@@ -961,6 +961,16 @@ get '/admin/users/:id/qrz' do
   
   begin
     station = QrzAutoSession.new.lookup(@user_to_edit.call_sign)
+    
+    # Add calculated lat/lon coordinates if grid square is available
+    if station[:grid_square]
+      lat, lon = GridSquare.new(station[:grid_square]).to_a
+      if lat && lon
+        station[:latitude] = lat
+        station[:longitude] = lon
+      end
+    end
+    
     station.to_json
   rescue Qrz::NotFound
     status 404
