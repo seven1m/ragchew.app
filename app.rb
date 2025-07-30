@@ -36,7 +36,7 @@ helpers do
       links = [
         "<a href='/user'>#{erb "<%== @user.call_sign %>"}</a>",
         @user.admin? ? "<a href='/admin'>admin</a>" : nil,
-        @user.net_logger? && !@user.logging_net ? "<a href='/create-net'>create net</a>" : nil,
+        !@user.logging_net ? "<a href='/create-net'>create net</a>" : nil,
         "<a href='/logout' data-method='post'>log out</a>"
       ].compact
     else
@@ -342,12 +342,9 @@ end
 
 get '/create-net' do
   @user = get_user
-  require_net_logger_role!
-
   check_if_already_started_a_net!(@user)
 
   @my_clubs = @user.clubs
-
   erb :create_net
 end
 

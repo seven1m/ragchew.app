@@ -1447,13 +1447,13 @@ class CreateNetForm extends Component {
         >
           <option value=""></option>
           ${this.props.clubs.map(
-            (club) => html`<option value=${club.id}>${club.name}</option>`
+            (club) => html`<option value=${club.id}>${club.best_name}</option>`
           )}
         </select>
       </label>
       <p>
         <em
-          >If your club is not listed above, you may find it${" "}
+          >If your club is not listed above, you may find and "join" it${" "}
           <a href="/groups">here</a>.</em
         >
       </p>
@@ -1462,8 +1462,6 @@ class CreateNetForm extends Component {
 }
 
 class CreateNet extends Component {
-  state = { formVisible: false }
-
   render() {
     if (this.props.clubs.length === 0)
       return html`<p>
@@ -1473,19 +1471,7 @@ class CreateNet extends Component {
         >
       </p>`
 
-    return html`
-      <p>
-        <input
-          id="understand"
-          type="checkbox"
-          onclick=${() =>
-            this.setState({ formVisible: !this.state.formVisible })}
-        />
-        <label for="understand">I understand, please let me start a net.</label>
-      </p>
-
-      ${this.state.formVisible ? h(CreateNetForm, this.props) : null}
-    `
+    return html`<${CreateNetForm} ...${this.props} />`
   }
 }
 

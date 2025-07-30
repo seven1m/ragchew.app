@@ -18,6 +18,10 @@ module Tables
       full_name.presence || name
     end
 
+    def as_json
+      super.merge(best_name:)
+    end
+
     # returns an array of hashes, like this:
     #
     #     [

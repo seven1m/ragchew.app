@@ -1,6 +1,30 @@
 <h1>Create a Net</h1>
 
-<% if @my_clubs.any? %>
+<% if !@user.net_logger? %>
+
+  <p>
+    It is possible to create a net with RagChew.app, but you need to be added to our private beta first.
+  </p>
+
+  <p>
+    Please <a href="mailto:<%== SUPPORT_EMAIL %>">email Tim</a> and request access. Also include
+    which club or group you will be logging for.
+  </p>
+
+<% elsif @my_clubs.none? %>
+
+  <p class="error-callout">
+    This is where you would enter details for your net, but you are not a
+    logger for any club. If your club already exists <a href="/groups">here</a>,
+    you can "join" it and come back.
+  </p>
+
+  <p>
+    Please <a href="mailto:<%== SUPPORT_EMAIL %>">contact Tim</a> for help.
+  </p>
+
+<% else %>
+
   <p>
     You are about to start a net. Only do this if you absolutely know what you are doing.
     If you are trying to participate in a net or join a net or call into a net, this is not
@@ -20,9 +44,5 @@
   </p>
 
   <div data-component="CreateNet" data-props="<%= json_for_html_attribute({ net_control: @user.call_sign, clubs: @my_clubs.as_json }) %>"></div>
-<% else %>
-  <p class="error-callout">
-    This is where you would enter details for your net, but you are not a
-    logger for any club. Please <a href="mailto:<%== SUPPORT_EMAIL %>">contact Tim</a>.
-  </p>
+
 <% end %>
