@@ -953,6 +953,27 @@ rescue ActiveRecord::RecordNotFound
   return { error: 'Membership not found.' }.to_json
 end
 
+get '/admin/users/:id/qrz' do
+  @user = get_user
+  require_admin!
+
+  @user_to_edit = Tables::User.find(params[:id])
+  
+  begin
+    station = QrzAutoSession.new.lookup(@user_to_edit.call_sign)
+    station.to_json
+  rescue Qrz::NotFound
+    status 404
+    return { error: 'Call sign not found in QRZ database.' }.to_json
+  rescue Qrz::Error => e
+    status 500
+    return { error: "QRZ lookup failed: #{e.message}" }.to_json
+  rescue => e
+    status 500
+    return { error: "Unexpected error: #{e.message}" }.to_json
+  end
+end
+
 get '/admin/closed-nets' do
   @user = get_user
   require_admin!

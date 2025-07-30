@@ -1,6 +1,13 @@
 <h1>User: <%== @user_to_edit.call_sign %></h1>
 
-<p><a href="https://www.qrz.com/db/<%= url_escape @user_to_edit.call_sign.upcase %>">QRZ</a></p>
+<p>
+  <button id="qrz-lookup-btn" onclick="lookupQrz()">Get from QRZ</button>
+  <span id="qrz-loading" style="display: none; margin-left: 10px; font-style: italic;">Loading...</span>
+</p>
+
+<div id="qrz-info" style="display: none; margin: 20px 0; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9;">
+  <div id="qrz-content"></div>
+</div>
 
 <dl>
   <dt>First name:</dt>
@@ -129,8 +136,8 @@ searchInput.addEventListener('input', function() {
         if (clubs.length === 0) {
           resultsDiv.innerHTML = '<div style="padding: 10px; color: #666;">No clubs found</div>';
         } else {
-          resultsDiv.innerHTML = clubs.map(club => 
-            `<div style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;" 
+          resultsDiv.innerHTML = clubs.map(club =>
+            `<div style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;"
                   onclick="addUserToClub(${club.id}, '${escapeHtml(club.name)}')"
                   onmouseover="this.style.backgroundColor='#f5f5f5'"
                   onmouseout="this.style.backgroundColor='white'">
@@ -178,5 +185,226 @@ function addUserToClub(clubId, clubName) {
 
   resultsDiv.style.display = 'none';
   searchInput.value = '';
+}
+
+function lookupQrz() {
+  const btn = document.getElementById('qrz-lookup-btn');
+  const loading = document.getElementById('qrz-loading');
+  const infoDiv = document.getElementById('qrz-info');
+  const contentDiv = document.getElementById('qrz-content');
+
+  btn.disabled = true;
+  loading.style.display = 'inline';
+  infoDiv.style.display = 'none';
+
+  fetch(`/admin/users/<%== @user_to_edit.id %>/qrz`)
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => Promise.reject(err));
+      }
+      return response.json();
+    })
+    .then(station => {
+      contentDiv.innerHTML = formatQrzInfo(station);
+      infoDiv.style.display = 'block';
+    })
+    .catch(error => {
+      contentDiv.innerHTML = `<div style="color: red;">Error: ${error.error || 'Unknown error occurred'}</div>`;
+      infoDiv.style.display = 'block';
+    })
+    .finally(() => {
+      btn.disabled = false;
+      loading.style.display = 'none';
+    });
+}
+
+function formatQrzInfo(station) {
+  let html = '<dl>';
+
+  if (station.call_sign) {
+    html += `<dt>Call Sign:</dt><dd><strong>${escapeHtml(station.call_sign)}</strong></dd>`;
+  }
+
+  if (station.first_name || station.last_name) {
+    const name = [station.first_name, station.last_name].filter(Boolean).join(' ');
+    html += `<dt>Name:</dt><dd>${escapeHtml(name)}</dd>`;
+  }
+
+  if (station.nickname) {
+    html += `<dt>Nickname:</dt><dd>${escapeHtml(station.nickname)}</dd>`;
+  }
+
+  if (station.license_class) {
+    html += `<dt>License Class:</dt><dd>${escapeHtml(station.license_class)}</dd>`;
+  }
+
+  if (station.license_date) {
+    html += `<dt>Licensed Since:</dt><dd>${escapeHtml(station.license_date)}</dd>`;
+  }
+
+  if (station.expiry_date) {
+    html += `<dt>License Expires:</dt><dd>${escapeHtml(station.expiry_date)}</dd>`;
+  }
+
+  if (station.previous_call) {
+    html += `<dt>Previous Call:</dt><dd>${escapeHtml(station.previous_call)}</dd>`;
+  }
+
+  if (station.aliases) {
+    html += `<dt>Aliases:</dt><dd>${escapeHtml(station.aliases)}</dd>`;
+  }
+
+  if (station.trustee) {
+    html += `<dt>Trustee:</dt><dd>${escapeHtml(station.trustee)}</dd>`;
+  }
+
+  if (station.street || station.city || station.state || station.zip) {
+    const addressParts = [];
+    if (station.street) addressParts.push(escapeHtml(station.street));
+
+    const cityState = [station.city, station.state].filter(Boolean).join(', ');
+    if (cityState) addressParts.push(escapeHtml(cityState));
+
+    if (station.zip) addressParts.push(escapeHtml(station.zip));
+
+    const address = addressParts.join('<br/>');
+    html += `<dt>Address:</dt><dd>${address}</dd>`;
+  }
+
+  if (station.county) {
+    html += `<dt>County:</dt><dd>${escapeHtml(station.county)}</dd>`;
+  }
+
+  if (station.country) {
+    html += `<dt>Country:</dt><dd>${escapeHtml(station.country)}</dd>`;
+  }
+
+  if (station.dxcc) {
+    html += `<dt>DXCC:</dt><dd>${escapeHtml(station.dxcc)}</dd>`;
+  }
+
+  if (station.cqzone) {
+    html += `<dt>CQ Zone:</dt><dd>${escapeHtml(station.cqzone)}</dd>`;
+  }
+
+  if (station.ituzone) {
+    html += `<dt>ITU Zone:</dt><dd>${escapeHtml(station.ituzone)}</dd>`;
+  }
+
+  if (station.grid_square) {
+    html += `<dt>Grid Square:</dt><dd>${escapeHtml(station.grid_square)}</dd>`;
+  }
+
+  if (station.born) {
+    html += `<dt>Born:</dt><dd>${escapeHtml(station.born)}</dd>`;
+  }
+
+  if (station.qsl_manager) {
+    html += `<dt>QSL Manager:</dt><dd>${escapeHtml(station.qsl_manager)}</dd>`;
+  }
+
+  if (station.email) {
+    html += `<dt>Email:</dt><dd><a href="mailto:${escapeHtml(station.email)}">${escapeHtml(station.email)}</a></dd>`;
+  }
+
+  if (station.url) {
+    html += `<dt>Website:</dt><dd><a href="${escapeHtml(station.url)}" target="_blank">${escapeHtml(station.url)}</a></dd>`;
+  }
+
+  if (station.views) {
+    html += `<dt>QRZ Page Views:</dt><dd>${escapeHtml(station.views)}</dd>`;
+  }
+
+  if (station.eqsl === '1') {
+    html += `<dt>eQSL:</dt><dd>Yes</dd>`;
+  }
+
+  if (station.lotw === '1') {
+    html += `<dt>LoTW:</dt><dd>Yes</dd>`;
+  }
+
+  if (station.mqsl === '1') {
+    html += `<dt>Paper QSL:</dt><dd>Yes</dd>`;
+  }
+
+  if (station.iota) {
+    html += `<dt>IOTA:</dt><dd>${escapeHtml(station.iota)}</dd>`;
+  }
+
+  if (station.moddate) {
+    html += `<dt>Last Updated:</dt><dd>${escapeHtml(station.moddate)}</dd>`;
+  }
+
+  if (station.image) {
+    html += `<dt>Photo:</dt><dd><img src="${escapeHtml(station.image)}" alt="QRZ Photo" style="max-width: 200px; max-height: 200px;"/></dd>`;
+  }
+
+  html += '</dl>';
+
+  html += `<p style="margin-top: 15px; font-size: smaller; color: #666;">
+    Data from <a href="https://www.qrz.com/db/${escapeHtml(station.call_sign)}" target="_blank">QRZ.com</a>
+  </p>`;
+
+  // Add map if grid square is available
+  if (station.grid_square) {
+    html += `<div id="qrz-map" style="height: 300px; margin: 15px 0; border: 1px solid #ccc;"></div>`;
+  }
+
+  // Initialize map after content is added to DOM
+  if (station.grid_square) {
+    setTimeout(() => initQrzMap(station.grid_square, station.call_sign), 100);
+  }
+
+  return html;
+}
+
+function gridSquareToLatLon(gridSquare) {
+  if (!gridSquare || gridSquare.length < 4) return null;
+
+  const grid = gridSquare.toUpperCase();
+
+  // Field (first two letters)
+  const fieldLon = (20 * (grid.charCodeAt(0) - 65)) - 180;
+  const fieldLat = (10 * (grid.charCodeAt(1) - 65)) - 90;
+
+  // Square (next two digits)
+  const squareLon = 2 * parseInt(grid[2]);
+  const squareLat = parseInt(grid[3]);
+
+  // Subsquare (optional last two letters)
+  let subsquareLon = 0;
+  let subsquareLat = 0;
+
+  if (grid.length >= 6) {
+    subsquareLon = (5 * (grid.charCodeAt(4) - 65)) / 60.0;
+    subsquareLat = (2.5 * (grid.charCodeAt(5) - 65)) / 60.0;
+  } else {
+    // If no subsquare, use center of square
+    subsquareLon = 1; // Center of 2-degree square
+    subsquareLat = 0.5; // Center of 1-degree square
+  }
+
+  const longitude = fieldLon + squareLon + subsquareLon;
+  const latitude = fieldLat + squareLat + subsquareLat;
+
+  return { latitude, longitude };
+}
+
+function initQrzMap(gridSquare, callSign) {
+  const coords = gridSquareToLatLon(gridSquare);
+  if (!coords) return;
+
+  // Create map
+  const map = L.map('qrz-map').setView([coords.latitude, coords.longitude], 8);
+
+  // Add tile layer
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+
+  // Add marker
+  const marker = L.marker([coords.latitude, coords.longitude]).addTo(map);
+  marker.bindPopup(`<strong>${escapeHtml(callSign)}</strong><br/>Grid: ${escapeHtml(gridSquare)}`).openPopup();
 }
 </script>
