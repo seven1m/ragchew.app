@@ -153,6 +153,16 @@ helpers do
     end
   end
 
+  def weeks_in_range(range)
+    return to_enum(__method__, range) unless block_given?
+
+    t = range.begin.beginning_of_week
+    while t < range.end
+      yield t
+      t = (t + 1.week).beginning_of_week
+    end
+  end
+
   def stat_values_by_hour(hours, name)
     records = Tables::Stat.where(name:, period: hours).to_a
     hours.map do |hour|
@@ -164,6 +174,13 @@ helpers do
     records = Tables::Stat.where(name:, period: dates).to_a
     dates.map do |date|
       records.detect { |r| r.period == date.beginning_of_day }&.value || 0
+    end
+  end
+
+  def stat_values_by_week(weeks, name)
+    records = Tables::Stat.where(name:, period: weeks).to_a
+    weeks.map do |week|
+      records.detect { |r| r.period == week.beginning_of_week }&.value || 0
     end
   end
 
@@ -837,13 +854,42 @@ def gather_daily_stats
   }
 end
 
+def gather_weekly_stats
+  Time.zone = 'America/Chicago'
+
+  time_range = 1.year.ago..Time.zone.now
+  weeks = weeks_in_range(time_range).to_a
+
+  new_user_values = stat_values_by_week(weeks, 'new_users_per_week')
+  active_user_values = stat_values_by_week(weeks, 'active_users_per_week').zip(new_user_values).map { |active, new| active - new }
+  @user_stats_weekly = {
+    new_users: {
+      x: weeks,
+      y: new_user_values,
+      name: 'new',
+      type: 'bar'
+    },
+    active_users: {
+      x: weeks,
+      y: active_user_values,
+      name: 'existing',
+      type: 'bar'
+    }
+  }
+  @net_stats_weekly = {
+    x: weeks,
+    y: stat_values_by_week(weeks, 'nets_per_week'),
+    type: 'bar'
+  }
+end
+
 get '/admin' do
   @user = get_user
   require_admin!
 
   @page_title = 'Admin'
 
-  gather_daily_stats
+  gather_weekly_stats
 
   erb :admin
 end

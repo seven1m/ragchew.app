@@ -1848,5 +1848,24 @@ function buildStatCharts() {
     net_data_daily.marker = { color: "orange" }
     Plotly.newPlot("net_chart_daily", [net_data_daily], { title: "nets" })
   }
+
+  elm = document.getElementById("user_chart_weekly")
+  if (elm) {
+    const user_data_weekly = JSON.parse(elm.dataset.data)
+    const active_user_data_weekly = user_data_weekly.active_users
+    const new_user_data_weekly = user_data_weekly.new_users
+    Plotly.newPlot(
+      "user_chart_weekly",
+      [active_user_data_weekly, new_user_data_weekly],
+      { title: "active users", barmode: "stack" }
+    )
+  }
+
+  elm = document.getElementById("net_chart_weekly")
+  if (elm) {
+    const net_data_weekly = JSON.parse(elm.dataset.data)
+    net_data_weekly.marker = { color: "orange" }
+    Plotly.newPlot("net_chart_weekly", [net_data_weekly], { title: "nets" })
+  }
 }
 window.buildStatCharts = buildStatCharts
