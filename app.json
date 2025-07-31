@@ -13,20 +13,8 @@
       "schedule": "9 0 * * *"
     },
     {
-      "command": "bundle exec rake stats:hourly",
+      "command": "bundle exec rake stats",
       "schedule": "0 * * * *"
-    },
-    {
-      "command": "bundle exec rake stats:daily",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "command": "bundle exec rake stats:weekly",
-      "schedule": "0 0 * * 0"
-    },
-    {
-      "command": "bundle exec rake stats:monthly",
-      "schedule": "0 0 1 * *"
     }
   ],
   "healthchecks": {

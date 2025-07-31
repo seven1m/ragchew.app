@@ -119,65 +119,47 @@ task :update_club_list do
   UpdateClubList.new.call
 end
 
-namespace :stats do
-  def build_stats(range, period_name,  period)
-    nets = Tables::Net.where(created_at: range).count
-    closed_nets = Tables::ClosedNet.where(created_at: range).count
-    Tables::Stat.find_or_initialize_by(name: "nets_per_#{period_name}", period:).update!(value: nets + closed_nets)
+def build_stats(range, period_name, period)
+  nets = Tables::Net.where(created_at: range).count
+  closed_nets = Tables::ClosedNet.where(created_at: range).count
+  Tables::Stat.find_or_initialize_by(name: "nets_per_#{period_name}", period:).update!(value: nets + closed_nets)
 
-    new_users = Tables::User.where(created_at: range).count
-    Tables::Stat.find_or_initialize_by(name: "new_users_per_#{period_name}", period:).update!(value: new_users)
+  new_users = Tables::User.where(created_at: range).count
+  Tables::Stat.find_or_initialize_by(name: "new_users_per_#{period_name}", period:).update!(value: new_users)
 
-    active_users = Tables::User.where(last_signed_in_at: range).count
-    Tables::Stat.find_or_initialize_by(name: "active_users_per_#{period_name}", period:).update!(value: active_users)
+  active_users = Tables::User.where(last_signed_in_at: range).count
+  Tables::Stat.find_or_initialize_by(name: "active_users_per_#{period_name}", period:).update!(value: active_users)
+end
+
+task :stats do
+  Time.zone = 'America/Chicago'
+  now = Time.zone.now
+
+  # Back up to previous hour since cron runs at the beginning of each hour
+  previous_hour = now.beginning_of_hour - 1.hour
+  range = previous_hour..(previous_hour + 1.hour)
+  puts "Building hourly stats for #{previous_hour.strftime('%Y-%m-%d %H:00')} - #{range.end.strftime('%Y-%m-%d %H:00')}"
+  build_stats(range, 'hour', previous_hour)
+
+  # Only run daily/weekly/monthly stats at specific times to avoid duplicates
+  if now.hour == 0  # Run daily stats at midnight
+    previous_day = now.beginning_of_day - 1.day
+    range = previous_day..(previous_day + 1.day)
+    puts "Building daily stats for #{previous_day.strftime('%Y-%m-%d')} - #{range.end.strftime('%Y-%m-%d')}"
+    build_stats(range, 'day', previous_day)
   end
 
-  task :hourly do
-    Time.zone = 'America/Chicago'
-
-    last_hour = 1.hour.ago.beginning_of_hour
-    range = last_hour..Time.zone.now
-
-    build_stats(range, 'hour', last_hour)
+  if now.hour == 0 && now.wday == 1  # Run weekly stats at midnight on Monday
+    previous_week = now.beginning_of_week - 1.week
+    range = previous_week..(previous_week + 1.week)
+    puts "Building weekly stats for #{previous_week.strftime('%Y-%m-%d')} - #{range.end.strftime('%Y-%m-%d')}"
+    build_stats(range, 'week', previous_week)
   end
 
-  task :daily do
-    Time.zone = 'America/Chicago'
-
-    last_day = 1.day.ago.beginning_of_day
-    range = last_day..Time.zone.now
-
-    build_stats(range, 'day', last_day)
-  end
-
-  task :weekly do
-    Time.zone = 'America/Chicago'
-
-    last_week = 7.days.ago.beginning_of_week
-    range = last_week..Time.zone.now
-
-    build_stats(range, 'week', last_week)
-  end
-
-  task :monthly do
-    Time.zone = 'America/Chicago'
-
-    last_month = 15.days.ago.beginning_of_month
-    range = last_month..Time.zone.now
-
-    build_stats(range, 'month', last_month)
-  end
-
-  task :clear do
-    Tables::Stat.delete_all
-  end
-
-  task :fix_daily do
-    Time.zone = 'America/Chicago'
-
-    Tables::Stat.where("name like '%per_day'").find_each do |stat|
-      stat.period = stat.period.beginning_of_hour
-      stat.save!
-    end
+  if now.hour == 0 && now.day == 1  # Run monthly stats at midnight on the 1st
+    previous_month = now.beginning_of_month - 1.month
+    range = previous_month..(previous_month + 1.month)
+    puts "Building monthly stats for #{previous_month.strftime('%Y-%m-%d')} - #{range.end.strftime('%Y-%m-%d')}"
+    build_stats(range, 'month', previous_month)
   end
 end
