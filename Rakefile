@@ -163,3 +163,53 @@ task :stats do
     build_stats(range, 'month', previous_month)
   end
 end
+
+task :backfill_stats do
+  Time.zone = 'America/Chicago'
+  
+  type = ENV['TYPE'] || raise('TYPE required (hourly, daily, weekly, monthly)')
+  start_time = ENV['START'] || raise('START required (e.g., "2024-01-01" or "2024-01-01 14:00")')
+  end_time = ENV['END'] # optional, defaults to now
+  
+  start_time = Time.zone.parse(start_time)
+  end_time = end_time ? Time.zone.parse(end_time) : Time.zone.now
+  
+  case type.downcase
+  when 'hourly'
+    period_method = :beginning_of_hour
+    increment = 1.hour
+    period_name = 'hour'
+  when 'daily'
+    period_method = :beginning_of_day
+    increment = 1.day
+    period_name = 'day'
+  when 'weekly'
+    period_method = :beginning_of_week
+    increment = 1.week
+    period_name = 'week'
+  when 'monthly'
+    period_method = :beginning_of_month
+    increment = 1.month
+    period_name = 'month'
+  else
+    raise "Invalid TYPE: #{type}. Must be hourly, daily, weekly, or monthly"
+  end
+  
+  current_period = start_time.send(period_method)
+  end_period = end_time.send(period_method)
+  
+  puts "Backfilling #{type} stats from #{current_period} to #{end_period}"
+  count = 0
+  
+  while current_period <= end_period
+    range = current_period..(current_period + increment)
+    puts "Processing #{period_name} #{current_period.strftime('%Y-%m-%d %H:%M')} - #{range.end.strftime('%Y-%m-%d %H:%M')}"
+    
+    build_stats(range, period_name, current_period)
+    count += 1
+    
+    current_period += increment
+  end
+  
+  puts "Backfilled #{count} #{type} periods"
+end
