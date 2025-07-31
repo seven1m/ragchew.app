@@ -21,7 +21,11 @@ class StationUpdater
       @station = Tables::Station
         .find_or_initialize_by(call_sign: @call_sign)
         .extend_expiration
-      @station.update!(info)
+      station_attributes = info.slice(
+        :call_sign, :first_name, :last_name, :image, :grid_square,
+        :street, :city, :state, :zip, :county, :country, :dxcc
+      )
+      @station.update!(station_attributes)
     rescue Qrz::NotFound
       Tables::Station.find_or_initialize_by(call_sign: @call_sign)
         .extend_expiration
