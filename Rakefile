@@ -131,29 +131,13 @@ task :stats do
   Time.zone = 'America/Chicago'
   now = Time.zone.now
 
-  # Only run weekly stats at midnight on Monday
   if now.hour == 0 && now.wday == 1
-    previous_week = now.beginning_of_week - 1.week
-    range = previous_week..(previous_week + 1.week)
-    puts "Building weekly stats for #{previous_week.strftime('%Y-%m-%d')} - #{range.end.strftime('%Y-%m-%d')}"
-    build_stats(range, 'week', previous_week)
+    week_start = now.beginning_of_week - 1.week
   else
-    puts "Skipping stats - only runs at midnight on Monday"
-  end
-end
-
-namespace :stats do
-  task :clear do
-    Tables::Stat.delete_all
+    week_start = now.beginning_of_week
   end
 
-  task :clear_non_weekly do
-    Tables::Stat.where("name NOT LIKE '%_per_week'").delete_all
-    puts "Deleted all non-weekly stats"
-  end
-
-  task :clear_nets_stats do
-    Tables::Stat.where("name LIKE 'nets_per_%'").delete_all
-    puts "Deleted all nets stats"
-  end
+  range = week_start..(week_start + 1.week)
+  puts "Building weekly stats for #{range.begin.strftime('%Y-%m-%d')} - #{range.end.strftime('%Y-%m-%d')}"
+  build_stats(range, 'week', week_start)
 end
