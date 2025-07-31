@@ -163,20 +163,6 @@ helpers do
     end
   end
 
-  def stat_values_by_hour(hours, name)
-    records = Tables::Stat.where(name:, period: hours).to_a
-    hours.map do |hour|
-      records.detect { |r| r.period == hour }&.value || 0
-    end
-  end
-
-  def stat_values_by_date(dates, name)
-    records = Tables::Stat.where(name:, period: dates).to_a
-    dates.map do |date|
-      records.detect { |r| r.period == date.beginning_of_day }&.value || 0
-    end
-  end
-
   def stat_values_by_week(weeks, name)
     records = Tables::Stat.where(name:, period: weeks).to_a
     weeks.map do |week|
@@ -797,62 +783,7 @@ post '/logout' do
   redirect '/'
 end
 
-def gather_hourly_stats
-  time_range = 7.days.ago..Time.zone.now
-  times = hours_in_range(time_range).to_a
 
-  new_user_values = stat_values_by_hour(times, 'new_users_per_hour')
-  active_user_values = stat_values_by_hour(times, 'active_users_per_hour').zip(new_user_values).map { |active, new| active - new }
-  @user_stats_hourly = {
-    new_users: {
-      x: times,
-      y: new_user_values,
-      name: 'new',
-      type: 'bar'
-    },
-    active_users: {
-      x: times,
-      y: active_user_values,
-      name: 'existing',
-      type: 'bar'
-    }
-  }
-  @net_stats_hourly = {
-    x: times,
-    y: stat_values_by_hour(times, 'nets_per_hour'),
-    type: 'bar'
-  }
-
-end
-
-def gather_daily_stats
-  Time.zone = 'America/Chicago'
-
-  time_range = 30.days.ago..Time.zone.now
-  dates = dates_in_range(time_range).to_a
-
-  new_user_values = stat_values_by_date(dates, 'new_users_per_day')
-  active_user_values = stat_values_by_date(dates, 'active_users_per_day').zip(new_user_values).map { |active, new| active - new }
-  @user_stats_daily = {
-    new_users: {
-      x: dates,
-      y: new_user_values,
-      name: 'new',
-      type: 'bar'
-    },
-    active_users: {
-      x: dates,
-      y: active_user_values,
-      name: 'existing',
-      type: 'bar'
-    }
-  }
-  @net_stats_daily = {
-    x: dates,
-    y: stat_values_by_date(dates, 'nets_per_day'),
-    type: 'bar'
-  }
-end
 
 def gather_weekly_stats
   Time.zone = 'America/Chicago'
@@ -876,11 +807,6 @@ def gather_weekly_stats
       type: 'bar'
     }
   }
-  @net_stats_weekly = {
-    x: weeks,
-    y: stat_values_by_week(weeks, 'nets_per_week'),
-    type: 'bar'
-  }
 end
 
 get '/admin' do
@@ -894,19 +820,7 @@ get '/admin' do
   erb :admin
 end
 
-get '/admin/stats' do
-  @user = get_user
-  require_admin!
 
-  @page_title = 'Admin'
-
-  Time.zone = 'America/Chicago'
-
-  gather_hourly_stats
-  gather_daily_stats
-
-  erb :admin_stats
-end
 
 get '/admin/users' do
   @user = get_user

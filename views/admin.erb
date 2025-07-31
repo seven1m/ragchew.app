@@ -1,9 +1,6 @@
 <h1>Admin</h1>
 
-<div class="columns">
-  <div class="column" id="user_chart_weekly" data-data="<%= json_for_html_attribute @user_stats_weekly %>"></div>
-  <div class="column" id="net_chart_weekly" data-data="<%= json_for_html_attribute @net_stats_weekly %>"></div>
-</div>
+<div id="user_chart_weekly" data-data="<%= json_for_html_attribute @user_stats_weekly %>"></div>
 
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 <script>
@@ -12,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 </script>
 
-<p><a href="/admin/stats">More stats...</a></p>
+
 
 <h2>Data</h2>
 

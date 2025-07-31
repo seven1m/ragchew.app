@@ -120,10 +120,6 @@ task :update_club_list do
 end
 
 def build_stats(range, period_name, period)
-  nets = Tables::Net.where(created_at: range).count
-  closed_nets = Tables::ClosedNet.where(created_at: range).count
-  Tables::Stat.find_or_initialize_by(name: "nets_per_#{period_name}", period:).update!(value: nets + closed_nets)
-
   new_users = Tables::User.where(created_at: range).count
   Tables::Stat.find_or_initialize_by(name: "new_users_per_#{period_name}", period:).update!(value: new_users)
 
@@ -135,81 +131,29 @@ task :stats do
   Time.zone = 'America/Chicago'
   now = Time.zone.now
 
-  # Back up to previous hour since cron runs at the beginning of each hour
-  previous_hour = now.beginning_of_hour - 1.hour
-  range = previous_hour..(previous_hour + 1.hour)
-  puts "Building hourly stats for #{previous_hour.strftime('%Y-%m-%d %H:00')} - #{range.end.strftime('%Y-%m-%d %H:00')}"
-  build_stats(range, 'hour', previous_hour)
-
-  # Only run daily/weekly/monthly stats at specific times to avoid duplicates
-  if now.hour == 0  # Run daily stats at midnight
-    previous_day = now.beginning_of_day - 1.day
-    range = previous_day..(previous_day + 1.day)
-    puts "Building daily stats for #{previous_day.strftime('%Y-%m-%d')} - #{range.end.strftime('%Y-%m-%d')}"
-    build_stats(range, 'day', previous_day)
-  end
-
-  if now.hour == 0 && now.wday == 1  # Run weekly stats at midnight on Monday
+  # Only run weekly stats at midnight on Monday
+  if now.hour == 0 && now.wday == 1
     previous_week = now.beginning_of_week - 1.week
     range = previous_week..(previous_week + 1.week)
     puts "Building weekly stats for #{previous_week.strftime('%Y-%m-%d')} - #{range.end.strftime('%Y-%m-%d')}"
     build_stats(range, 'week', previous_week)
-  end
-
-  if now.hour == 0 && now.day == 1  # Run monthly stats at midnight on the 1st
-    previous_month = now.beginning_of_month - 1.month
-    range = previous_month..(previous_month + 1.month)
-    puts "Building monthly stats for #{previous_month.strftime('%Y-%m-%d')} - #{range.end.strftime('%Y-%m-%d')}"
-    build_stats(range, 'month', previous_month)
+  else
+    puts "Skipping stats - only runs at midnight on Monday"
   end
 end
 
-task :backfill_stats do
-  Time.zone = 'America/Chicago'
-  
-  type = ENV['TYPE'] || raise('TYPE required (hourly, daily, weekly, monthly)')
-  start_time = ENV['START'] || raise('START required (e.g., "2024-01-01" or "2024-01-01 14:00")')
-  end_time = ENV['END'] # optional, defaults to now
-  
-  start_time = Time.zone.parse(start_time)
-  end_time = end_time ? Time.zone.parse(end_time) : Time.zone.now
-  
-  case type.downcase
-  when 'hourly'
-    period_method = :beginning_of_hour
-    increment = 1.hour
-    period_name = 'hour'
-  when 'daily'
-    period_method = :beginning_of_day
-    increment = 1.day
-    period_name = 'day'
-  when 'weekly'
-    period_method = :beginning_of_week
-    increment = 1.week
-    period_name = 'week'
-  when 'monthly'
-    period_method = :beginning_of_month
-    increment = 1.month
-    period_name = 'month'
-  else
-    raise "Invalid TYPE: #{type}. Must be hourly, daily, weekly, or monthly"
+namespace :stats do
+  task :clear do
+    Tables::Stat.delete_all
   end
-  
-  current_period = start_time.send(period_method)
-  end_period = end_time.send(period_method)
-  
-  puts "Backfilling #{type} stats from #{current_period} to #{end_period}"
-  count = 0
-  
-  while current_period <= end_period
-    range = current_period..(current_period + increment)
-    puts "Processing #{period_name} #{current_period.strftime('%Y-%m-%d %H:%M')} - #{range.end.strftime('%Y-%m-%d %H:%M')}"
-    
-    build_stats(range, period_name, current_period)
-    count += 1
-    
-    current_period += increment
+
+  task :clear_non_weekly do
+    Tables::Stat.where("name NOT LIKE '%_per_week'").delete_all
+    puts "Deleted all non-weekly stats"
   end
-  
-  puts "Backfilled #{count} #{type} periods"
+
+  task :clear_nets_stats do
+    Tables::Stat.where("name LIKE 'nets_per_%'").delete_all
+    puts "Deleted all nets stats"
+  end
 end
