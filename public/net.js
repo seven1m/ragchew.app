@@ -439,13 +439,18 @@ class Net extends Component {
             ...info,
             existingCheckins,
           },
-          editing: {
-            ...this.state.editing,
-            preferred_name:
-              presence(info.preferred_name) || info.first_name.split(/\s+/)[0],
-            notes: presence(info.notes) || "",
-          },
         })
+        if (!this.state.editing.num) {
+          await this.setState({
+            editing: {
+              ...this.state.editing,
+              preferred_name:
+                presence(info.preferred_name) ||
+                info.first_name.split(/\s+/)[0],
+              notes: presence(info.notes) || "",
+            },
+          })
+        }
       } else if (response.status === 404) {
         await this.clearStationInfo(false)
       } else {
