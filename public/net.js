@@ -10,6 +10,165 @@ dayjs.extend(relativeTime)
 dayjs.extend(utc)
 const html = htm.bind(h)
 
+class MessageFormatter {
+  constructor(showFormatting = true) {
+    this.showFormatting = showFormatting
+    this.tagMappings = {
+      p: { open: "<p>", close: "</p>" },
+      b: { open: "<strong>", close: "</strong>" },
+      u: { open: "<u>", close: "</u>" },
+      i: { open: "<em>", close: "</em>" },
+      big: { open: '<span style="font-size: larger;">', close: "</span>" },
+      small: { open: '<span style="font-size: smaller;">', close: "</span>" },
+    }
+  }
+
+  // Escape HTML characters to prevent XSS
+  escapeHtml(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;")
+  }
+
+  // Convert URLs to clickable links
+  linkifyUrls(text) {
+    return text.replace(
+      /https?:\/\/[^\s;()'"<>[\]{}]+(?=\s|$|[.,;!?)])?/gi,
+      (url) => `<a href="${url}" target="_blank">${url}</a>`
+    )
+  }
+
+  // Parse and convert custom formatting tags to HTML or strip them
+  parseFormatting(text) {
+    if (!this.showFormatting) {
+      return this.stripFormatting(text)
+    }
+    const tokens = this.tokenize(text)
+    const result = this.processTokens(tokens)
+    return result
+  }
+
+  // Strip formatting tags but keep their content
+  stripFormatting(text) {
+    const tokens = this.tokenize(text)
+    let result = ""
+
+    for (const token of tokens) {
+      if (token.type === "text") {
+        result += token.content
+      }
+      // Skip open and close tags - they are removed but content is preserved
+    }
+
+    return result
+  }
+
+  // Tokenize the input text into tags and content
+  tokenize(text) {
+    const tokens = []
+    let i = 0
+
+    while (i < text.length) {
+      if (text[i] === "[") {
+        const tagEnd = text.indexOf("]", i)
+        if (tagEnd !== -1) {
+          const tagContent = text.substring(i + 1, tagEnd)
+
+          // Check if it's a closing tag
+          if (tagContent.startsWith("/")) {
+            const tagName = tagContent.substring(1)
+            tokens.push({ type: "close", tag: tagName })
+          } else {
+            tokens.push({ type: "open", tag: tagContent })
+          }
+
+          i = tagEnd + 1
+        } else {
+          // No closing bracket found, treat as regular text
+          tokens.push({ type: "text", content: text[i] })
+          i++
+        }
+      } else {
+        // Find the next opening bracket or end of string
+        let nextBracket = text.indexOf("[", i)
+        if (nextBracket === -1) nextBracket = text.length
+
+        if (nextBracket > i) {
+          tokens.push({ type: "text", content: text.substring(i, nextBracket) })
+          i = nextBracket
+        } else {
+          i++
+        }
+      }
+    }
+
+    return tokens
+  }
+
+  // Process tokens and build HTML output
+  processTokens(tokens) {
+    const stack = []
+    let result = ""
+
+    for (const token of tokens) {
+      if (token.type === "text") {
+        result += token.content
+      } else if (token.type === "open") {
+        const tagName = token.tag.toLowerCase()
+        if (this.tagMappings[tagName]) {
+          stack.push(tagName)
+          result += this.tagMappings[tagName].open
+        } else {
+          // Unknown tag, treat as text
+          result += `[${token.tag}]`
+        }
+      } else if (token.type === "close") {
+        const tagName = token.tag.toLowerCase()
+
+        // Find the matching opening tag in the stack
+        const stackIndex = stack.lastIndexOf(tagName)
+        if (stackIndex !== -1 && this.tagMappings[tagName]) {
+          // Close all tags from the top of the stack down to the matching tag
+          for (let i = stack.length - 1; i >= stackIndex; i--) {
+            const stackTag = stack[i]
+            if (this.tagMappings[stackTag]) {
+              result += this.tagMappings[stackTag].close
+            }
+          }
+          // Remove closed tags from stack
+          stack.splice(stackIndex)
+        } else {
+          // No matching opening tag or unknown tag, treat as text
+          result += `[/${token.tag}]`
+        }
+      }
+    }
+
+    // Close any remaining open tags
+    for (let i = stack.length - 1; i >= 0; i--) {
+      const stackTag = stack[i]
+      if (this.tagMappings[stackTag]) {
+        result += this.tagMappings[stackTag].close
+      }
+    }
+
+    return result
+  }
+
+  // Main formatting function
+  format(text) {
+    if (!text) return ""
+
+    let formatted = this.escapeHtml(text)
+    formatted = this.parseFormatting(formatted)
+    formatted = this.linkifyUrls(formatted)
+    return formatted
+  }
+}
+
 let intervalWithBackoffNextId = 0
 const intervalWithBackoffIntervals = {}
 
@@ -59,6 +218,7 @@ class Net extends Component {
     lastUpdatedAt: null,
     monitoringThisNet: this.props.monitoringThisNet,
     reverseMessages: localStorage.getItem("reverseMessages") === "true",
+    showFormatting: localStorage.getItem("showFormatting") !== "false", // default to true
   }
 
   formRef = createRef()
@@ -230,14 +390,23 @@ class Net extends Component {
         <h2>Messages</h2>
         ${this.state.monitoringThisNet &&
         html`<label>
-          <input
-            type="checkbox"
-            id="reverse-messages"
-            checked=${this.state.reverseMessages}
-            onClick=${this.handleReverseMessagesToggle.bind(this)}
-          />
-          Reverse messages
-        </label>`}
+            <input
+              type="checkbox"
+              id="reverse-messages"
+              checked=${this.state.reverseMessages}
+              onClick=${this.handleReverseMessagesToggle.bind(this)}
+            />
+            Reverse messages
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              id="show-formatting"
+              checked=${this.state.showFormatting}
+              onClick=${this.handleShowFormattingToggle.bind(this)}
+            />
+            Show formatting
+          </label>`}
       </div>
 
       <${Messages}
@@ -248,6 +417,7 @@ class Net extends Component {
         userCallSign=${this.props.userCallSign}
         isLogger=${this.props.isLogger}
         reverseMessages=${this.state.reverseMessages}
+        showFormatting=${this.state.showFormatting}
         onToggleMonitorNet=${this.handleToggleMonitorNet.bind(this)}
       />
 
@@ -392,6 +562,12 @@ class Net extends Component {
     const newValue = !this.state.reverseMessages
     this.setState({ reverseMessages: newValue })
     localStorage.setItem("reverseMessages", newValue.toString())
+  }
+
+  handleShowFormattingToggle() {
+    const newValue = !this.state.showFormatting
+    this.setState({ showFormatting: newValue })
+    localStorage.setItem("showFormatting", newValue.toString())
   }
 
   handleCallSignInput(call_sign) {
@@ -889,31 +1065,8 @@ class Messages extends Component {
   }
 
   formatText(text) {
-    const sanitized = text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;")
-
-    let formatted = sanitized.replace(
-      /https?:\/\/[^\s,;()'"<>[\]{}]+(?=\s|$|[.,;!?)])?/gi,
-      (url) => {
-        return `<a href="${url}" target="_blank">${url}</a>`
-      }
-    )
-    let formattedNext
-    for (;;) {
-      formattedNext = formatted
-        .replace(/\[(p|b|u)\]([^\[]*)\[\/\1\]/, "<$1>$2</$1>")
-        .replace(
-          /\[big\]([^\[]*)\[\/big\]/,
-          "<span style='font-size:larger'>$1</span>"
-        )
-      if (formattedNext === formatted) break
-      formatted = formattedNext
-    }
-    return formatted
+    const parser = new MessageFormatter(this.props.showFormatting)
+    return parser.format(text)
   }
 
   renderLog() {
