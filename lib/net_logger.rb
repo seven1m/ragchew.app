@@ -131,6 +131,10 @@ class NetLogger
     NetList.new.update_net_list_right_now_with_wreckless_disregard_for_the_last_update!
   end
 
+  def current_highlight_num
+    @net_info.net.checkins.find_by(currently_operating: true)&.num || 0
+  end
+
   private
 
   def send_update!(entries, highlight_num: current_highlight_num)
@@ -173,9 +177,5 @@ class NetLogger
       'Token' => password,
       'UpdatesFromNetControl' => data,
     )
-  end
-
-  def current_highlight_num
-    @net_info.net.checkins.find_by(currently_operating: true)&.num || 0
   end
 end

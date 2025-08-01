@@ -477,7 +477,15 @@ patch '/highlight/:id/:num' do
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
-  logger.highlight!(params.fetch(:num).to_i)
+  requested_num = params.fetch(:num).to_i
+
+  if logger.current_highlight_num == requested_num
+    highlight_num = 0
+  else
+    highlight_num = requested_num
+  end
+
+  logger.highlight!(highlight_num)
 
   return { success: true }.to_json
 rescue NetLogger::NotAuthorizedError
@@ -783,8 +791,6 @@ post '/logout' do
   redirect '/'
 end
 
-
-
 def gather_weekly_stats
   Time.zone = 'America/Chicago'
 
@@ -819,8 +825,6 @@ get '/admin' do
 
   erb :admin
 end
-
-
 
 get '/admin/users' do
   @user = get_user
