@@ -25,7 +25,7 @@
     <%= style_tag 'main.css' %>
     <% if @user&.theme == 'dark' %>
       <link rel="stylesheet" href="/dark.css">
-    <% elsif @user&.theme == 'system' %>
+    <% elsif !@user || @user&.theme == 'system' %>
       <link rel="stylesheet" href="/dark.css" media="(prefers-color-scheme: dark)">
     <% end %>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>

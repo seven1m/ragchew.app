@@ -68,7 +68,7 @@
 
 <dl>
   <dt>2025-08-01</dt>
-  <dd>There is a new "theme" user setting and dark theme. The dark theme is automatically selected if your browser indicates you prefer dark mode.</dd>
+  <dd>There is a new "theme" <%- if @user %><a href="/user">user setting</a><%- else %>user setting<%- end %> and dark theme. The dark theme is automatically selected if your browser indicates you prefer dark mode.</dd>
 
   <dt>2025-07-31</dt>
   <dd>Message formatting via tags has been enhanced, and now there is an option to disable formatting and render all messages plainly.</dd>
