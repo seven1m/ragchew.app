@@ -1,0 +1,177 @@
+/* Dark mode overrides */
+
+body {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* Text colors */
+.index-map-explanation {
+  color: #888;
+}
+
+.disclaimer {
+  color: #888;
+}
+
+.disclaimer a, .disclaimer a:visited {
+  color: #888;
+}
+
+footer p {
+  color: #888;
+}
+
+footer a, footer a:visited {
+  color: #888;
+}
+
+/* Borders and dividers */
+.h2-with-controls {
+  border-bottom: 3px double #666;
+}
+
+h2 {
+  border-bottom: 3px double #666;
+}
+
+/* Table styling */
+tr.odd {
+  background-color: #2a2a2a;
+}
+
+tr.currently-operating td {
+  background-color: #4a2a4a;
+}
+
+tr.checked-out td, tr.checked-out td a {
+  color: #888;
+}
+
+tr.remarks {
+  color: #aaa;
+}
+
+/* Chat and messages */
+.blue-screen {
+  background-color: #2a3a4a;
+}
+
+.chat-odd {
+  background-color: #3a4a5a;
+}
+
+.chat-timestamp {
+  color: #aaa;
+}
+
+/* Highlights and callouts */
+.highlight {
+  background-color: #4a4a2a;
+}
+
+.info-callout {
+  background-color: #2a3a4a;
+  border: 1px solid #4a6a9a;
+}
+
+.error-callout {
+  background-color: #4a2a2a;
+  border: 1px solid #aa4a4a;
+}
+
+.warning-callout {
+  background-color: #4a3a2a;
+  border: 1px solid #aa7a4a;
+}
+
+/* Form elements */
+input, select {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+input:focus, select:focus {
+  border-color: #777;
+  outline: none;
+}
+
+/* Buttons and links */
+a.btn {
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  color: #e0e0e0;
+}
+
+a.btn:hover {
+  background-color: #4a4a4a;
+}
+
+.linkish:hover {
+  color: #6ab7ff;
+}
+
+/* Admin sections */
+.admin-only {
+  background-color: #2a2a2a;
+}
+
+/* Links */
+a {
+  color: #6ab7ff;
+}
+
+a:visited {
+  color: #9a8aff;
+}
+
+/* Offline status */
+span.Offline {
+  color: #666;
+}
+
+/* Form styling */
+input[type="text"], input[type="password"], textarea, select {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+  border-color: #777;
+  background-color: #333;
+}
+
+/* Button styling */
+button, input[type="submit"] {
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+button:hover, input[type="submit"]:hover {
+  background-color: #4a4a4a;
+}
+
+/* Table borders */
+table {
+  border-collapse: collapse;
+}
+
+th, td {
+  border-color: #444;
+}
+
+/* Navigation */
+nav a {
+  color: #6ab7ff;
+}
+
+nav a:visited {
+  color: #9a8aff;
+}
+
+/* General */
+.dark-only { display: revert; }
+.light-only { display: none; }

@@ -23,6 +23,20 @@
       <% end %>
     </select>
   </label>
+
+  <label>
+    Theme:<br />
+    <select name="theme">
+      <% {
+        'system' => "Automatic",
+        'light' => "Light",
+        'dark' => "Dark",
+      }.each do |value, label| %>
+        <option value="<%= value %>" <%- if @user.theme == value %>selected<%- end %>><%= label %></option>
+      <% end %>
+    </select>
+  </label>
+
   <p><input type="submit" value="Save" /></p>
 </form>
 

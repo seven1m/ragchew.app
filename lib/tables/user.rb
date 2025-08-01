@@ -16,6 +16,8 @@ module Tables
       utc_24: 2,
     }
 
+    validates :theme, inclusion: { in: %w[system light dark] }
+
     def name
       [first_name, last_name].compact.join(' ')
     end

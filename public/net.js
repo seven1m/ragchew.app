@@ -10,6 +10,39 @@ dayjs.extend(relativeTime)
 dayjs.extend(utc)
 const html = htm.bind(h)
 
+// Theme detection and map tile management
+function getCurrentTheme() {
+  const userTheme = document.body.getAttribute("data-theme") || "system"
+
+  if (userTheme === "system") {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light"
+  }
+
+  return userTheme
+}
+
+function createTileLayer(theme) {
+  if (theme === "dark") {
+    return L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: "abcd",
+      }
+    )
+  } else {
+    return L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    })
+  }
+}
+
 class MessageFormatter {
   constructor(showFormatting = true) {
     this.showFormatting = showFormatting
@@ -1836,11 +1869,10 @@ function buildNetMap() {
     4
   )
   netMap.attributionControl.setPrefix("")
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  }).addTo(netMap)
+
+  // Add theme-aware tile layer
+  const currentTheme = getCurrentTheme()
+  createTileLayer(currentTheme).addTo(netMap)
 
   window.netMapOms = new OverlappingMarkerSpiderfier(netMap)
   const popup = new L.Popup({ offset: [0, -30] })

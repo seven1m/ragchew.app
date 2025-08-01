@@ -1,5 +1,12 @@
 <h1>
-  <img src="/images/logo.svg" style="height:30px;"/>
+  <% if @user&.theme == 'dark' %>
+    <img src="/images/logo-dark.svg" style="height:30px;"/>
+  <% elsif @user&.theme == 'system' %>
+    <img src="/images/logo.svg" style="height:30px;" class="light-only">
+    <img src="/images/logo-dark.svg" style="height:30px;" class="dark-only">
+  <% else %>
+    <img src="/images/logo.svg" style="height:30px;"/>
+  <% end %>
   RagChew.app
 </h1>
 
@@ -60,6 +67,9 @@
 </p>
 
 <dl>
+  <dt>2025-08-01</dt>
+  <dd>There is a new "theme" user setting and dark theme. The dark theme is automatically selected if your browser indicates you prefer dark mode.</dd>
+
   <dt>2025-07-31</dt>
   <dd>Message formatting via tags has been enhanced, and now there is an option to disable formatting and render all messages plainly.</dd>
 

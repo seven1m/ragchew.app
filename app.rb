@@ -749,6 +749,7 @@ post '/preferences' do
   require_user!
 
   @user.time_format = params[:time_format]
+  @user.theme = params[:theme]
   @user.save!
 
   redirect '/'

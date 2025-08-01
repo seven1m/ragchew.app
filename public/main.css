@@ -25,6 +25,8 @@ header.flex .header-col-grow { flex-grow: 1; }
 h1 { margin-top: 10px; }
 h2 { border-bottom: 3px double #999; }
 
+tr { border-bottom: none; }
+
 body { max-width: 100%; }
 
 footer { margin-top: 50px; }
@@ -49,8 +51,7 @@ tr.checked-out td, tr.checked-out td a { color: #999; }
 td { white-space: nowrap; }
 td.can-wrap { white-space: normal; min-width: 150px; }
 tr.odd { background-color: #eee; }
-tr.details { border-bottom: none; }
-tr.remarks { color: #777; }
+tr.remarks { color: #777 }
 td.avatar-cell { height: 64px; }
 
 .blue-screen { background-color: #e8f4f8; }
@@ -109,6 +110,8 @@ ul.no-bullets { list-style-type: none; padding: 0; margin: 0; }
 .linkish:hover { color: dodgerblue; }
 
 a.btn { padding: 4px; background-color: #eee; border: 1px solid #ccc; border-radius: 5px; text-decoration: none; color: #333; font-family: sans-serif; }
+
+.dark-only { display: none; }
 
 /* Mobile */
 

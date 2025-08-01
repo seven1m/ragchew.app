@@ -13,9 +13,21 @@
     </title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="/images/logo.svg" type="image/svg">
+    <% if @user&.theme == 'dark' %>
+      <link rel="shortcut icon" href="/images/logo-dark.svg" type="image/svg">
+    <% elsif @user&.theme == 'system' %>
+      <link rel="shortcut icon" href="/images/logo.svg" type="image/svg">
+      <link rel="shortcut icon" href="/images/logo-dark.svg" type="image/svg" media="(prefers-color-scheme: dark)">
+    <% else %>
+      <link rel="shortcut icon" href="/images/logo.svg" type="image/svg">
+    <% end %>
     <link rel="stylesheet" href="/typesafe.css">
     <%= style_tag 'main.css' %>
+    <% if @user&.theme == 'dark' %>
+      <link rel="stylesheet" href="/dark.css">
+    <% elsif @user&.theme == 'system' %>
+      <link rel="stylesheet" href="/dark.css" media="(prefers-color-scheme: dark)">
+    <% end %>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"/>
     <link rel="stylesheet" href="/toastify.css"/>
@@ -23,7 +35,7 @@
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"></script>
   </head>
-  <body data-time-format="<%= @user&.time_format %>">
+  <body data-time-format="<%= @user&.time_format %>" data-theme="<%= @user&.theme || 'system' %>">
     <%= nav %>
     <%= yield %>
     <footer>
