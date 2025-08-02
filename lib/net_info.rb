@@ -269,17 +269,28 @@ class NetInfo
     changes = 0
 
     checkins.each do |checkin|
+      is_new_checkin = false
       if (existing = records.detect { |r| r.num == checkin[:num] })
         existing.update!(checkin)
         changes += 1 if existing.previous_changes.any?
       else
         records << @record.checkins.create!(checkin)
         changes += 1
+        is_new_checkin = true
       end
       Tables::Station.find_or_initialize_by(call_sign: checkin[:call_sign]).update!(
         last_heard_on: @record.name,
         last_heard_at: checkin[:checked_in_at],
       )
+
+      # Update club station check-in tracking if this net belongs to a club
+      if @record.club && is_new_checkin && checkin[:call_sign].present?
+        club_station = @record.club.club_stations.find_or_initialize_by(call_sign: checkin[:call_sign].upcase)
+        club_station.first_check_in ||= checkin[:checked_in_at]
+        club_station.last_check_in = checkin[:checked_in_at]
+        club_station.check_in_count += 1 # we already have a lock so this should be atomic
+        club_station.save!
+      end
     end
 
     stored_currently_operating = records.detect { |r| r.currently_operating? }&.num
