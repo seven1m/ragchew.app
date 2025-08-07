@@ -345,6 +345,7 @@ end
 
 get '/create-net' do
   @user = get_user
+  require_user!
   check_if_already_started_a_net!(@user)
 
   @my_clubs = @user.clubs
