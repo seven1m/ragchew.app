@@ -336,13 +336,17 @@ class NetInfo
 
     records = @record.messages.all
     messages.each do |message|
-      if (existing = records.detect { |r| r.log_id == message[:log_id] })
-        existing.update!(message)
-        changes += 1 if existing.previous_changes.any?
-      else
-        message[:blocked] = blocked_stations.include?(message[:call_sign].upcase)
-        @record.messages.create!(message)
-        changes += 1
+      begin
+        if (existing = records.detect { |r| r.log_id == message[:log_id] })
+          existing.update!(message)
+          changes += 1 if existing.previous_changes.any?
+        else
+          message[:blocked] = blocked_stations.include?(message[:call_sign].upcase)
+          @record.messages.create!(message)
+          changes += 1
+        end
+      rescue ActiveRecord::StatementInvalid => error
+        Honeybadger.notify(error, message: 'Unable to create/update message')
       end
     end
 
@@ -358,6 +362,10 @@ class NetInfo
 
   def fetch(force_full: false)
     data = fetch_raw(force_full:)
+
+    unless data['NetLogger Start Data']
+      Honeybadger.notify('No Start Data!', context: data)
+    end
 
     checkins = data['NetLogger Start Data'].map do |num, call_sign, city, state, name, remarks, qsl_info, checked_in_at, county, grid_square, street, zip, status, _unknown, country, dxcc, preferred_name|
       next if call_sign == 'future use 2'
