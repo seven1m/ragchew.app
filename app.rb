@@ -836,6 +836,9 @@ get '/admin' do
                                  .includes(:club)
   @ragchew_nets = (active_nets.to_a + closed_nets.to_a).sort_by(&:created_at).reverse
 
+  @new_users = Tables::User.where('created_at >= ?', 7.days.ago)
+                           .order(created_at: :desc)
+
   erb :admin
 end
 

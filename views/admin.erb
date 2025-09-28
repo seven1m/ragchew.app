@@ -13,52 +13,87 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <p>Nets created by this tool in the last 7 days:</p>
 
-<div class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Club</th>
-        <th>Net Control</th>
-        <th>Net Logger</th>
-        <th>Created</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @ragchew_nets.each do |net| %>
-        <tr class="<%= net.is_a?(Tables::ClosedNet) ? 'closed-ragchew-net' : 'active-ragchew-net' %>">
-          <td>
-            <% if net.is_a?(Tables::ClosedNet) %>
-              <a href="/closed-net/<%= url_escape net.id %>"><%== net.name %></a>
-            <% else %>
-              <a href="/net/<%= url_escape net.name %>"><%== net.name %></a>
-            <% end %>
-          </td>
-          <td>
-            <% if net.club %>
-              <a href="/group/<%== url_escape(net.club.name) %>"><%== net.club.best_name %></a>
-            <% else %>
-              <em>no club</em>
-            <% end %>
-          </td>
-          <td>
-            <% if net.net_control.present? %>
-              <a href="/admin/users/<%= url_escape net.net_control %>"><%== net.net_control %></a>
-            <% end %>
-          </td>
-          <td>
-            <% if net.net_logger.present? %>
-              <a href="/admin/users/<%= url_escape net.net_logger.split('-').first %>"><%== net.net_logger %></a>
-            <% end %>
-          </td>
-          <td><%= format_time net.created_at %></td>
+<% if @ragchew_nets.any? %>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Club</th>
+          <th>Net Control</th>
+          <th>Net Logger</th>
+          <th>Created</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        <% @ragchew_nets.each do |net| %>
+          <tr class="<%= net.is_a?(Tables::ClosedNet) ? 'closed-ragchew-net' : 'active-ragchew-net' %>">
+            <td>
+              <% if net.is_a?(Tables::ClosedNet) %>
+                <a href="/closed-net/<%= url_escape net.id %>"><%== net.name %></a>
+              <% else %>
+                <a href="/net/<%= url_escape net.name %>"><%== net.name %></a>
+              <% end %>
+            </td>
+            <td>
+              <% if net.club %>
+                <a href="/group/<%== url_escape(net.club.name) %>"><%== net.club.best_name %></a>
+              <% else %>
+                <em>no club</em>
+              <% end %>
+            </td>
+            <td>
+              <% if net.net_control.present? %>
+                <a href="/admin/users/<%= url_escape net.net_control %>"><%== net.net_control %></a>
+              <% end %>
+            </td>
+            <td>
+              <% if net.net_logger.present? %>
+                <a href="/admin/users/<%= url_escape net.net_logger.split('-').first %>"><%== net.net_logger %></a>
+              <% end %>
+            </td>
+            <td><%= format_time net.created_at %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p><em>no data</em></p>
+<% end %>
 
 <p><a href="/admin/table/closed_nets?column=created_by_ragchew&value=true">show all</a></p>
+
+<h2>New Users</h2>
+
+<p>Users created in the last 7 days:</p>
+
+<% if @new_users.any? %>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Call Sign</th>
+          <th>Name</th>
+          <th>Created</th>
+          <th>Last Signed In</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @new_users.each do |user| %>
+          <tr<%= user.one_time_user? ? ' class="single-login-user"' : '' %>>
+            <td><a href="/admin/users/<%= user.id %>"><%== user.call_sign %></a></td>
+            <td><%== user.first_name %> <%== user.last_name %></td>
+            <td><%= format_time user.created_at %></td>
+            <td><%= format_time user.last_signed_in_at %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p><em>no data</em></p>
+<% end %>
 
 <h2>Data</h2>
 
