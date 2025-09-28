@@ -13,22 +13,9 @@
 
 <% else %>
 
-  <p>
-    You are about to start a net. Only do this if you absolutely know what you are doing.
-    If you are trying to participate in a net or join a net or call into a net, this is not
-    where you do that. Instead, go back <a href="/">home</a> and find the net there.
-    If itʼs not there, then whoever is responsible for running and/or logging the net hasnʼt
-    started it yet.
-  </p>
-
-  <p>
-    <strong>Do not continue unless you are a person in charge of this net!</strong>
-  </p>
-
   <p class="warning-callout">
-    <strong>This is a BETA feature.</strong> There is a good chance you may encounter bugs.
-    Please use NetLogger if logging your net is critical to you and your netizens.
-    If, on the other hand, you want to help me work out the kinks, carry on, friend!
+    <strong>You are about to start a net.</strong> This is not where you would join or participate in a net.
+    This screen is for someone who is a net control operator or a net logger. :-)
   </p>
 
   <div data-component="CreateNet" data-props="<%= json_for_html_attribute({ net_control: @user.call_sign, clubs: @my_clubs.as_json }) %>"></div>

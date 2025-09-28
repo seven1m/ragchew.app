@@ -31,7 +31,7 @@ module Tables
     end
 
     def net_logger?
-      flags & 2 == 2
+      return true
     end
 
     def net_logger=(value)
