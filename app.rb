@@ -1208,13 +1208,21 @@ get '/admin/table/:table' do
   scope = scope.where('id > ?', params[:after]) if params[:after]
   if params[:column].present? && params[:value].present?
     column = ActiveRecord::Base.connection.quote_column_name(params[:column])
+    value = params[:value]
+
+    # Handle boolean columns
+    column_info = klass.columns.find { |c| c.name == params[:column] }
+    if column_info&.type == :boolean
+      value = value.to_s.downcase == 'true'
+    end
+
     if params[:like]
       operator = 'like'
-      params[:value] = "%#{params[:value]}%" unless params[:value].include?('%')
+      value = "%#{value}%" unless value.to_s.include?('%')
     else
       operator = '='
     end
-    scope = scope.where("#{column} #{operator} ?", params[:value])
+    scope = scope.where("#{column} #{operator} ?", value)
   end
   @count = scope.count
   @more_pages = @count > per_page
