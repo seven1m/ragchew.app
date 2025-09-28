@@ -24,6 +24,7 @@ module Tables
           'center_longitude',
           'center_radius',
           'club_id',
+          'created_by_ragchew',
         )
       )
       closed_net.ended_at = Time.now

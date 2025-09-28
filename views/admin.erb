@@ -9,7 +9,56 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 </script>
 
+<h2>Ragchew Nets</h2>
 
+<p>Nets created by this tool in the last 7 days:</p>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Club</th>
+        <th>Net Control</th>
+        <th>Net Logger</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @ragchew_nets.each do |net| %>
+        <tr class="<%= net.is_a?(Tables::ClosedNet) ? 'closed-ragchew-net' : 'active-ragchew-net' %>">
+          <td>
+            <% if net.is_a?(Tables::ClosedNet) %>
+              <a href="/closed-net/<%= url_escape net.id %>"><%== net.name %></a>
+            <% else %>
+              <a href="/net/<%= url_escape net.name %>"><%== net.name %></a>
+            <% end %>
+          </td>
+          <td>
+            <% if net.club %>
+              <a href="/group/<%== url_escape(net.club.name) %>"><%== net.club.best_name %></a>
+            <% else %>
+              <em>no club</em>
+            <% end %>
+          </td>
+          <td>
+            <% if net.net_control.present? %>
+              <a href="/admin/users/<%= url_escape net.net_control %>"><%== net.net_control %></a>
+            <% end %>
+          </td>
+          <td>
+            <% if net.net_logger.present? %>
+              <a href="/admin/users/<%= url_escape net.net_logger.split('-').first %>"><%== net.net_logger %></a>
+            <% end %>
+          </td>
+          <td><%= format_time net.created_at %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<p><a href="/admin/table/closed_nets?column=created_by_ragchew&value=true">show all</a></p>
 
 <h2>Data</h2>
 

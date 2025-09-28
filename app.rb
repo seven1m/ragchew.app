@@ -828,6 +828,14 @@ get '/admin' do
 
   gather_weekly_stats
 
+  active_nets = Tables::Net.where(created_by_ragchew: true)
+                           .where('created_at >= ?', 7.days.ago)
+                           .includes(:club)
+  closed_nets = Tables::ClosedNet.where(created_by_ragchew: true)
+                                 .where('created_at >= ?', 7.days.ago)
+                                 .includes(:club)
+  @ragchew_nets = (active_nets.to_a + closed_nets.to_a).sort_by(&:created_at).reverse
+
   erb :admin
 end
 
@@ -867,6 +875,16 @@ end
 get '/admin/users/:id' do
   @user = get_user
   require_admin!
+
+  unless params[:id].match?(/^\d+$/)
+    # It's a callsign, find the user and redirect
+    if (user = Tables::User.find_by(call_sign: params[:id].upcase))
+      redirect "/admin/users/#{user.id}"
+    else
+      status 404
+      return "User not found"
+    end
+  end
 
   @page_title = 'Admin - User'
   @user_to_edit = Tables::User.find(params[:id])
@@ -927,10 +945,10 @@ get '/admin/users/:id/qrz' do
   require_admin!
 
   @user_to_edit = Tables::User.find(params[:id])
-  
+
   begin
     station = QrzAutoSession.new.lookup(@user_to_edit.call_sign)
-    
+
     # Add calculated lat/lon coordinates if grid square is available
     if station[:grid_square]
       lat, lon = GridSquare.new(station[:grid_square]).to_a
@@ -939,7 +957,7 @@ get '/admin/users/:id/qrz' do
         station[:longitude] = lon
       end
     end
-    
+
     station.to_json
   rescue Qrz::NotFound
     status 404
