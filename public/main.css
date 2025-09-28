@@ -8,6 +8,8 @@ nav { display: flex; justify-content: space-between; }
 .nav-right { text-align: right; padding-left: 25px; }
 nav a { white-space: nowrap; }
 
+.single-login-user { color: #888; }
+
 .index-map-explanation { color: #999; font-size: smaller; font-style: italic; }
 
 .disclaimer { margin-top: 50px; font-size: smaller; color: #999; }

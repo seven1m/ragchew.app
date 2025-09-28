@@ -36,7 +36,7 @@
     </thead>
     <tbody>
       <% @users.each do |user| %>
-        <tr>
+        <tr<%= user.one_time_user? ? ' class="single-login-user"' : '' %>>
           <td>
             <a href="/admin/users/<%== user.id %>">
               <%== user.call_sign %>
