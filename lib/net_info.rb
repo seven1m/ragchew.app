@@ -161,7 +161,9 @@ class NetInfo
   end
 
   def update_station_details!(call_sign, preferred_name:, notes:)
-    @record.club
+    return unless (club = @record.club)
+
+    club
       .club_stations
       .find_or_initialize_by(call_sign: call_sign.upcase)
       .update!(preferred_name:, notes:)

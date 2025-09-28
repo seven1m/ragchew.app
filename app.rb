@@ -370,10 +370,13 @@ post '/create-net' do
     return { error: "Some required fields are missing: #{missing.join(', ')}.", fields: missing }.to_json
   end
 
-  club = Tables::Club.find(params[:club_id])
-  unless club.club_members.where(user_id: @user.id).any?
-    status 400
-    return { error: 'You are not a member of this club.' }.to_json
+  club = nil
+  if params[:club_id].present? && params[:club_id] != 'no_club'
+    club = Tables::Club.find(params[:club_id])
+    unless club.club_members.where(user_id: @user.id).any?
+      status 400
+      return { error: 'You are not a member of this club.' }.to_json
+    end
   end
 
   CREATE_NET_REQUIRED_PARAMS.each do |param, requirements|

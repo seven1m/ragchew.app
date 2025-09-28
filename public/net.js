@@ -403,6 +403,7 @@ class Net extends Component {
       ${this.props.isLogger &&
       h(LogForm, {
         ...this.state.editing,
+        club: this.props.club,
         ref: this.formRef,
         netId: this.props.netId,
         nextNum: this.nextNum(),
@@ -1310,7 +1311,7 @@ class LogForm extends Component {
           </div>
           <div class="column">
             <label>
-              Remarks (saved to this net only):<br />
+              Remarks ${this.props.club ? "(saved to this net only)" : ""}:<br />
               <input
                 name="remarks"
                 value=${this.props.remarks}
@@ -1318,15 +1319,8 @@ class LogForm extends Component {
                 autocomplete="off"
               />
             </label>
-            <label>
-              Station Notes (saved for next time):<br />
-              <input
-                name="notes"
-                value=${this.props.notes}
-                oninput=${(e) => this.props.onNotesInput(e.target.value)}
-                autocomplete="off"
-              />
-            </label>
+
+            ${this.props.club && this.renderStationNotesField()}
           </div>
         </div>
         <div>
@@ -1336,6 +1330,20 @@ class LogForm extends Component {
           ${this.renderInfo()} ${this.renderClear()}
         </div>
       </form>
+    `
+  }
+
+  renderStationNotesField() {
+    return html`
+      <label>
+        Station Notes (saved for next time):<br />
+        <input
+          name="notes"
+          value=${this.props.notes}
+          oninput=${(e) => this.props.onNotesInput(e.target.value)}
+          autocomplete="off"
+        />
+      </label>
     `
   }
 
@@ -1449,6 +1457,15 @@ class CreateNetForm extends Component {
     if (this.state.submitting) return
     this.setState({ submitting: true })
 
+    if (!this.state.club_id) {
+      this.setState({
+        errorMessage: 'You must select a club or choose "NO CLUB".',
+        errorFields: { club_id: true },
+        submitting: false,
+      })
+      return
+    }
+
     fetch("/create-net", {
       method: "POST",
       body: JSON.stringify({
@@ -1500,7 +1517,7 @@ class CreateNetForm extends Component {
             maxlength="32"
           />
           ${this.state.closedNets.length > 0 &&
-          html`<p>Chose a previously-used net name:</p>
+          html`<p>Choose a previously-used net name:</p>
             <ul>
               ${this.state.closedNets.map(
                 (net) =>
@@ -1632,16 +1649,28 @@ class CreateNetForm extends Component {
           value=${this.state.club_id}
           onchange=${(e) => {
             this.setState({ club_id: e.target.value }, () => {
-              this.fetchClosedNets()
+              if (this.state.club_id && this.state.club_id !== "no_club") {
+                this.fetchClosedNets()
+              } else {
+                this.setState({ closedNets: [] })
+              }
             })
           }}
+          required
         >
           <option value=""></option>
           ${this.props.clubs.map(
             (club) => html`<option value=${club.id}>${club.best_name}</option>`
           )}
+          <option value="no_club">NO CLUB</option>
         </select>
       </label>
+      ${this.state.club_id === "no_club" &&
+      html`<p class="warning">
+        <strong>Note:</strong> This net may not be associated with a club if we
+        cannot auto-match it based on the name. It would be better for you to
+        select a club above to keep the system tidy!
+      </p>`}
       <p>
         <em
           >If your club is not listed above, you may find and "join" it${" "}
