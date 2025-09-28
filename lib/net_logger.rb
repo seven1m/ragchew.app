@@ -101,6 +101,11 @@ class NetLogger
     net = Tables::Net.where(name:).order(:created_at).last
     raise CouldNotFindNetAfterCreationError, result unless net
 
+    if club.nil?
+      AssociateNetWithClub.new(net).call
+      club = net.club
+    end
+
     net.update!(club:, created_by_ragchew: true)
     user.update!(logging_net: net, logging_password: password)
   end
