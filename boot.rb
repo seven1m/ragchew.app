@@ -1,7 +1,7 @@
 require 'bundler/setup'
 
 require 'active_record'
-require 'erubis'
+require 'erubi'
 require 'dotenv/load'
 require 'dotiw'
 require 'cgi'
@@ -17,8 +17,8 @@ require 'uri'
 require 'yaml'
 require 'with_advisory_lock'
 
-template = Erubis::Eruby.new(File.read('config/database.yaml'))
-db_config = YAML.safe_load(template.result)
+template = eval(Erubi::Engine.new(File.read('config/database.yaml')).src)
+db_config = YAML.safe_load(template)
 env = ENV['RACK_ENV'] == 'production' ? :production : :development
 ActiveRecord::Base.establish_connection(db_config[env.to_s])
 ActiveRecord::Base.logger = Logger.new($stderr) if ENV['DEBUG_SQL']

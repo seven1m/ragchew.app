@@ -4,8 +4,8 @@ Dir['./lib/migrations/*.rb'].to_a.each do |file|
   require file
 end
 
-template = Erubis::Eruby.new(File.read('config/database.yaml'))
-db_config = YAML.safe_load(template.result)
+template = eval(Erubi::Engine.new(File.read('config/database.yaml')).src)
+db_config = YAML.safe_load(template)
 env = ENV['RACK_ENV'] || 'development'
 ActiveRecord::Base.establish_connection(db_config[env])
 
