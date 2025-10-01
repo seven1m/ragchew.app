@@ -1,5 +1,13 @@
 <h1>Admin</h1>
 
+<% if @suggested_clubs.any? %>
+<h2>Suggested Clubs</h2>
+
+<p><%= @suggested_clubs.count %> club suggestion<%= @suggested_clubs.count == 1 ? '' : 's' %> pending review: <%= @suggested_clubs.map(&:name).join(', ') %></p>
+
+<p><a href="/admin/suggested-clubs">Review suggestions</a></p>
+<% end %>
+
 <div id="user_chart_weekly" data-data="<%= json_for_html_attribute @user_stats_weekly %>"></div>
 
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
@@ -166,6 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <td><a href="/admin/table/stats">stats</a></td>
         <td><%= Tables::Stat.count %></td>
         <td><%= format_time Tables::Stat.maximum(:updated_at) %></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/table/suggested_clubs">suggested clubs</a></td>
+        <td><%= Tables::SuggestedClub.count %></td>
+        <td><%= format_time Tables::SuggestedClub.maximum(:created_at) %></td>
       </tr>
       <tr>
         <td><a href="/admin/users">users</a></td>

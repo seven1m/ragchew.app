@@ -576,9 +576,33 @@ rescue ActiveRecord::RecordNotFound
 end
 
 get '/groups' do
+  @user = get_user
   @clubs = Tables::Club.order_by_name.pluck(:name, :full_name)
 
   erb :clubs
+end
+
+get '/suggest-club' do
+  @user = get_user
+  require_user!
+
+  erb :suggest_club
+end
+
+post '/suggest-club' do
+  @user = get_user
+  require_user!
+
+  Tables::SuggestedClub.create!(
+    name: params[:name],
+    full_name: params[:full_name],
+    website: params[:website],
+    description: params[:description],
+    nets: params[:nets],
+    suggested_by: @user.call_sign
+  )
+
+  redirect '/groups?suggested=1'
 end
 
 post '/join-group/:id' do
@@ -839,6 +863,8 @@ get '/admin' do
   @new_users = Tables::User.where('created_at >= ?', 7.days.ago)
                            .order(created_at: :desc)
 
+  @suggested_clubs = Tables::SuggestedClub.order(created_at: :desc)
+
   erb :admin
 end
 
@@ -1034,6 +1060,16 @@ get '/admin/clubs/new' do
   require_admin!
 
   @club = Tables::Club.new
+  
+  if params[:suggested_club_id]
+    suggested_club = Tables::SuggestedClub.find(params[:suggested_club_id])
+    @club.name = suggested_club.name
+    @club.full_name = suggested_club.full_name
+    @club.about_url = suggested_club.website
+    @club.description = suggested_club.description
+    @club.net_patterns = suggested_club.nets.present? ? [suggested_club.nets] : nil
+  end
+  
   @url = "/admin/clubs"
 
   erb :admin_club_edit
@@ -1234,6 +1270,24 @@ get '/admin/table/:table' do
   @columns = klass.columns
 
   erb :admin_table
+end
+
+get '/admin/suggested-clubs' do
+  @user = get_user
+  require_admin!
+
+  @suggested_clubs = Tables::SuggestedClub.order(created_at: :desc)
+
+  erb :admin_suggested_clubs
+end
+
+delete '/admin/suggested-clubs/:id' do
+  @user = get_user
+  require_admin!
+
+  Tables::SuggestedClub.find(params[:id]).destroy
+
+  redirect '/admin/suggested-clubs'
 end
 
 post '/monitor/:net_id' do

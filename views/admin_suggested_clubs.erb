@@ -1,0 +1,49 @@
+<h1>Suggested Clubs</h1>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Full Name</th>
+        <th>Website</th>
+        <th>Description</th>
+        <th>Nets</th>
+        <th>Suggested By</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @suggested_clubs.each do |club| %>
+        <tr>
+          <td><%== club.name %></td>
+          <td><%== club.full_name %></td>
+          <td>
+            <% if club.website.present? %>
+              <a href="<%== club.website %>" target="_blank"><%== club.website %></a>
+            <% end %>
+          </td>
+          <td><%== club.description %></td>
+          <td><%== club.nets %></td>
+          <td><a href="/admin/users/<%= club.suggested_by %>"><%== club.suggested_by %></a></td>
+          <td><%= format_time club.created_at %></td>
+          <td>
+            <form action="/admin/clubs/new" method="get" style="display: inline;">
+              <input type="hidden" name="suggested_club_id" value="<%= club.id %>">
+              <button>Promote</button>
+            </form>
+            <form action="/admin/suggested-clubs/<%= club.id %>" method="post" style="display: inline;">
+              <input type="hidden" name="_method" value="delete">
+              <button onclick="return confirm('Delete this suggestion?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<% if @suggested_clubs.empty? %>
+  <p><em>No suggested clubs</em></p>
+<% end %>

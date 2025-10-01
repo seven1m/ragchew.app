@@ -1,8 +1,12 @@
 <h1>Groups and Clubs</h1>
 
+<% if params[:suggested] %>
+<p><strong>Thank you for your suggestion! It will be reviewed and added if appropriate.</strong></p>
+<% end %>
+
 <p>
   I add groups and clubs here manually, as I get time. Of course, this is only some of the clubs that exist.
-  Please <a href="mailto:<%== SUPPORT_EMAIL %>">email me</a> to suggest a new one. -Tim
+  <a href="/suggest-club">Suggest a club</a> or <a href="mailto:<%== SUPPORT_EMAIL %>">email me</a>. -Tim
 </p>
 
 <ul>
