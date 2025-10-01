@@ -5,7 +5,7 @@ Dir['./lib/migrations/*.rb'].to_a.each do |file|
 end
 
 template = Erubis::Eruby.new(File.read('config/database.yaml'))
-db_config = YAML.safe_load(template.result) 
+db_config = YAML.safe_load(template.result)
 env = ENV['RACK_ENV'] || 'development'
 ActiveRecord::Base.establish_connection(db_config[env])
 
@@ -45,6 +45,24 @@ end
 task :console do
   require 'irb'
   binding.irb
+end
+
+task :db do
+  require 'uri'
+
+  db_url = ENV['DATABASE_URL']
+  raise 'DATABASE_URL not set' unless db_url
+
+  uri = URI.parse(db_url)
+
+  cmd = ['mysql']
+  cmd << "-h#{uri.host}" if uri.host
+  cmd << "-P#{uri.port}" if uri.port
+  cmd << "-u#{uri.user}" if uri.user
+  cmd << "-p#{uri.password}" if uri.password
+  cmd << uri.path[1..-1] if uri.path && uri.path.length > 1
+
+  exec(*cmd)
 end
 
 task :runner do
