@@ -46,7 +46,7 @@
   <ul>
     <% @my_clubs.each do |club| %>
       <li>
-        <a href="/group/<%== url_escape(club.name) %>"><%= club.best_name %></a>
+        <a href="/group/<%== url_escape(club.name) %>"><%== club.best_name %></a>
         <form class="inline" action="/leave-group/<%= club.id %>?return=/user" method="post" onclick="if (!confirm('Are you sure?')) return false"><button>Leave</button></form>
       </li>
     <% end %>
