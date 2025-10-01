@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "dokku": {
+      "predeploy": "bundle exec rake db:migrate"
+    }
+  },
   "cron": [
     {
       "command": "bundle exec rake cleanup",
