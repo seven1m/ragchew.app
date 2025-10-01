@@ -1,5 +1,16 @@
+require_relative '../bit_flags'
+
 module Tables
   class User < ActiveRecord::Base
+    include BitFlags
+
+    bit_flag :admin, 0
+    bit_flag :net_logger, 1
+    bit_flag :net_creation_blocked, 2
+
+    def net_logger?
+      true
+    end
     validates :call_sign, presence: true
 
     belongs_to :monitoring_net, class_name: 'Net'
@@ -20,22 +31,6 @@ module Tables
 
     def name
       [first_name, last_name].compact.join(' ')
-    end
-
-    def admin?
-      flags & 1 == 1
-    end
-
-    def admin=(value)
-      self.flags = (value ? 1 : 0) + (flags & 2)
-    end
-
-    def net_logger?
-      return true
-    end
-
-    def net_logger=(value)
-      self.flags = (flags & 1) + (value ? 2 : 0)
     end
 
     def can_log_for_club?(club)

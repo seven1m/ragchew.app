@@ -65,6 +65,10 @@
     <input type="checkbox" name="admin" value="true" <%= @user_to_edit.admin? ? 'checked' : '' %>/>
     Admin
   </label>
+  <label>
+    <input type="checkbox" name="net_creation_blocked" value="true" <%= @user_to_edit.net_creation_blocked? ? 'checked' : '' %>/>
+    Block net creation
+  </label>
   <input type="submit" value="Save"/>
 </form>
 

@@ -36,7 +36,7 @@ helpers do
       links = [
         "<a href='/user'>#{erb "<%== @user.call_sign %>"}</a>",
         @user.admin? ? "<a href='/admin'>admin</a>" : nil,
-        !@user.logging_net ? "<a href='/create-net'>create net</a>" : nil,
+        (!@user.logging_net && !@user.net_creation_blocked?) ? "<a href='/create-net'>create net</a>" : nil,
         "<a href='/logout' data-method='post'>log out</a>"
       ].compact
     else
@@ -346,6 +346,12 @@ end
 get '/create-net' do
   @user = get_user
   require_user!
+
+  if @user.net_creation_blocked?
+    status 403
+    return "Net creation is unavailable."
+  end
+
   check_if_already_started_a_net!(@user)
 
   @my_clubs = @user.clubs
@@ -355,6 +361,12 @@ end
 post '/create-net' do
   @user = get_user
   require_net_logger_role!
+
+  if @user.net_creation_blocked?
+    status 403
+    content_type 'application/json'
+    return { error: "Net creation is unavailable." }.to_json
+  end
 
   check_if_already_started_a_net!(@user)
 
@@ -928,6 +940,7 @@ post '/admin/users/:id' do
   @user_to_edit = Tables::User.find(params[:id])
   @user_to_edit.admin = params[:admin] == 'true'
   @user_to_edit.net_logger = params[:net_logger] == 'true'
+  @user_to_edit.net_creation_blocked = params[:net_creation_blocked] == 'true'
   @user_to_edit.save!
 
   redirect "/admin/users/#{params[:id]}"
@@ -1060,7 +1073,7 @@ get '/admin/clubs/new' do
   require_admin!
 
   @club = Tables::Club.new
-  
+
   if params[:suggested_club_id]
     suggested_club = Tables::SuggestedClub.find(params[:suggested_club_id])
     @club.name = suggested_club.name
@@ -1069,7 +1082,7 @@ get '/admin/clubs/new' do
     @club.description = suggested_club.description
     @club.net_patterns = suggested_club.nets.present? ? [suggested_club.nets] : nil
   end
-  
+
   @url = "/admin/clubs"
 
   erb :admin_club_edit
