@@ -631,10 +631,12 @@ class Net extends Component {
 
   async fetchStationInfo() {
     try {
+      const params = new URLSearchParams()
+      if (this.props.club) params.append("club_id", this.props.club.id)
+      if (this.props.net?.name) params.append("net_name", this.props.net.name)
+
       const response = await fetch(
-        `/station/${encodeURIComponent(this.state.editing.call_sign)}?${
-          this.props.club ? `club_id=${this.props.club.id}` : ""
-        }`
+        `/station/${encodeURIComponent(this.state.editing.call_sign)}?${params}`
       )
       if (response.status === 200) {
         const existingCheckins = this.state.checkins.filter(
@@ -1365,9 +1367,51 @@ class LogForm extends Component {
     return html`
       <span>
         ${stationName(this.props)}, ${city}, ${state} (${country})
-        ${this.renderLastCheckin()}
+        ${this.renderCheckinCounts()} ${this.renderLastCheckin()}
       </span>
     `
+  }
+
+  renderCheckinCounts() {
+    if (
+      this.props.info.net_checkins !== undefined ||
+      this.props.info.club_checkins !== undefined
+    ) {
+      const netCount = this.props.info.net_checkins || 0
+      const clubCount = this.props.info.club_checkins || 0
+
+      if (netCount === 0 && clubCount === 0) {
+        return html`<br /><span class="warning">first time check-in</span>`
+      }
+
+      const parts = []
+      if (this.props.info.net_checkins !== undefined) {
+        let netText = `net check-ins: ${netCount}`
+        if (this.props.info.net_last_check_in) {
+          netText += ` (last time ${dayjs(
+            this.props.info.net_last_check_in
+          ).fromNow()})`
+        }
+        parts.push(netText)
+      }
+      if (this.props.info.club_checkins !== undefined) {
+        let clubText = `club check-ins: ${clubCount}`
+        if (this.props.info.club_last_check_in) {
+          clubText += ` (last time ${dayjs(
+            this.props.info.club_last_check_in
+          ).fromNow()})`
+        }
+        parts.push(clubText)
+      }
+      return html`<br /><span class="notice"
+          >${parts
+            .map((part) => html`${part}`)
+            .reduce((acc, part, i) =>
+              i === 0 ? part : html`${acc}<br />${part}`
+            )}</span
+        >`
+    }
+    return null
   }
 
   renderLastCheckin() {
@@ -1380,9 +1424,7 @@ class LogForm extends Component {
     if (!lastCheckin) return null
 
     return html`<br />
-      <span class="notice">
-        Already checked in ${dayjs(lastCheckin.checked_in_at).fromNow()}
-      </span>`
+      <span class="warning"> Recheck </span>`
   }
 
   renderClear() {

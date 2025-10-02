@@ -665,6 +665,25 @@ get '/station/:call_sign' do
     attributes.merge!(club_station.attributes.slice('preferred_name', 'notes'))
   end
 
+  if params[:net_name].present?
+    net_station = Tables::NetStation.find_by(net_name: params[:net_name], call_sign: params[:call_sign])
+    net_checkins = net_station&.check_in_count || 0
+    net_last_check_in = net_station&.last_check_in
+
+    club_checkins = 0
+    club_last_check_in = nil
+    if params[:club_id].present?
+      club_station = Tables::ClubStation.find_by(club_id: params[:club_id], call_sign: params[:call_sign])
+      club_checkins = club_station&.check_in_count || 0
+      club_last_check_in = club_station&.last_check_in
+    end
+
+    attributes[:net_checkins] = net_checkins
+    attributes[:net_last_check_in] = net_last_check_in
+    attributes[:club_checkins] = club_checkins
+    attributes[:club_last_check_in] = club_last_check_in
+  end
+
   attributes.to_json
 end
 

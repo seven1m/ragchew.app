@@ -272,6 +272,7 @@ class NetInfo
 
     checkins.each do |checkin|
       is_new_checkin = false
+      is_recheck = records.any? { |r| r.call_sign&.upcase == checkin[:call_sign]&.upcase }
       if (existing = records.detect { |r| r.num == checkin[:num] })
         existing.update!(checkin)
         changes += 1 if existing.previous_changes.any?
@@ -286,12 +287,21 @@ class NetInfo
       )
 
       # Update club station check-in tracking if this net belongs to a club
-      if @record.club && is_new_checkin && checkin[:call_sign].present?
+      if @record.club && is_new_checkin && !is_recheck && checkin[:call_sign].present?
         club_station = @record.club.club_stations.find_or_initialize_by(call_sign: checkin[:call_sign].upcase)
         club_station.first_check_in ||= checkin[:checked_in_at]
         club_station.last_check_in = checkin[:checked_in_at]
         club_station.check_in_count += 1 # we already have a lock so this should be atomic
         club_station.save!
+      end
+
+      # Update net station check-in tracking
+      if is_new_checkin && !is_recheck && checkin[:call_sign].present?
+        net_station = Tables::NetStation.find_or_initialize_by(net_name: @record.name, call_sign: checkin[:call_sign].upcase)
+        net_station.first_check_in ||= checkin[:checked_in_at]
+        net_station.last_check_in = checkin[:checked_in_at]
+        net_station.check_in_count += 1
+        net_station.save!
       end
     end
 

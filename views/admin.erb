@@ -161,6 +161,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <td><%= format_time Tables::Net.maximum(:updated_at) %></td>
       </tr>
       <tr>
+        <td><a href="/admin/table/net_stations">net stations</a></td>
+        <td><%= Tables::NetStation.count %></td>
+        <td><%= format_time Tables::NetStation.maximum(:updated_at) %></td>
+      </tr>
+      <tr>
         <td><a href="/admin/table/servers">servers</a></td>
         <td><%= Tables::Server.count %></td>
         <td><%= format_time Tables::Server.maximum(:updated_at) %></td>
