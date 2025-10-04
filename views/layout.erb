@@ -13,9 +13,9 @@
     </title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <% if @user&.theme == 'dark' %>
+    <% if @theme == 'dark' %>
       <link rel="shortcut icon" href="/images/logo-dark.svg" type="image/svg">
-    <% elsif @user&.theme == 'system' %>
+    <% elsif @theme == 'system' %>
       <link rel="shortcut icon" href="/images/logo.svg" type="image/svg">
       <link rel="shortcut icon" href="/images/logo-dark.svg" type="image/svg" media="(prefers-color-scheme: dark)">
     <% else %>
@@ -23,9 +23,9 @@
     <% end %>
     <link rel="stylesheet" href="/typesafe.css">
     <%= style_tag 'main.css' %>
-    <% if @user&.theme == 'dark' %>
+    <% if @theme == 'dark' %>
       <link rel="stylesheet" href="/dark.css">
-    <% elsif !@user || @user&.theme == 'system' %>
+    <% elsif !@user || @theme == 'system' %>
       <link rel="stylesheet" href="/dark.css" media="(prefers-color-scheme: dark)">
     <% end %>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
@@ -35,8 +35,10 @@
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"></script>
   </head>
-  <body data-time-format="<%= @user&.time_format %>" data-theme="<%= @user&.theme || 'system' %>">
-    <%= nav %>
+  <body data-time-format="<%= @user&.time_format %>" data-theme="<%= @theme || 'system' %>">
+    <% unless @for_mobile %>
+      <%= nav %>
+    <% end %>
     <%= yield %>
     <footer>
       <p>
@@ -46,5 +48,9 @@
         <a href="mailto:<%= SUPPORT_EMAIL %>">Send corrections or report spam/abuse.</a>
       </p>
     </footer>
+    <% if @for_mobile %>
+      <p>&nbsp;</p>
+      <p>&nbsp;</p>
+    <% end %>
   </body>
 </html>

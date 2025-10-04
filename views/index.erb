@@ -1,7 +1,7 @@
 <h1>
-  <% if @user&.theme == 'dark' %>
+  <% if @theme == 'dark' %>
     <img src="/images/logo-dark.svg" style="height:30px;"/>
-  <% elsif @user&.theme == 'system' %>
+  <% elsif @theme == 'system' %>
     <img src="/images/logo.svg" style="height:30px;" class="light-only">
     <img src="/images/logo-dark.svg" style="height:30px;" class="dark-only">
   <% else %>

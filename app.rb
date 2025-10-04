@@ -32,6 +32,16 @@ if development?
   end
 end
 
+before do
+  @user = get_user
+  if @user
+    headers['X-RagChew-User'] = @user.call_sign
+    headers['X-RagChew-Role'] = @user.admin? ? 'admin' : 'user'
+  end
+  @theme = request.env['HTTP_X_RAGCHEW_THEME'] || @user&.theme
+  @for_mobile = request.env['HTTP_X_RAGCHEW_UI'] == 'mobile'
+end
+
 helpers do
   def nav
     if @user
@@ -195,7 +205,6 @@ ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__)
 
 get '/' do
   @homepage = true
-  @user = get_user
   frequency_order_cast = Arel.sql('CAST(frequency AS DOUBLE)')
   band_order_cast = Arel.sql("CAST(REPLACE(REPLACE(band, '70cm', '0'), 'm', '') AS UNSIGNED)")
   order = case params[:order]
@@ -229,13 +238,11 @@ get '/' do
 end
 
 get '/about' do
-  @user = get_user
 
   erb :about
 end
 
 get '/net/:name' do
-  @user = get_user
 
   params[:name] = CGI.unescape(params[:name])
   service = NetInfo.new(name: params[:name])
@@ -287,7 +294,6 @@ rescue NetInfo::NotFoundError
 end
 
 get '/net/:id/details' do
-  @user = get_user
   require_user!
 
   service = NetInfo.new(id: params[:id])
@@ -332,7 +338,6 @@ rescue NetInfo::NotFoundError
 end
 
 get '/net/:id/log' do
-  @user = get_user
   require_user!
 
   service = NetInfo.new(id: params[:id])
@@ -346,7 +351,6 @@ rescue NetInfo::NotFoundError
 end
 
 get '/create-net' do
-  @user = get_user
   require_user!
 
   if @user.net_creation_blocked?
@@ -361,7 +365,6 @@ get '/create-net' do
 end
 
 post '/create-net' do
-  @user = get_user
   require_net_logger_role!
 
   if @user.net_creation_blocked?
@@ -433,7 +436,6 @@ post '/create-net' do
 end
 
 post '/start-logging/:id' do
-  @user = get_user
   require_net_logger_role!
 
   if @user.logging_net
@@ -453,7 +455,6 @@ rescue NetLogger::PasswordIncorrectError
 end
 
 post '/stop-logging/:id' do
-  @user = get_user
   require_user!
 
   @user.update!(logging_net: nil, logging_password: nil)
@@ -464,7 +465,6 @@ rescue ActiveRecord::RecordNotFound
 end
 
 patch '/log/:id/:num' do
-  @user = get_user
   require_net_logger_role!
 
   @params = params.merge(JSON.parse(request.body.read))
@@ -479,7 +479,6 @@ rescue NetLogger::NotAuthorizedError
 end
 
 delete '/log/:id/:num' do
-  @user = get_user
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
@@ -491,7 +490,6 @@ rescue NetLogger::NotAuthorizedError
 end
 
 patch '/highlight/:id/:num' do
-  @user = get_user
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
@@ -511,7 +509,6 @@ rescue NetLogger::NotAuthorizedError
 end
 
 post '/close-net/:id' do
-  @user = get_user
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
@@ -532,8 +529,6 @@ rescue NetLogger::CouldNotCloseNetError => e
 end
 
 get '/closed-nets' do
-  @user = get_user
-
   params[:days] ||= '1'
 
   scope = Tables::ClosedNet.all
@@ -571,8 +566,6 @@ get '/closed-nets' do
 end
 
 get '/closed-net/:id' do
-  @user = get_user
-
   @closed_net = Tables::ClosedNet.find(params[:id])
   @page_title = @name = @closed_net&.name
   @checkin_count = @closed_net.checkin_count
@@ -590,21 +583,18 @@ rescue ActiveRecord::RecordNotFound
 end
 
 get '/groups' do
-  @user = get_user
   @clubs = Tables::Club.order_by_name.pluck(:name, :full_name)
 
   erb :clubs
 end
 
 get '/suggest-club' do
-  @user = get_user
   require_user!
 
   erb :suggest_club
 end
 
 post '/suggest-club' do
-  @user = get_user
   require_user!
 
   Tables::SuggestedClub.create!(
@@ -620,7 +610,6 @@ post '/suggest-club' do
 end
 
 post '/join-group/:id' do
-  @user = get_user
   require_user!
 
   @club = Tables::Club.find(params[:id])
@@ -630,7 +619,6 @@ post '/join-group/:id' do
 end
 
 post '/leave-group/:id' do
-  @user = get_user
   require_user!
 
   @club = Tables::Club.find(params[:id])
@@ -644,7 +632,6 @@ post '/leave-group/:id' do
 end
 
 get '/station/:call_sign' do
-  @user = get_user
   require_net_logger_role!
 
   content_type 'application/json'
@@ -688,7 +675,6 @@ get '/station/:call_sign' do
 end
 
 get '/station/:call_sign/image' do
-  @user = get_user
   require_user!
 
   expires Tables::Station::EXPIRATION_IN_SECONDS, :public, :must_revalidate
@@ -715,7 +701,6 @@ end
 
 # from form
 post '/favorite' do
-  @user = get_user
   require_user!
 
   if @user.favorites.count >= MAX_FAVORITES
@@ -744,8 +729,6 @@ end
 
 # from JS
 post '/favorite/:call_sign' do
-  @user = get_user
-
   content_type 'application/json'
 
   return { error: 'not logged in' }.to_json unless @user
@@ -777,8 +760,6 @@ post '/favorite/:call_sign' do
 end
 
 post '/unfavorite/:call_sign' do
-  @user = get_user
-
   content_type 'application/json'
 
   return { error: 'not logged in' }.to_json unless @user
@@ -795,7 +776,6 @@ post '/unfavorite/:call_sign' do
 end
 
 get '/user' do
-  @user = get_user
   require_user!
 
   @my_clubs = @user.clubs.order_by_name
@@ -806,7 +786,6 @@ get '/user' do
 end
 
 post '/preferences' do
-  @user = get_user
   require_user!
 
   @user.time_format = params[:time_format]
@@ -878,7 +857,6 @@ def gather_weekly_stats
 end
 
 get '/admin' do
-  @user = get_user
   require_admin!
 
   @page_title = 'Admin'
@@ -902,7 +880,6 @@ get '/admin' do
 end
 
 get '/admin/users' do
-  @user = get_user
   require_admin!
 
   @page_title = 'Admin - Users'
@@ -935,7 +912,6 @@ get '/admin/users' do
 end
 
 get '/admin/users/:id' do
-  @user = get_user
   require_admin!
 
   unless params[:id].match?(/^\d+$/)
@@ -955,7 +931,6 @@ get '/admin/users/:id' do
 end
 
 post '/admin/users/:id' do
-  @user = get_user
   require_admin!
 
   @user_to_edit = Tables::User.find(params[:id])
@@ -968,7 +943,6 @@ post '/admin/users/:id' do
 end
 
 post '/admin/users/:id/clubs' do
-  @user = get_user
   require_admin!
 
   @user_to_edit = Tables::User.find(params[:id])
@@ -989,7 +963,6 @@ rescue ActiveRecord::RecordNotFound
 end
 
 delete '/admin/users/:id/clubs/:club_id' do
-  @user = get_user
   require_admin!
 
   @user_to_edit = Tables::User.find(params[:id])
@@ -1004,7 +977,6 @@ rescue ActiveRecord::RecordNotFound
 end
 
 get '/admin/users/:id/qrz' do
-  @user = get_user
   require_admin!
 
   @user_to_edit = Tables::User.find(params[:id])
@@ -1035,7 +1007,6 @@ get '/admin/users/:id/qrz' do
 end
 
 get '/admin/closed-nets' do
-  @user = get_user
   require_admin!
 
   per_page = 20
@@ -1050,7 +1021,6 @@ get '/admin/closed-nets' do
 end
 
 delete '/admin/closed-net/:id' do
-  @user = get_user
   require_admin!
 
   Tables::ClosedNet.where(id: params[:id]).delete_all
@@ -1059,7 +1029,6 @@ delete '/admin/closed-net/:id' do
 end
 
 get '/admin/clubs' do
-  @user = get_user
   require_admin!
 
   scope = Tables::Club.order(:name)
@@ -1073,7 +1042,6 @@ get '/admin/clubs' do
 end
 
 get '/admin/clubs/search' do
-  @user = get_user
   require_admin!
 
   query = params[:q].to_s.strip
@@ -1090,7 +1058,6 @@ get '/admin/clubs/search' do
 end
 
 get '/admin/clubs/new' do
-  @user = get_user
   require_admin!
 
   @club = Tables::Club.new
@@ -1110,7 +1077,6 @@ get '/admin/clubs/new' do
 end
 
 get '/admin/clubs/:id/edit' do
-  @user = get_user
   require_admin!
 
   @club = Tables::Club.find(params[:id])
@@ -1122,7 +1088,6 @@ get '/admin/clubs/:id/edit' do
 end
 
 post '/admin/clubs' do
-  @user = get_user
   require_admin!
 
   @club = Tables::Club.create!(name: params[:club][:name])
@@ -1143,7 +1108,6 @@ rescue ActiveRecord::RecordInvalid => e
 end
 
 patch '/admin/clubs/:id' do
-  @user = get_user
   require_admin!
 
   @club = Tables::Club.find(params[:id])
@@ -1161,7 +1125,6 @@ rescue JSON::ParserError
 end
 
 delete '/admin/clubs/:id' do
-  @user = get_user
   require_admin!
 
   @club = Tables::Club.find(params[:id])
@@ -1171,7 +1134,6 @@ delete '/admin/clubs/:id' do
 end
 
 post '/admin/clubs/:id/members' do
-  @user = get_user
   require_admin!
 
   @club = Tables::Club.find(params[:id])
@@ -1185,7 +1147,6 @@ rescue ActiveRecord::RecordNotFound
 end
 
 delete '/admin/clubs/:id/members/:user_id' do
-  @user = get_user
   require_admin!
 
   @club = Tables::Club.find(params[:id])
@@ -1199,7 +1160,6 @@ rescue ActiveRecord::RecordNotFound
 end
 
 get '/admin/nets' do
-  @user = get_user
   require_admin!
 
   @nets = Tables::Net.includes(:club).order(:name).to_a
@@ -1209,7 +1169,6 @@ get '/admin/nets' do
 end
 
 get '/admin/nets/:id' do
-  @user = get_user
   require_admin!
 
   net = Tables::Net.find(params[:id])
@@ -1217,7 +1176,6 @@ get '/admin/nets/:id' do
 end
 
 delete '/admin/nets/:id' do
-  @user = get_user
   require_admin!
 
   Tables::Net.find(params[:id]).destroy
@@ -1226,7 +1184,6 @@ delete '/admin/nets/:id' do
 end
 
 post '/admin/refresh-net-list' do
-  @user = get_user
   require_admin!
 
   NetList.new.list
@@ -1235,7 +1192,6 @@ post '/admin/refresh-net-list' do
 end
 
 post '/admin/batch-edit-nets' do
-  @user = get_user
   require_admin!
 
   nets = Tables::Net.where(id: params[:net_ids])
@@ -1257,7 +1213,6 @@ post '/admin/batch-edit-nets' do
 end
 
 post '/admin/associate-clubs' do
-  @user = get_user
   require_admin!
 
   Tables::Club.find_each do |club|
@@ -1272,7 +1227,6 @@ post '/admin/associate-clubs' do
 end
 
 get '/admin/table/:table' do
-  @user = get_user
   require_admin!
 
   per_page = 100
@@ -1307,7 +1261,6 @@ get '/admin/table/:table' do
 end
 
 get '/admin/suggested-clubs' do
-  @user = get_user
   require_admin!
 
   @suggested_clubs = Tables::SuggestedClub.order(created_at: :desc)
@@ -1316,7 +1269,6 @@ get '/admin/suggested-clubs' do
 end
 
 delete '/admin/suggested-clubs/:id' do
-  @user = get_user
   require_admin!
 
   Tables::SuggestedClub.find(params[:id]).destroy
@@ -1327,7 +1279,6 @@ end
 post '/monitor/:net_id' do
   content_type 'application/json'
 
-  @user = get_user
   require_user!
 
   @net_info = NetInfo.new(id: params[:net_id])
@@ -1344,7 +1295,6 @@ end
 post '/unmonitor/:net_id' do
   content_type 'application/json'
 
-  @user = get_user
   require_user!
 
   if @user.monitoring_net && @user.monitoring_net == @user.logging_net
@@ -1364,7 +1314,6 @@ rescue NetInfo::NotFoundError
 end
 
 post '/message/:net_id' do
-  @user = get_user
   require_user!
 
   message = params[:message].to_s.strip
@@ -1400,8 +1349,6 @@ rescue NetInfo::ServerError => e
 end
 
 get '/group/:slug' do
-  @user = get_user
-
   params[:slug] = CGI.unescape(params[:slug])
   @club = Tables::Club.find_by!(name: params[:slug])
   if @club.about_url.nil?
@@ -1423,7 +1370,6 @@ rescue ActiveRecord::RecordNotFound
 end
 
 get '/group/:id/nets.json' do
-  @user = get_user
   require_user!
 
   club = Tables::Club.find(params[:id])
@@ -1443,7 +1389,6 @@ rescue ActiveRecord::RecordNotFound
 end
 
 post '/admin/block_net' do
-  @user = get_user
   require_admin!
 
   Tables::BlockedNet.create!(name: CGI.unescape(params[:name]), reason: params[:reason])
@@ -1451,7 +1396,6 @@ post '/admin/block_net' do
 end
 
 post '/admin/unblock_net' do
-  @user = get_user
   require_admin!
 
   Tables::BlockedNet.where(name: CGI.unescape(params[:name])).delete_all
@@ -1459,7 +1403,6 @@ post '/admin/unblock_net' do
 end
 
 post '/admin/remove_closed_net_from_club' do
-  @user = get_user
   require_admin!
 
   closed_net = Tables::ClosedNet.find(params[:id])
@@ -1469,7 +1412,6 @@ post '/admin/remove_closed_net_from_club' do
 end
 
 get '/admin/clubs.json' do
-  @user = get_user
   require_admin!
 
   content_type 'application/json'
@@ -1489,7 +1431,6 @@ get '/admin/clubs.json' do
 end
 
 patch '/admin/clubs.json' do
-  @user = get_user
   require_admin!
 
   existing = Tables::Club.all.each_with_object({}) { |c, h| h[c.name.downcase] = c }
@@ -1523,7 +1464,6 @@ patch '/admin/clubs.json' do
 end
 
 post '/pusher/auth/:net_id' do
-  @user = get_user
   require_user!
 
   content_type 'application/json'
