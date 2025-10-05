@@ -17,7 +17,7 @@ nav a { white-space: nowrap; }
 
 /* Layout */
 
-header { clear: both; margin-top: 0; }
+header { clear: both; margin: 25px 0; }
 header.flex { display: flex; justify-content: space-between; }
 header.flex .header-col-grow { flex-grow: 1; }
 header.flex .header-col-grow * { margin: 0; }
