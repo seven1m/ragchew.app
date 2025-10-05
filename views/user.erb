@@ -6,6 +6,8 @@
 
 <p>Your name, location, and profile photo all come from <a href="https://qrz.com/db/<%== url_escape(@user.call_sign) %>">www.qrz.com/db/<%== @user.call_sign %></a>. You can log in there to change them.</p>
 
+<p><a href="/logout" data-method="post">Log out</a></p>
+
 <h2>Preferences</h2>
 
 <p>These settings change how the site works for you.</p>
