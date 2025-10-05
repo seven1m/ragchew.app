@@ -1758,10 +1758,9 @@ class CreateNetForm extends Component {
       </label>
       ${this.state.club_id === "no_club" &&
       html`<p class="warning">
-        <strong>Note:</strong> This net may not be associated with a group or
-        club if we cannot auto-match it based on the name. Also, some features
-        just don't work without a group association. It would be better for you
-        to select a club above to keep the system tidy!
+        <strong>Warning:</strong> Some features such as${" "}
+        <em>preferred name</em> and <em>station notes</em> don't work without a
+        group/club association.
       </p>`}
       <p>
         <em
