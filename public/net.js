@@ -389,6 +389,7 @@ class Net extends Component {
         </div>
       </header>
 
+      <a name="map"></a>
       <${Map} coords=${this.state.coords} />
 
       <p class="timestamps">
@@ -396,6 +397,7 @@ class Net extends Component {
         ${formatTimeWithDayjs(this.state.lastUpdatedAt, true)})
       </p>
 
+      <a name="log"></a>
       <h2>Log</h2>
 
       <${Checkins}
@@ -429,6 +431,7 @@ class Net extends Component {
       })}
 
       <div class="h2-with-controls">
+        <a name="messages"></a>
         <h2>Messages</h2>
         ${this.state.monitoringThisNet &&
         html`<label>
@@ -463,6 +466,7 @@ class Net extends Component {
         onToggleMonitorNet=${this.handleToggleMonitorNet.bind(this)}
       />
 
+      <a name="monitors"></a>
       <h2>Monitors</h2>
 
       <${Monitors} monitors=${this.state.monitors} />
