@@ -18,6 +18,10 @@ body {
   color: #888;
 }
 
+.favorite-star, .favorite-star-big {
+  filter: invert(1);
+}
+
 footer p {
   color: #888;
 }

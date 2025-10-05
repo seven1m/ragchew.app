@@ -20,6 +20,7 @@ nav a { white-space: nowrap; }
 header { clear: both; margin-top: 0; }
 header.flex { display: flex; justify-content: space-between; }
 header.flex .header-col-grow { flex-grow: 1; }
+header.flex .header-col-grow * { margin: 0; }
 
 .h2-with-controls { display: flex; justify-content: space-between; border-bottom: 3px double #999; margin: 2.5rem 0 1rem; }
 .h2-with-controls h2 { border-bottom: none; margin: 0; }
@@ -39,6 +40,9 @@ footer a, footer a:visited { color: #999; }
 .columns.vertically-centered { align-items: center; }
 .columns .column { flex: 1; flex-grow: 1; }
 .columns .column-right { text-align: right; }
+
+table { width: auto; }
+table.full-width-table { width: 100%; }
 
 /* Net */
 
@@ -62,7 +66,8 @@ td.avatar-cell { height: 64px; }
 .chat-sender { }
 .chat-timestamp { color: #888; }
 
-.favorite-star { width: 15px; height: 15px; max-width: none; cursor: pointer; }
+.favorite-star { width: 15px; height: 15px; cursor: pointer; }
+.favorite-star-big { width: 30px; height: 30px; cursor: pointer; }
 
 #net-map { height: 500px; }
 

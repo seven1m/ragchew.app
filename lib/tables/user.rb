@@ -15,6 +15,7 @@ module Tables
 
     belongs_to :monitoring_net, class_name: 'Net'
     has_many :favorites, dependent: :delete_all
+    has_many :favorite_nets, dependent: :delete_all
     belongs_to :logging_net, class_name: 'Net', optional: true
     has_many :club_members, dependent: :delete_all
     has_many :clubs, through: :club_members

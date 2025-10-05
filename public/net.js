@@ -243,7 +243,8 @@ class Net extends Component {
     messages: [],
     messagesCount: 0,
     monitors: [],
-    favorites: [],
+    favorites: this.props.favorites || [],
+    favoritedNet: this.props.favoritedNet,
     lastUpdatedAt: null,
     editing: { ...BLANK_EDITING_ENTRY },
     info: null,
@@ -369,7 +370,14 @@ class Net extends Component {
         <div class="header-col-grow">
           ${this.renderClubBreadcrumbs()}
 
-          <h1>${this.props.net.name}</h1>
+          <h1>
+            <${FavoriteNet}
+              netName=${this.props.net.name}
+              favorited=${this.state.favoritedNet}
+              big=${true}
+            />
+            ${" "} ${this.props.net.name}
+          </h1>
 
           ${this.renderNetControls()} ${this.renderNetDetails()}
         </div>
@@ -818,7 +826,7 @@ class Checkins extends Component {
 
     return html`
       <div class="table-wrapper">
-        <table id="checkins-table">
+        <table id="checkins-table" class="full-width-table">
           <thead>
             <tr>
               <th>Num</th>
@@ -1023,8 +1031,15 @@ class Favorite extends Component {
   }
 
   handleClick() {
-    favorite(this.props.callSign, null, this.state.favorited)
-    this.setState({ favorited: !this.state.favorited })
+    let func = this.state.favorited ? "unfavorite" : "favorite"
+    fetch(`/${func}/${this.props.callSign}`, {
+      method: "POST",
+    })
+      .then((data) => data.json())
+      .then((json) => {
+        if (json.error) alert(json.error)
+        else this.setState({ favorited: json.favorited })
+      })
   }
 
   render() {
@@ -1036,6 +1051,36 @@ class Favorite extends Component {
           ? "star-solid.svg"
           : "star-outline.svg"}"
         class="favorite-star"
+        onclick="${(e) => this.handleClick(e)}"
+      />
+    `
+  }
+}
+
+class FavoriteNet extends Component {
+  state = {
+    favorited: this.props.favorited,
+  }
+
+  handleClick() {
+    let func = this.state.favorited ? "unfavorite_net" : "favorite_net"
+    fetch(`/${func}/${this.props.netName}`, {
+      method: "POST",
+    })
+      .then((data) => data.json())
+      .then((json) => {
+        if (json.error) alert(json.error)
+        else this.setState({ favorited: json.favorited })
+      })
+  }
+
+  render() {
+    return html`
+      <img
+        src="/images/${this.state.favorited
+          ? "star-solid.svg"
+          : "star-outline.svg"}"
+        class="${this.props.big ? "favorite-star-big" : "favorite-star"}"
         onclick="${(e) => this.handleClick(e)}"
       />
     `
@@ -1863,13 +1908,15 @@ function getUniqueColor(username, targetLightness = 0.4) {
   return rgbToHex(adjustedR, adjustedG, adjustedB)
 }
 
-const components = { Net, CreateNet }
+const components = { Net, CreateNet, Favorite, FavoriteNet }
 
 document.querySelectorAll("[data-component]").forEach((elm) => {
   const name = elm.dataset.component
   const props = elm.dataset.props ? JSON.parse(elm.dataset.props) : {}
   elm.innerHTML = ""
-  render(html`<${components[name]} ...${props} />`, elm)
+  const component = components[name]
+  if (!component) console.error(`${name} component not found`)
+  render(html`<${component} ...${props} />`, elm)
 })
 
 function updatePage() {
@@ -2034,23 +2081,6 @@ document.addEventListener("readystatechange", (event) => {
   }
 })
 
-function favorite(call_sign, elm, unfavorite) {
-  const func = unfavorite ? "unfavorite" : "favorite"
-  fetch(`/${func}/${call_sign}`, {
-    method: "POST",
-    headers: {
-      "X-Requested-With": "XMLHttpRequest",
-    },
-  })
-    .then((data) => data.json())
-    .then((json) => {
-      if (json.error) alert(json.error)
-      else if (elm) elm.outerHTML = json.html
-    })
-    .catch(console.error)
-}
-
-window.favorite = favorite
 window.buildNetMap = buildNetMap
 window.updateNetMapCenters = updateNetMapCenters
 window.setIntervalWithBackoff = setIntervalWithBackoff

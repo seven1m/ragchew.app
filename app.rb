@@ -47,6 +47,7 @@ helpers do
     if @user
       links = [
         "<a href='/user'>#{erb "<%== @user.call_sign %>"}</a>",
+        "<a href='/favorites'>favorites</a>",
         @user.admin? ? "<a href='/admin'>admin</a>" : nil,
         (!@user.logging_net && !@user.net_creation_blocked?) ? "<a href='/create-net'>create net</a>" : nil,
         "<a href='/logout' data-method='post'>log out</a>"
@@ -243,7 +244,6 @@ get '/about' do
 end
 
 get '/net/:name' do
-
   params[:name] = CGI.unescape(params[:name])
   service = NetInfo.new(name: params[:name])
 
@@ -259,6 +259,7 @@ get '/net/:name' do
     @messages = @net.messages.order(:sent_at).to_a
     @monitors = @net.monitors.order(:call_sign).to_a
     @favorites = @user.favorites.pluck(:call_sign)
+    @favorited_net = @user.favorite_nets.where(net_name: @net.name).any?
     @last_updated_at = @net.fully_updated_at
     @update_interval = @net.update_interval_in_seconds + 1
     erb :net
@@ -277,6 +278,7 @@ rescue NetInfo::NotFoundError
     @page_title = @name = @closed_net&.name
   end
   if @closed_net
+    @favorited_net = @user.favorite_nets.where(net_name: @closed_net.name).any? if @user
     @checkin_count = @closed_net.checkin_count
     @message_count = @closed_net.message_count
     @monitor_count = @closed_net.monitor_count
@@ -319,6 +321,7 @@ get '/net/:id/details' do
   messages.reject! { |m| m.blocked? && m.call_sign.upcase != @user.call_sign.upcase }
   monitors = net.monitors.order(:call_sign).to_a
   favorites = @user.favorites.pluck(:call_sign)
+  favorited_net = @user.favorite_nets.where(net_name: net.name).any?
 
   content_type 'application/json'
   {
@@ -328,6 +331,7 @@ get '/net/:id/details' do
     messagesCount:,
     monitors:,
     favorites:,
+    favoritedNet: favorited_net,
     lastUpdatedAt: net.updated_at.rfc3339,
     monitoringThisNet: monitoring_this_net,
   }.to_json
@@ -572,6 +576,7 @@ get '/closed-net/:id' do
   @message_count = @closed_net.message_count
   @monitor_count = @closed_net.monitor_count
   @net_count = Tables::Net.count
+  @favorited_net = @user.favorite_nets.where(net_name: @closed_net.name).any? if @user
 
   @more_recent_closed_net = Tables::ClosedNet.where(name: @closed_net.name).where('started_at > ?', @closed_net.started_at).order(started_at: :desc).first
   @open_net = Tables::Net.find_by(name: @closed_net.name)
@@ -699,7 +704,6 @@ get '/station/:call_sign/image' do
   redirect image_url
 end
 
-# from form
 post '/favorite' do
   require_user!
 
@@ -719,19 +723,14 @@ post '/favorite' do
     last_name: station && station[:last_name],
   )
 
-  redirect '/user'
+  redirect '/favorites'
 rescue ActiveRecord::RecordNotUnique
-  redirect '/user'
-rescue Qrz::NotFound
-  status 400
-  erb "<p><em>That call sign was not found in QRZ.</em></p>"
+  redirect '/favorites'
 end
 
-# from JS
 post '/favorite/:call_sign' do
   content_type 'application/json'
-
-  return { error: 'not logged in' }.to_json unless @user
+  require_user!
 
   if @user.favorites.count >= MAX_FAVORITES
     return {
@@ -750,39 +749,68 @@ post '/favorite/:call_sign' do
     last_name: station && station[:last_name],
   )
 
-  {
-    html: erb(
-      :_favorite,
-      locals: { call_sign: params[:call_sign], favorited: true },
-      layout: false
-    )
-  }.to_json
+  { favorited: true }.to_json
 end
 
 post '/unfavorite/:call_sign' do
   content_type 'application/json'
-
-  return { error: 'not logged in' }.to_json unless @user
+  require_user!
 
   @user.favorites.where(call_sign: params[:call_sign]).delete_all
 
-  {
-    html: erb(
-      :_favorite,
-      locals: { call_sign: params[:call_sign], favorited: false },
-      layout: false
-    )
-  }.to_json
+  { favorited: false }.to_json
+end
+
+post '/favorite_net/:net_name' do
+  content_type 'application/json'
+  require_user!
+
+  if @user.favorite_nets.count >= MAX_FAVORITES
+    return {
+      error: "ERROR: You cannot have more than #{MAX_FAVORITES} favorites."
+    }.to_json
+  end
+
+  net_name = params[:net_name].tr('+', ' ')
+  @user.favorite_nets.create!(net_name:)
+
+  { favorited: true }.to_json
+end
+
+post '/unfavorite_net/:net_name' do
+  content_type 'application/json'
+  require_user!
+
+  net_name = params[:net_name].tr('+', ' ')
+  @user.favorite_nets.where(net_name:).delete_all
+
+  { favorited: false }.to_json
 end
 
 get '/user' do
   require_user!
 
   @my_clubs = @user.clubs.order_by_name
-  @favorites = @user.favorites.order(:call_sign).to_a
 
   @page_title = 'User Profile and Settings'
   erb :user
+end
+
+get '/favorites' do
+  require_user!
+
+  @favorites = @user.favorites.order(:call_sign).to_a
+  @favorite_nets = @user.favorite_nets.order(:net_name).to_a
+
+  # Get net data for favorite nets
+  favorite_net_names = @favorite_nets.map(&:net_name)
+  @active_nets = Tables::Net.where(name: favorite_net_names).index_by(&:name)
+  @recent_closed_nets = Tables::ClosedNet.where(name: favorite_net_names)
+                                         .group(:name)
+                                         .maximum(:started_at)
+
+  @page_title = 'Favorites'
+  erb :favorites
 end
 
 post '/preferences' do
@@ -1500,7 +1528,11 @@ end
 def require_user!
   return if @user
 
-  redirect '/'
+  if content_type == 'application/json'
+    return { error: 'not logged in' }.to_json
+  else
+    redirect '/'
+  end
 end
 
 def require_admin!

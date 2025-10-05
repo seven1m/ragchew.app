@@ -10,6 +10,8 @@
   isLogger: @user.logging_net == @net,
   canLogForClub: @user.can_log_for_club?(@net.club),
   monitoringThisNet: @user.monitoring_net == @net,
+  favorites: @favorites,
+  favoritedNet: @favorited_net,
   pusher: {
     key: pusher_key,
     cluster: pusher_cluster,

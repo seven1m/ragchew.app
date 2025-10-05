@@ -2,7 +2,12 @@
   <div class="header-col-grow">
     <%= erb :_club_breadcrumb, locals: { net: @closed_net } %>
 
-    <h1><%== @closed_net.name %> (closed)</h1>
+    <h1>
+      <% if @user %>
+        <div data-component="FavoriteNet" data-props="<%= make_value_safe_for_html_attribute({ netName: @closed_net.name, favorited: @favorited_net, big: true }.to_json) %>" style="display:inline"></div>
+      <% end %>
+      <%== @closed_net.name %> (closed)
+    </h1>
 
     <p><em>ended <%== time_ago_in_words(@closed_net.ended_at) %> ago</em></p>
   </div>
