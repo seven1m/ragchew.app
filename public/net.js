@@ -463,6 +463,7 @@ class Net extends Component {
         isLogger=${this.props.isLogger}
         reverseMessages=${this.state.reverseMessages}
         showFormatting=${this.state.showFormatting}
+        blockedStations=${this.props.blockedStations}
         onToggleMonitorNet=${this.handleToggleMonitorNet.bind(this)}
       />
 
@@ -1158,10 +1159,14 @@ class Messages extends Component {
     if (this.props.messages.length === 0)
       return html`<p><em>no messages yet</em></p>`
 
+    const filteredMessages = this.props.messages.filter(
+      message => !this.props.blockedStations.includes(message.call_sign)
+    )
+
     const messages = (
       this.props.reverseMessages
-        ? [...this.props.messages].reverse()
-        : this.props.messages
+        ? [...filteredMessages].reverse()
+        : filteredMessages
     ).map((message, index) => this.renderMessage(message, index))
 
     const sendingMessage =

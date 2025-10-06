@@ -10,6 +10,7 @@ module Tables
     has_many :checkins, dependent: :delete_all
     has_many :monitors, dependent: :delete_all
     has_many :messages, dependent: :delete_all
+    has_many :blocked_stations, as: :blocker, dependent: :delete_all
 
     def self.all_by_name
       all.each_with_object({}) do |net, hash|

@@ -61,3 +61,28 @@
 <% else %>
   <p><em>You have not joined any clubs yet. You can find them <a href="/groups">here</a>.</em></p>
 <% end %>
+
+<h2>Blocked Stations</h2>
+
+<p>Station call signs listed here will not show in the Messages section of any net, just for you. You can carry on blissfully unaware they are talking. :-)</p>
+
+<% if @blocked_stations.any? %>
+  <ul>
+    <% @blocked_stations.each do |blocked_station| %>
+      <li>
+        <%== blocked_station.call_sign %>
+        <form class="inline" action="/blocked-stations/<%= blocked_station.id %>" method="post" onclick="if (!confirm('Are you sure?')) return false">
+          <input type="hidden" name="_method" value="delete" />
+          <button>Remove</button>
+        </form>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p><em>No blocked stations.</em></p>
+<% end %>
+
+<form class="inline" action="/blocked-stations" method="post">
+  <input type="text" name="call_sign" placeholder="Call sign" required />
+  <input type="submit" value="Block" />
+</form>

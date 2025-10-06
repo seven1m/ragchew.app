@@ -19,6 +19,7 @@ module Tables
     belongs_to :logging_net, class_name: 'Net', optional: true
     has_many :club_members, dependent: :delete_all
     has_many :clubs, through: :club_members
+    has_many :blocked_stations, as: :blocker, dependent: :delete_all
 
     scope :is_monitoring, -> { where.not(monitoring_net_id: nil) }
 

@@ -260,6 +260,7 @@ get '/net/:name' do
     @monitors = @net.monitors.order(:call_sign).to_a
     @favorites = @user.favorites.pluck(:call_sign)
     @favorited_net = @user.favorite_nets.where(net_name: @net.name).any?
+    @blocked_stations = @user.blocked_stations.pluck(:call_sign)
     @last_updated_at = @net.fully_updated_at
     @update_interval = @net.update_interval_in_seconds + 1
     erb :net
@@ -800,6 +801,7 @@ get '/user' do
   require_user!
 
   @my_clubs = @user.clubs.order_by_name
+  @blocked_stations = @user.blocked_stations.order(:call_sign)
 
   @page_title = 'User Profile and Settings'
   erb :user
@@ -830,6 +832,24 @@ post '/preferences' do
   @user.save!
 
   redirect '/'
+end
+
+post '/blocked-stations' do
+  require_user!
+
+  call_sign = params[:call_sign].to_s.strip.upcase
+  @user.blocked_stations.create!(call_sign: call_sign)
+
+  redirect '/user'
+end
+
+delete '/blocked-stations/:id' do
+  require_user!
+
+  blocked_station = @user.blocked_stations.find(params[:id])
+  blocked_station.destroy!
+
+  redirect '/user'
 end
 
 get '/login' do

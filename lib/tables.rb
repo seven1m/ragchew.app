@@ -1,3 +1,4 @@
+require_relative './tables/blocked_station'
 require_relative './tables/blocked_net'
 require_relative './tables/club'
 require_relative './tables/club_member'
