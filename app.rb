@@ -295,6 +295,14 @@ rescue NetInfo::NotFoundError
   end
 end
 
+get '/api/net_id/:name' do
+  params[:name] = CGI.unescape(params[:name])
+  service = NetInfo.new(name: params[:name])
+
+  content_type 'application/json'
+  { id: service.net.id }.to_json
+end
+
 get '/net/:id/details' do
   require_user!
 
@@ -334,6 +342,7 @@ get '/net/:id/details' do
     favoritedNet: favorited_net,
     lastUpdatedAt: net.updated_at.rfc3339,
     monitoringThisNet: monitoring_this_net,
+    timeFormat: @user.time_format,
   }.to_json
 rescue NetInfo::NotFoundError
   status 404
@@ -1489,6 +1498,18 @@ patch '/admin/clubs.json' do
     existing.values.each(&:destroy)
     erb "#{created} created, #{updated} updated, #{deleted} deleted"
   end
+end
+
+get '/pusher/details/:net_id' do
+  require_user!
+
+  content_type 'application/json'
+  {
+    key: pusher_key,
+    cluster: pusher_cluster,
+    authEndpoint: "/pusher/auth/#{params[:net_id]}",
+    channel: "private-net-#{params[:net_id]}",
+  }.to_json
 end
 
 post '/pusher/auth/:net_id' do
