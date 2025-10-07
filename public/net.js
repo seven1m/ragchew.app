@@ -1086,11 +1086,11 @@ class FavoriteNet extends Component {
   }
 
   render() {
+    const image = this.state.favorited ? "star-solid.svg" : "star-outline.svg"
+
     return html`
       <img
-        src="/images/${this.state.favorited
-          ? "star-solid.svg"
-          : "star-outline.svg"}"
+        src="/images/${image}"
         class="${this.props.big ? "favorite-star-big" : "favorite-star"}"
         onclick="${(e) => this.handleClick(e)}"
       />
