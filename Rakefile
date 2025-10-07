@@ -103,7 +103,7 @@ task :cleanup do
     # If the logger clicks 'stop logging' then we don't have a user to close the net with.
     next unless (user = net.logging_users.first)
 
-    last_activity = [net.checkins.maximum(:updated_at), net.messages.maximum(:created_at)].compact.max
+    last_activity = [net.checkins.maximum(:updated_at), net.messages.maximum(:created_at), net.created_at].compact.max
     if last_activity < MAX_IDLE_NET.ago
       logger = NetLogger.new(NetInfo.new(id: net.id), user:)
       logger.close_net! rescue nil
