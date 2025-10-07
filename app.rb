@@ -608,9 +608,11 @@ get '/groups' do
 end
 
 get '/suggest-club' do
-  require_user!
-
-  erb :suggest_club
+  if @user
+    erb :suggest_club
+  else
+    erb "<p>Please <a href='/login'>log in</a> first.</p>"
+  end
 end
 
 post '/suggest-club' do
