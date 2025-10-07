@@ -470,7 +470,13 @@ class Net extends Component {
       <a name="monitors"></a>
       <h2>Monitors</h2>
 
-      <${Monitors} monitors=${this.state.monitors} />
+      <${Monitors}
+        monitors=${this.state.monitors}
+        isLogger=${this.props.isLogger}
+        userCallSign=${this.props.userCallSign}
+        netId=${this.props.netId}
+        netBlockedStations=${this.props.netBlockedStations}
+      />
     `
   }
 
@@ -1160,7 +1166,7 @@ class Messages extends Component {
       return html`<p><em>no messages yet</em></p>`
 
     const filteredMessages = this.props.messages.filter(
-      message => !this.props.blockedStations.includes(message.call_sign)
+      (message) => !this.props.blockedStations.includes(message.call_sign)
     )
 
     const messages = (
@@ -1291,6 +1297,30 @@ class Messages extends Component {
 }
 
 class Monitors extends Component {
+  handleBlockStation(callSign) {
+    if (
+      !confirm(
+        "Are you sure you want to block this user? This cannot be undone."
+      )
+    ) {
+      return
+    }
+
+    fetch(
+      `/net/${this.props.netId}/blocked-stations/${encodeURIComponent(
+        callSign
+      )}`,
+      {
+        method: "POST",
+      }
+    )
+      .then((response) => response.json())
+      .then((status) => {
+        if (status.blocked) location.reload()
+      })
+      .catch((error) => console.error("Error blocking station:", error))
+  }
+
   render() {
     return html`
       <div class="table-wrapper">
@@ -1311,7 +1341,40 @@ class Monitors extends Component {
                   <td>${monitor.name}</td>
                   <td>${monitor.version}</td>
                   <td>
-                    <span class=${monitor.status}>${monitor.status}</span>
+                    ${this.props.netBlockedStations &&
+                    this.props.netBlockedStations.includes(monitor.call_sign)
+                      ? html`<span class="blocked">Blocked</span>`
+                      : this.props.isLogger &&
+                        monitor.call_sign !== this.props.userCallSign
+                      ? html`<span
+                          class=${monitor.status}
+                          title="Block user from messaging other users."
+                          style="position: relative; cursor: pointer;"
+                          onmouseenter=${(e) => {
+                            const link = e.target.querySelector(".block-link")
+                            if (link) link.style.display = "inline"
+                          }}
+                          onmouseleave=${(e) => {
+                            const link = e.target.querySelector(".block-link")
+                            if (link) link.style.display = "none"
+                          }}
+                        >
+                          ${monitor.status}
+                          <a
+                            href="#"
+                            class="block-link"
+                            style="display: none; margin-left: 5px; font-size: 0.8em;"
+                            onclick=${(e) => {
+                              e.preventDefault()
+                              this.handleBlockStation(monitor.call_sign)
+                            }}
+                          >
+                            block
+                          </a>
+                        </span>`
+                      : html`<span class=${monitor.status}
+                          >${monitor.status}</span
+                        >`}
                   </td>
                 </tr>`
             )}
@@ -1514,6 +1577,9 @@ class CreateNetForm extends Component {
     errorFields: {},
     errorMessage: null,
     closedNets: [],
+    blockedStations: [],
+    blockStationInput: "",
+    showAdvanced: false,
   }
 
   guessStuffFromFrequency(frequencyValue) {
@@ -1572,6 +1638,7 @@ class CreateNetForm extends Component {
         band: this.state.band,
         mode: this.state.mode,
         net_control: this.state.net_control,
+        blocked_stations: this.state.blockedStations,
       }),
     })
       .then((response) => {
@@ -1597,6 +1664,25 @@ class CreateNetForm extends Component {
     fetch(`/group/${this.state.club_id}/nets.json`)
       .then((r) => r.json())
       .then((nets) => this.setState({ closedNets: nets }))
+  }
+
+  handleAddBlockedStation(e) {
+    e.preventDefault()
+    const callSign = this.state.blockStationInput.trim().toUpperCase()
+    if (callSign && !this.state.blockedStations.includes(callSign)) {
+      this.setState({
+        blockedStations: [...this.state.blockedStations, callSign],
+        blockStationInput: "",
+      })
+    }
+  }
+
+  handleRemoveBlockedStation(callSign) {
+    this.setState({
+      blockedStations: this.state.blockedStations.filter(
+        (cs) => cs !== callSign
+      ),
+    })
   }
 
   render() {
@@ -1723,6 +1809,52 @@ class CreateNetForm extends Component {
             maxlength="20"
           />
         </label>
+
+        ${!this.state.showAdvanced &&
+        html`<p>
+          <a
+            href="#"
+            onclick=${(e) => {
+              e.preventDefault()
+              this.setState({ showAdvanced: true })
+            }}
+          >
+            Advanced
+          </a>
+        </p>`}
+        ${this.state.showAdvanced &&
+        html`
+          <h3>Blocked Stations</h3>
+          ${this.state.blockedStations.length > 0 &&
+          html`<ul>
+            ${this.state.blockedStations.map(
+              (callSign) =>
+                html`<li>
+                  ${callSign}${" "}
+                  <button
+                    type="button"
+                    onclick=${() => this.handleRemoveBlockedStation(callSign)}
+                  >
+                    Remove
+                  </button>
+                </li>`
+            )}
+          </ul>`}
+          <form
+            onsubmit=${(e) => this.handleAddBlockedStation(e)}
+            style="margin-bottom:20px;"
+          >
+            <input
+              type="text"
+              placeholder="Call sign"
+              value=${this.state.blockStationInput}
+              oninput=${(e) =>
+                this.setState({ blockStationInput: e.target.value })}
+            />
+            <input type="submit" value="Block" />
+          </form>
+        `}
+
         <input
           type="submit"
           value="START NET NOW"

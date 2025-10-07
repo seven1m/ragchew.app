@@ -256,15 +256,18 @@ get '/net/:name' do
   end
 
   if @user
+    @is_logger = @user.logging_net == @net
     @messages = @net.messages.order(:sent_at).to_a
     @monitors = @net.monitors.order(:call_sign).to_a
     @favorites = @user.favorites.pluck(:call_sign)
     @favorited_net = @user.favorite_nets.where(net_name: @net.name).any?
     @blocked_stations = @user.blocked_stations.pluck(:call_sign)
+    @net_blocked_stations = @is_logger ? @net.blocked_stations.pluck(:call_sign) : []
     @last_updated_at = @net.fully_updated_at
     @update_interval = @net.update_interval_in_seconds + 1
     erb :net
   else
+    @is_logger = false
     @checkin_count = @net.checkins.count
     @message_count = @net.messages.count
     @monitor_count = @net.monitors.count
@@ -442,6 +445,7 @@ post '/create-net' do
     user: @user,
     mode: params[:mode],
     band: params[:band],
+    blocked_stations: params[:blocked_stations],
   )
 
   NetInfo.new(name: params[:net_name]).monitor!(user: @user)
@@ -850,6 +854,16 @@ delete '/blocked-stations/:id' do
   blocked_station.destroy!
 
   redirect '/user'
+end
+
+post '/net/:id/block-stations/:call_sign' do
+  require_net_logger_role!
+
+  logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
+  logger.block_station(call_sign: params[:call_sign])
+
+  content_type 'application/json'
+  { blocked: true }.to_json
 end
 
 get '/login' do

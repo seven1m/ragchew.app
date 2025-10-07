@@ -333,7 +333,11 @@ class NetInfo
         existing.update!(monitor)
         changes += 1 if existing.previous_changes.any?
       else
-        @record.monitors.create!(monitor)
+        new_monitor = @record.monitors.create!(monitor)
+        if @record.blocked_stations.where(call_sign: new_monitor.call_sign).any?
+          # was blocked at the beginning, now we need to tell NetLogger
+          NetLogger.block_station(self, call_sign: new_monitor.call_sign)
+        end
         changes += 1
       end
     end

@@ -78,7 +78,7 @@ class NetLogger
     @net_info.net.checkins.not_blank.maximum(:num).to_i + 1
   end
 
-  def self.create_net!(club:, name:, password:, frequency:, net_control:, user:, mode:, band:, enable_messaging: true, update_interval: 20000, misc_net_parameters: nil, host: 'www.netlogger.org')
+  def self.create_net!(club:, name:, password:, frequency:, net_control:, user:, mode:, band:, enable_messaging: true, update_interval: 20000, misc_net_parameters: nil, host: 'www.netlogger.org', blocked_stations: [])
     fetcher = Fetcher.new(host)
     result = fetcher.raw_get(
       'OpenNet20.php',
@@ -108,6 +108,32 @@ class NetLogger
 
     net.update!(club:, created_by_ragchew: true)
     user.update!(logging_net: net, logging_password: password)
+
+    logger = new(NetInfo.new(id: net.id), user:)
+
+    # Create blocked stations for the new net
+    if blocked_stations.is_a?(Array)
+      blocked_stations.each do |call_sign|
+        logger.block_station(call_sign:)
+      end
+    end
+  end
+
+  def block_station(call_sign:)
+    call_sign = call_sign.strip.upcase
+    net_info.net.blocked_stations.find_or_create_by(call_sign:)
+    if (num = net_info.net.monitors.find_by(call_sign:)&.num)
+      fetcher = Fetcher.new(net_info.host)
+      fetcher.post(
+        'SendExtData.php',
+        'NetName' => net_info.name,
+        'ExtNumber' => '3', # magic number = block
+        'ExtData' => num,
+      )
+    else
+      # They haven't started monitoring yet,
+      # so we'll have to do it later in NetInfo#update_monitors.
+    end
   end
 
   def self.start_logging(net_info, password:, user:)
