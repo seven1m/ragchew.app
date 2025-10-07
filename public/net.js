@@ -1854,12 +1854,9 @@ class CreateNetForm extends Component {
             <input type="submit" value="Block" />
           </form>
         `}
-
-        <input
-          type="submit"
-          value="START NET NOW"
-          disabled=${this.state.submitting}
-        />
+        ${this.state.submitting
+          ? html`Starting...`
+          : html`<input type="submit" value="START NET NOW" />`}
         ${this.state.errorMessage &&
         html`<p class="error">
           ${this.state.errorMessage.replace(/_/g, " ")}
