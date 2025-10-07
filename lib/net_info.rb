@@ -133,7 +133,8 @@ class NetInfo
     #Message:      hello just testing https://ragchew.app
 
     with_lock do
-      blocked_stations = @record.monitors.blocked.pluck(:call_sign).map(&:upcase)
+      blocked_stations = (@record.monitors.blocked.pluck(:call_sign).map(&:upcase) + @record.blocked_stations.pluck(:call_sign).map(&:upcase)).uniq
+      blocked = blocked_stations.include?(user.call_sign.upcase)
       message_record = @record.messages.create!(
         log_id: nil, # temporary messages don't have a log_id
         call_sign: user.call_sign,
