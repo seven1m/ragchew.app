@@ -1302,7 +1302,7 @@ class Monitors extends Component {
   handleBlockStation(callSign) {
     if (
       !confirm(
-        "Are you sure you want to block this user? This cannot be undone."
+        "Are you sure you want to block this user for this net? This cannot be undone."
       )
     ) {
       return
