@@ -37,3 +37,5 @@ require_relative './lib/qrz_auto_session'
 require_relative './lib/station_updater'
 require_relative './lib/tables'
 require_relative './lib/update_club_list'
+
+CURRENT_GIT_SHA = `git rev-parse HEAD`.strip

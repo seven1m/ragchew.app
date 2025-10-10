@@ -34,6 +34,20 @@
     <%= script_tag 'net.js' %>
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js"></script>
+    <script src="//js.honeybadger.io/v6.12/honeybadger.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      Honeybadger.configure({
+        apiKey: <%= ENV['HONEYBADGER_API_KEY'].to_json %>,
+        environment: <%= Sinatra::Base.environment.to_json %>,
+        revision: <%= CURRENT_GIT_SHA.to_json %>
+      });
+      <% if @user %>
+        Honeybadger.setContext({
+          user_id: <%= @user.id %>,
+          user_call_sign: <%= @user.call_sign.to_json %>
+        });
+      <% end %>
+    </script>
   </head>
   <body data-time-format="<%= @user&.time_format %>" data-theme="<%= @theme || 'system' %>">
     <% unless @for_mobile %>
