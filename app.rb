@@ -502,6 +502,7 @@ delete '/log/:id/:num' do
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
   logger.delete!(params.fetch(:num).to_i)
 
+  content_type 'application/json'
   return { success: true }.to_json
 rescue NetLogger::NotAuthorizedError
   halt 401, 'not authorized'
@@ -521,6 +522,7 @@ patch '/highlight/:id/:num' do
 
   logger.highlight!(highlight_num)
 
+  content_type 'application/json'
   return { success: true }.to_json
 rescue NetLogger::NotAuthorizedError
   halt 401, 'not authorized'
@@ -1054,6 +1056,7 @@ get '/admin/users/:id/qrz' do
 
   @user_to_edit = Tables::User.find(params[:id])
 
+  content_type 'application/json'
   begin
     station = QrzAutoSession.new.lookup(@user_to_edit.call_sign)
 
@@ -1116,6 +1119,8 @@ end
 
 get '/admin/clubs/search' do
   require_admin!
+
+  content_type 'application/json'
 
   query = params[:q].to_s.strip
   if query.length < 2
