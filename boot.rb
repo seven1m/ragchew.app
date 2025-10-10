@@ -38,4 +38,4 @@ require_relative './lib/station_updater'
 require_relative './lib/tables'
 require_relative './lib/update_club_list'
 
-CURRENT_GIT_SHA = `git rev-parse HEAD`.strip
+CURRENT_GIT_SHA = ENV['GIT_REV'] || `git rev-parse HEAD`.strip
