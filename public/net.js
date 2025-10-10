@@ -304,7 +304,7 @@ class Net extends Component {
     try {
       if (this.state.fetchInFlight) return
       this.setState({ fetchInFlight: true })
-      const response = await fetch(`/net/${this.props.netId}/details`)
+      const response = await fetch(`/api/net/${this.props.netId}/details`)
       this.setState({ fetchInFlight: false })
 
       if (response.status !== 200) {
@@ -655,7 +655,9 @@ class Net extends Component {
       if (this.props.net?.name) params.append("net_name", this.props.net.name)
 
       const response = await fetch(
-        `/station/${encodeURIComponent(this.state.editing.call_sign)}?${params}`
+        `/api/station/${encodeURIComponent(
+          this.state.editing.call_sign
+        )}?${params}`
       )
       if (response.status === 200) {
         const existingCheckins = this.state.checkins.filter(
@@ -726,7 +728,7 @@ class Net extends Component {
     this.addOrUpdateCheckinInMemory(payload)
     try {
       const response = await fetch(
-        `/log/${this.props.netId}/${
+        `/api/log/${this.props.netId}/${
           this.state.editing.num ? this.state.editing.num : "new" // a little sloppy to pass "new" here, but it works: the :num is overwritten by the payload anyway.
         }`,
         {
@@ -890,7 +892,7 @@ class CheckinRow extends Component {
     if (this.state.deleting) {
       clearTimeout(this.state.deletingTimeout)
       const response = await fetch(
-        `/log/${this.props.netId}/${this.props.num}`,
+        `/api/log/${this.props.netId}/${this.props.num}`,
         {
           method: "DELETE",
           headers: {
@@ -913,7 +915,7 @@ class CheckinRow extends Component {
   async handleHighlight(e) {
     e.preventDefault()
     const response = await fetch(
-      `/highlight/${this.props.netId}/${this.props.num}`,
+      `/api/highlight/${this.props.netId}/${this.props.num}`,
       {
         method: "PATCH",
         headers: {
@@ -1043,7 +1045,7 @@ class Favorite extends Component {
 
   handleClick() {
     let func = this.state.favorited ? "unfavorite" : "favorite"
-    fetch(`/${func}/${this.props.callSign}`, {
+    fetch(`/api/${func}/${this.props.callSign}`, {
       method: "POST",
     })
       .then((data) => data.json())
@@ -1075,7 +1077,7 @@ class FavoriteNet extends Component {
 
   handleClick() {
     let func = this.state.favorited ? "unfavorite_net" : "favorite_net"
-    fetch(`/${func}/${this.props.netName}`, {
+    fetch(`/api/${func}/${this.props.netName}`, {
       method: "POST",
     })
       .then((data) => data.json())
@@ -1198,7 +1200,7 @@ class Messages extends Component {
 
   handleMonitorNet() {
     this.setState({ loading: true })
-    fetch(`/monitor/${this.props.netId}`, { method: "POST" })
+    fetch(`/api/monitor/${this.props.netId}`, { method: "POST" })
       .then((response) => response.json())
       .then(async (data) => {
         if (data.ok) {
@@ -1215,7 +1217,7 @@ class Messages extends Component {
 
   handleUnmonitorNet() {
     this.setState({ loading: true })
-    fetch(`/unmonitor/${this.props.netId}`, { method: "POST" })
+    fetch(`/api/unmonitor/${this.props.netId}`, { method: "POST" })
       .then((response) => response.json())
       .then(async (data) => {
         if (data.ok) {
@@ -1238,7 +1240,7 @@ class Messages extends Component {
       messageInput: "",
     })
     try {
-      const response = await fetch(`/message/${this.props.netId}`, {
+      const response = await fetch(`/api/message/${this.props.netId}`, {
         method: "POST",
         headers: {
           "Content-Type":
@@ -1307,7 +1309,7 @@ class Monitors extends Component {
     }
 
     fetch(
-      `/net/${this.props.netId}/blocked-stations/${encodeURIComponent(
+      `/api/net/${this.props.netId}/blocked-stations/${encodeURIComponent(
         callSign
       )}`,
       {
@@ -1628,7 +1630,7 @@ class CreateNetForm extends Component {
       return
     }
 
-    fetch("/create-net", {
+    fetch("/api/create-net", {
       method: "POST",
       body: JSON.stringify({
         club_id: this.state.club_id,
@@ -1661,7 +1663,7 @@ class CreateNetForm extends Component {
   }
 
   fetchClosedNets() {
-    fetch(`/group/${this.state.club_id}/nets.json`)
+    fetch(`/api/group/${this.state.club_id}/nets.json`)
       .then((r) => r.json())
       .then((nets) => this.setState({ closedNets: nets }))
   }

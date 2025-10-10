@@ -307,7 +307,7 @@ get '/api/net_id/:name' do
   { id: service.net.id }.to_json
 end
 
-get '/net/:id/details' do
+get '/api/net/:id/details' do
   require_user!
 
   service = NetInfo.new(id: params[:id])
@@ -381,7 +381,7 @@ get '/create-net' do
   erb :create_net
 end
 
-post '/create-net' do
+post '/api/create-net' do
   require_net_logger_role!
 
   if @user.net_creation_blocked?
@@ -482,7 +482,7 @@ rescue ActiveRecord::RecordNotFound
   redirect '/'
 end
 
-patch '/log/:id/:num' do
+patch '/api/log/:id/:num' do
   require_net_logger_role!
 
   @params = params.merge(JSON.parse(request.body.read))
@@ -496,7 +496,7 @@ rescue NetLogger::NotAuthorizedError
   halt 401, 'not authorized'
 end
 
-delete '/log/:id/:num' do
+delete '/api/log/:id/:num' do
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
@@ -508,7 +508,7 @@ rescue NetLogger::NotAuthorizedError
   halt 401, 'not authorized'
 end
 
-patch '/highlight/:id/:num' do
+patch '/api/highlight/:id/:num' do
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
@@ -654,7 +654,7 @@ post '/leave-group/:id' do
   end
 end
 
-get '/station/:call_sign' do
+get '/api/station/:call_sign' do
   require_net_logger_role!
 
   content_type 'application/json'
@@ -746,7 +746,7 @@ rescue ActiveRecord::RecordNotUnique
   redirect '/favorites'
 end
 
-post '/favorite/:call_sign' do
+post '/api/favorite/:call_sign' do
   content_type 'application/json'
   require_user!
 
@@ -770,7 +770,7 @@ post '/favorite/:call_sign' do
   { favorited: true }.to_json
 end
 
-post '/unfavorite/:call_sign' do
+post '/api/unfavorite/:call_sign' do
   content_type 'application/json'
   require_user!
 
@@ -779,7 +779,7 @@ post '/unfavorite/:call_sign' do
   { favorited: false }.to_json
 end
 
-post '/favorite_net/:net_name' do
+post '/api/favorite_net/:net_name' do
   content_type 'application/json'
   require_user!
 
@@ -795,7 +795,7 @@ post '/favorite_net/:net_name' do
   { favorited: true }.to_json
 end
 
-post '/unfavorite_net/:net_name' do
+post '/api/unfavorite_net/:net_name' do
   content_type 'application/json'
   require_user!
 
@@ -860,7 +860,7 @@ delete '/blocked-stations/:id' do
   redirect '/user'
 end
 
-post '/net/:id/block-stations/:call_sign' do
+post '/api/net/:id/blocked-stations/:call_sign' do
   require_net_logger_role!
 
   logger = NetLogger.new(NetInfo.new(id: params[:id]), user: @user)
@@ -1051,7 +1051,7 @@ rescue ActiveRecord::RecordNotFound
   return { error: 'Membership not found.' }.to_json
 end
 
-get '/admin/users/:id/qrz' do
+get '/api/admin/users/:id/qrz' do
   require_admin!
 
   @user_to_edit = Tables::User.find(params[:id])
@@ -1117,7 +1117,7 @@ get '/admin/clubs' do
   erb :admin_clubs
 end
 
-get '/admin/clubs/search' do
+get '/api/admin/clubs/search' do
   require_admin!
 
   content_type 'application/json'
@@ -1354,7 +1354,7 @@ delete '/admin/suggested-clubs/:id' do
   redirect '/admin/suggested-clubs'
 end
 
-post '/monitor/:net_id' do
+post '/api/monitor/:net_id' do
   content_type 'application/json'
 
   require_user!
@@ -1370,7 +1370,7 @@ rescue NetInfo::NotFoundError
   { error: true }.to_json
 end
 
-post '/unmonitor/:net_id' do
+post '/api/unmonitor/:net_id' do
   content_type 'application/json'
 
   require_user!
@@ -1391,12 +1391,12 @@ rescue NetInfo::NotFoundError
   { error: true }.to_json
 end
 
-post '/message/:net_id' do
+post '/api/message/:net_id' do
   require_user!
 
   message = params[:message].to_s.strip
-    .tr("‘ʼ’", "'")
-    .tr("“”", '"')
+    .tr("'ʼ'", "'")
+    .tr("""", '"')
     .tr("-–—−⁃᠆", "-")
     .gsub("…", "...")
 
@@ -1424,6 +1424,63 @@ post '/message/:net_id' do
 rescue NetInfo::ServerError => e
   status 500
   { error: e.message }.to_json
+end
+
+get '/api/group/:id/nets.json' do
+  require_user!
+
+  club = Tables::Club.find(params[:id])
+
+  nets = club.closed_nets
+             .where('started_at > ?', 60.days.ago)
+             .order(:name, :frequency)
+             .select(:id, :name, :frequency, :band, :mode, :started_at)
+             .to_a
+             .uniq { |n| [n.name.downcase, n.frequency] }
+
+  content_type 'application/json'
+  nets.to_json
+rescue ActiveRecord::RecordNotFound
+  status 404
+  erb :missing_club
+end
+
+get '/api/admin/clubs.json' do
+  require_admin!
+
+  content_type 'application/json'
+  attachment 'clubs.json'
+
+  {
+    clubs: Tables::Club.order(:name).map do |record|
+      if record.logo_url.present?
+        path = File.join(__dir__, 'public', record.logo_url)
+        if File.exist?(path)
+          logo = Base64.encode64(File.read(path))
+        end
+      end
+      record.as_json.except('id', 'created_at', 'updated_at').merge(logo:)
+    end
+  }.to_json
+end
+
+get '/api/pusher/details/:net_id' do
+  require_user!
+
+  content_type 'application/json'
+  {
+    key: pusher_key,
+    cluster: pusher_cluster,
+    authEndpoint: "/pusher/auth/#{params[:net_id]}",
+    channel: "private-net-#{params[:net_id]}",
+  }.to_json
+end
+
+post '/api/pusher/auth/:net_id' do
+  require_user!
+
+  content_type 'application/json'
+  Pusher::Client.from_env.authenticate("private-net-#{params[:net_id]}", params[:socket_id]).to_json
 end
 
 get '/group/:slug' do
@@ -1508,7 +1565,7 @@ get '/admin/clubs.json' do
   }.to_json
 end
 
-patch '/admin/clubs.json' do
+patch '/api/admin/clubs.json' do
   require_admin!
 
   existing = Tables::Club.all.each_with_object({}) { |c, h| h[c.name.downcase] = c }
