@@ -225,21 +225,22 @@ get '/' do
   @last_updated_at = Tables::Server.maximum(:net_list_fetched_at)
   @update_interval = 30
   @update_backoff = 5
-  @centers = @nets.map do |net|
-    next unless net.show_circle?
-    {
-      latitude: net.center_latitude,
-      longitude: net.center_longitude,
-      radius: net.center_radius,
-      name: net.name,
-      url: "/net/#{url_escape(net.name)}",
-    }
-  end.compact.sort_by { |c| c[:radius] }.reverse
+  @centers = net_centers(@nets)
   erb :index
 end
 
-get '/about' do
+get '/api/nets' do
+  content_type 'application/json'
+  service = NetList.new
+  nets = service.list(order: :name)
+  centers = net_centers(nets)
+  {
+    nets:,
+    centers:,
+  }.to_json
+end
 
+get '/about' do
   erb :about
 end
 
@@ -337,6 +338,7 @@ get '/api/net/:id/details' do
 
   content_type 'application/json'
   {
+    net:,
     checkins:,
     coords:,
     messages:,
@@ -905,6 +907,19 @@ end
 post '/logout' do
   session.clear
   redirect '/'
+end
+
+def net_centers(nets)
+  nets.map do |net|
+    next unless net.show_circle?
+    {
+      latitude: net.center_latitude,
+      longitude: net.center_longitude,
+      radius: net.center_radius,
+      name: net.name,
+      url: "/net/#{url_escape(net.name)}",
+    }
+  end.compact.sort_by { |c| c[:radius] }.reverse
 end
 
 def gather_weekly_stats
