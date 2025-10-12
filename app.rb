@@ -916,6 +916,7 @@ def net_centers(nets)
       latitude: net.center_latitude,
       longitude: net.center_longitude,
       radius: net.center_radius,
+      id: net.id,
       name: net.name,
       url: "/net/#{url_escape(net.name)}",
     }
