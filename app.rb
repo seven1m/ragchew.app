@@ -229,6 +229,11 @@ get '/' do
   erb :index
 end
 
+get '/api/user' do
+  content_type 'application/json'
+  { user: @user }.to_json
+end
+
 get '/api/nets' do
   content_type 'application/json'
   service = NetList.new
@@ -301,15 +306,23 @@ rescue NetInfo::NotFoundError
 end
 
 get '/api/net_id/:name' do
+  content_type 'application/json'
+
   params[:name] = CGI.unescape(params[:name])
   service = NetInfo.new(name: params[:name])
 
-  content_type 'application/json'
   { id: service.net.id }.to_json
+rescue NetInfo::NotFoundError
+  status 404
+  if (closed_net = Tables::ClosedNet.where(name: params[:name]).order(started_at: :desc).first)
+    { error: "net closed", closedNetId: closed_net.id }.to_json
+  else
+    { error: "not found" }.to_json
+  end
 end
 
 get '/api/net/:id/details' do
-  require_user!
+  content_type 'application/json'
 
   service = NetInfo.new(id: params[:id])
 
@@ -323,20 +336,36 @@ get '/api/net/:id/details' do
       { lat:, lon:, callSign: checkin.call_sign, name: checkin.name }
     end
   end
+  messagesCount = net.messages.count
+  monitors = net.monitors.order(:call_sign).to_a
+
+  unless @user
+    if net.show_circle?
+      circle = {
+        latitude: net.center_latitude,
+        longitude: net.center_longitude,
+        radius: net.center_radius
+      }
+    end
+    return {
+      net:,
+      checkinCount: checkins.size,
+      messagesCount:,
+      monitorCount: monitors.size,
+      circle:
+    }.to_json
+  end
 
   monitoring_this_net = @user.monitoring_net == net
   if monitoring_this_net
     @user.update!(monitoring_net_last_refreshed_at: Time.now)
   end
 
-  messagesCount = net.messages.count
   messages = monitoring_this_net ? net.messages.order(:sent_at).to_a : []
   messages.reject! { |m| m.blocked? && m.call_sign.upcase != @user.call_sign.upcase }
-  monitors = net.monitors.order(:call_sign).to_a
   favorites = @user.favorites.pluck(:call_sign)
   favorited_net = @user.favorite_nets.where(net_name: net.name).any?
 
-  content_type 'application/json'
   {
     net:,
     checkins:,
@@ -588,21 +617,30 @@ get '/closed-nets' do
 end
 
 get '/closed-net/:id' do
-  @closed_net = Tables::ClosedNet.find(params[:id])
-  @page_title = @name = @closed_net&.name
-  @checkin_count = @closed_net.checkin_count
-  @message_count = @closed_net.message_count
-  @monitor_count = @closed_net.monitor_count
-  @net_count = Tables::Net.count
-  @favorited_net = @user.favorite_nets.where(net_name: @closed_net.name).any? if @user
-
-  @more_recent_closed_net = Tables::ClosedNet.where(name: @closed_net.name).where('started_at > ?', @closed_net.started_at).order(started_at: :desc).first
-  @open_net = Tables::Net.find_by(name: @closed_net.name)
-
+  set_closed_net_details
+  @page_title = @name
   erb :closed_net
 rescue ActiveRecord::RecordNotFound
   status 404
   erb :missing_net
+end
+
+get '/api/closed-net/:id' do
+  set_closed_net_details
+  content_type 'application/json'
+  {
+    net: @closed_net,
+    checkinCount: @checkin_count,
+    messageCount: @message_count,
+    monitorCount: @monitor_count,
+    netCount: @net_count,
+    favoritedNet: @favorited_net,
+    moreRecentClosedNet: @more_recent_closed_net,
+    openNet: @open_net,
+  }.to_json
+rescue ActiveRecord::RecordNotFound
+  status 404
+  { error: 'not found' }.to_json
 end
 
 get '/groups' do
@@ -896,8 +934,15 @@ post '/login' do
 
   redirect params[:net] ? "/net/#{url_escape params[:net]}" : '/'
 rescue Qrz::Error => e
-  @error = e.message
-  erb :login
+  status 400
+
+  if request.accept.include?('application/json')
+    content_type 'application/json'
+    { error: e.message }.to_json
+  else
+    @error = e.message
+    erb :login
+  end
 end
 
 get '/logout' do
@@ -1703,6 +1748,19 @@ def fix_club_params(params)
     params[:club][param] = JSON.parse(params[:club][param]) if params[:club][param]
   end
   params[:club][:logo_url] = UpdateClubList.download_logo_url(@club, params[:club][:logo_url])
+end
+
+def set_closed_net_details
+  @closed_net = Tables::ClosedNet.find(params[:id])
+  @name = @closed_net&.name
+  @checkin_count = @closed_net.checkin_count
+  @message_count = @closed_net.message_count
+  @monitor_count = @closed_net.monitor_count
+  @net_count = Tables::Net.count
+  @favorited_net = @user.favorite_nets.where(net_name: @closed_net.name).any? if @user
+
+  @more_recent_closed_net = Tables::ClosedNet.where(name: @closed_net.name).where('started_at > ?', @closed_net.started_at).order(started_at: :desc).first
+  @open_net = Tables::Net.find_by(name: @closed_net.name)
 end
 
 FavoriteNetDetail = Struct.new(:net_name, :active_net, :last_closed_at, keyword_init: true)
