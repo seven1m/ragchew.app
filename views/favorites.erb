@@ -37,13 +37,11 @@
 
 <p><em>You can find <a href="/closed-nets">closed nets here</a>. Note that sometimes nets use slightly different names, and we don't do any fuzzy matching here. You'll need to find every variation to add. :-(</em></p>
 
-<h2>Favorite Stations (<%= @favorites.size %>)</h2>
+<h2>Favorite Stations (<%= @favorite_details.size %>)</h2>
 
 <p>Favorite stations allow you to easily spot friends if they have checked in on a net. You can add up to <%== MAX_FAVORITES %> favorite stations.</p>
 
-<% monitoring_by_call_sign = Tables::Monitor.where(call_sign: @favorites.map(&:call_sign)).includes(:net).select(&:net).each_with_object({}) { |c, h| h[c.call_sign] ||= []; h[c.call_sign] << c.net } %>
-
-<% if @favorites.any? %>
+<% if @favorite_details.any? %>
   <div class="table-wrapper">
     <table>
       <thead>
@@ -51,28 +49,35 @@
           <th></th>
           <th>Call Sign</th>
           <th>Name</th>
-          <th>Checked In</th>
+          <th>Last Net</th>
+          <th>Last Heard</th>
           <th>Monitoring</th>
         </tr>
       </thead>
       <tbody>
-        <% @favorites.each do |favorite| %>
+        <% @favorite_details.each do |favorite_detail| %>
           <tr>
             <td>
-              <div data-component="Favorite" data-props="<%= make_value_safe_for_html_attribute({ callSign: favorite.call_sign, favorited: true }.to_json) %>"></div
+              <div data-component="Favorite" data-props="<%= make_value_safe_for_html_attribute({ callSign: favorite_detail.call_sign, favorited: true }.to_json) %>"></div
             </td>
-            <td><%== favorite.call_sign %></td>
+            <td><%== favorite_detail.call_sign %></td>
             <td>
-              <%== favorite.first_name %>
-              <%== favorite.last_name %>
-            </td>
-            <td>
-              <%= erb :_last_heard, locals: { call_sign: favorite.call_sign } %>
+              <%== favorite_detail.first_name %>
+              <%== favorite_detail.last_name %>
             </td>
             <td>
-              <% nets = monitoring_by_call_sign[favorite.call_sign] || [] %>
-              <% nets.each_with_index do |net, index| %>
-                <a href="/net/<%== url_escape(net.name) %>"><%== net.name %></a><% if index < nets.size - 1 %>,<% end %>
+              <% if favorite_detail.station %>
+                <a href="/net/<%== url_escape(favorite_detail.station.last_heard_on) %>"><%== favorite_detail.station.last_heard_on %></a>
+              <% end %>
+            </td>
+            <td>
+              <% if favorite_detail.station&.last_heard_at %>
+                <%= format_time(favorite_detail.station.last_heard_at) %>
+              <% end %>
+            </td>
+            <td>
+              <% favorite_detail.monitoring.each_with_index do |monitor, index| %>
+                <a href="/net/<%== url_escape(monitor.net.name) %>"><%== monitor.net.name %></a><% if index < favorite_detail.monitoring.size - 1 %>,<% end %>
               <% end %>
             </td>
           </tr>

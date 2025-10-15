@@ -1,4 +1,4 @@
-<% station = Tables::Station.find_by(call_sign:) %>
+<% station ||= Tables::Station.find_by(call_sign:) %>
 <% if station&.last_heard_on %>
   <a href="/net/<%== url_escape(station.last_heard_on) %>"><%== station.last_heard_on %></a>
   <% if station.last_heard_at %>

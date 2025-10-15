@@ -15,5 +15,9 @@ module Tables
     def expired?
       !expires_at || expires_at < Time.now
     end
+
+    def as_json(options = {})
+      super(options.reverse_merge(except: [:street]))
+    end
   end
 end

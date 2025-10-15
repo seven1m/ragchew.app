@@ -867,7 +867,7 @@ get '/api/favorites' do
   content_type 'application/json'
   set_favorites
   {
-    favorites: @favorites,
+    favorites: @favorite_details,
     favorite_nets: @favorite_net_details
   }.to_json
 end
@@ -1763,10 +1763,22 @@ def set_closed_net_details
   @open_net = Tables::Net.find_by(name: @closed_net.name)
 end
 
+FavoriteDetail = Struct.new(:call_sign, :first_name, :last_name, :station, :monitoring, keyword_init: true)
 FavoriteNetDetail = Struct.new(:net_name, :active_net, :last_closed_at, keyword_init: true)
 
 def set_favorites
-  @favorites = @user.favorites.order(:call_sign).to_a
+  favorites = @user.favorites.order(:call_sign).to_a
+  stations = Tables::Station.where(call_sign: favorites.map(&:call_sign)).index_by(&:call_sign)
+  monitoring_by_call_sign = Tables::Monitor.where(call_sign: favorites.map(&:call_sign)).includes(:net).group_by(&:call_sign)
+  @favorite_details = favorites.map do |favorite|
+    FavoriteDetail.new(
+      call_sign: favorite.call_sign,
+      first_name: favorite.first_name,
+      last_name: favorite.last_name,
+      station: stations[favorite.call_sign],
+      monitoring: (monitoring_by_call_sign[favorite.call_sign] || []).select(&:net),
+    )
+  end
 
   favorite_net_names = @user.favorite_nets.map(&:net_name)
   active_nets = Tables::Net.where(name: favorite_net_names).index_by(&:name)
