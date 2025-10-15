@@ -1,6 +1,6 @@
-<h2>Favorite Nets (<%= @favorite_nets.size %>)</h2>
+<h2>Favorite Nets (<%= @favorite_net_details.size %>)</h2>
 
-<% if @favorite_nets.any? %>
+<% if @favorite_net_details.any? %>
   <div class="table-wrapper">
     <table>
       <thead>
@@ -11,19 +11,17 @@
         </tr>
       </thead>
       <tbody>
-        <% @favorite_nets.each do |favorite_net| %>
-          <% active_net = @active_nets[favorite_net.net_name] %>
-          <% last_closed = @recent_closed_nets[favorite_net.net_name] %>
+        <% @favorite_net_details.each do |favorite_net_detail| %>
           <tr>
             <td>
-              <div data-component="FavoriteNet" data-props="<%= make_value_safe_for_html_attribute({ netName: favorite_net.net_name, favorited: true }.to_json) %>"></div>
+              <div data-component="FavoriteNet" data-props="<%= make_value_safe_for_html_attribute({ netName: favorite_net_detail.net_name, favorited: true }.to_json) %>"></div>
             </td>
-            <td><a href="/net/<%== url_escape(favorite_net.net_name) %>"><%== favorite_net.net_name %></a></td>
+            <td><a href="/net/<%== url_escape(favorite_net_detail.net_name) %>"><%== favorite_net_detail.net_name %></a></td>
             <td>
-              <% if active_net %>
-                Live now
-              <% elsif last_closed %>
-                <span class="time" data-time="<%= last_closed.iso8601 %>"><%= last_closed %></span>
+              <% if favorite_net_detail.active_net %>
+                <a href="/net/<%= url_escape(favorite_net_detail.net_name) %>">Live now</a>
+              <% elsif favorite_net_detail.last_closed_at %>
+                <%= format_time favorite_net_detail.last_closed_at %>
               <% else %>
                 Never
               <% end %>
@@ -37,7 +35,7 @@
   <p><em>You have no favorite nets.</em> Click the <img class="favorite-star" src="/images/star-outline.svg" style="height:15px"/> icon next to a net name to add one.</p>
 <% end %>
 
-<p><em>You can find <a href="/closed-nets">closed nets here</a>. Note that sometimes nets use slightly different names, and we don't do any fuzzy matching here. You'll need to find every variation to add. :-(</p>
+<p><em>You can find <a href="/closed-nets">closed nets here</a>. Note that sometimes nets use slightly different names, and we don't do any fuzzy matching here. You'll need to find every variation to add. :-(</em></p>
 
 <h2>Favorite Stations (<%= @favorites.size %>)</h2>
 

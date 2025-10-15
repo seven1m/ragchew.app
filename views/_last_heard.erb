@@ -2,6 +2,6 @@
 <% if station&.last_heard_on %>
   <a href="/net/<%== url_escape(station.last_heard_on) %>"><%== station.last_heard_on %></a>
   <% if station.last_heard_at %>
-    <em><%= distance_of_time_in_words(station.last_heard_at, Time.now) %> ago</em>
+    <em><%= format_time(station.last_heard_at) %></em>
   <% end %>
 <% end %>

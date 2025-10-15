@@ -66,7 +66,7 @@ helpers do
   def format_time(ts, time_only: false)
     return '' unless ts
 
-    "<span class='time #{time_only ? 'time-only' : ''}' data-time='#{ts.strftime('%Y-%m-%dT%H:%M:%S.000Z')}'>#{ts.strftime('%Y-%m-%d %H:%M:%S UTC')}</span>"
+    "<span class='time #{time_only ? 'time-only' : ''}' title='#{distance_of_time_in_words(ts, Time.now)} ago' data-time='#{ts.strftime('%Y-%m-%dT%H:%M:%S.000Z')}'>#{ts.strftime('%Y-%m-%d %H:%M:%S UTC')}</span>"
   end
 
   def url_escape(s)
@@ -819,19 +819,19 @@ end
 
 get '/favorites' do
   require_user!
-
-  @favorites = @user.favorites.order(:call_sign).to_a
-  @favorite_nets = @user.favorite_nets.order(:net_name).to_a
-
-  # Get net data for favorite nets
-  favorite_net_names = @favorite_nets.map(&:net_name)
-  @active_nets = Tables::Net.where(name: favorite_net_names).index_by(&:name)
-  @recent_closed_nets = Tables::ClosedNet.where(name: favorite_net_names)
-                                         .group(:name)
-                                         .maximum(:started_at)
-
+  set_favorites
   @page_title = 'Favorites'
   erb :favorites
+end
+
+get '/api/favorites' do
+  require_user!
+  content_type 'application/json'
+  set_favorites
+  {
+    favorites: @favorites,
+    favorite_nets: @favorite_net_details
+  }.to_json
 end
 
 post '/preferences' do
@@ -1703,4 +1703,23 @@ def fix_club_params(params)
     params[:club][param] = JSON.parse(params[:club][param]) if params[:club][param]
   end
   params[:club][:logo_url] = UpdateClubList.download_logo_url(@club, params[:club][:logo_url])
+end
+
+FavoriteNetDetail = Struct.new(:net_name, :active_net, :last_closed_at, keyword_init: true)
+
+def set_favorites
+  @favorites = @user.favorites.order(:call_sign).to_a
+
+  favorite_net_names = @user.favorite_nets.map(&:net_name)
+  active_nets = Tables::Net.where(name: favorite_net_names).index_by(&:name)
+  recent_closed_ats = Tables::ClosedNet.where(name: favorite_net_names)
+                                       .group(:name)
+                                       .maximum(:started_at)
+  @favorite_net_details = @user.favorite_nets.order(:net_name).map do |favorite_net|
+    FavoriteNetDetail.new(
+      net_name: favorite_net.net_name,
+      active_net: active_nets[favorite_net.net_name],
+      last_closed_at: recent_closed_ats[favorite_net.net_name],
+    )
+  end
 end
