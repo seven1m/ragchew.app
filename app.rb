@@ -361,7 +361,7 @@ get '/api/net/:id/details' do
     @user.update!(monitoring_net_last_refreshed_at: Time.now)
   end
 
-  messages = monitoring_this_net ? net.messages.order(:sent_at).to_a : []
+  messages = monitoring_this_net ? net.messages.includes(:message_reactions).order(:sent_at).to_a : []
   messages.reject! { |m| m.blocked? && m.call_sign.upcase != @user.call_sign.upcase }
   favorites = @user.favorites.pluck(:call_sign)
   favorited_net = @user.favorite_nets.where(net_name: net.name).any?
@@ -370,7 +370,7 @@ get '/api/net/:id/details' do
     net:,
     checkins:,
     coords:,
-    messages:,
+    messages: messages.as_json(include_reactions: true),
     messagesCount:,
     monitors:,
     favorites:,
@@ -1485,6 +1485,77 @@ post '/api/message/:net_id' do
 rescue NetInfo::ServerError => e
   status 500
   { error: e.message }.to_json
+end
+
+post '/api/react/:message_id' do
+  require_user!
+  content_type 'application/json'
+
+  ALLOWED_REACTIONS = %w[:thumbs_up: :thumbs_down: :heart: :joy: :open_mouth: :cry: :rage:].freeze
+
+  reaction = params[:reaction].to_s.strip
+  unless ALLOWED_REACTIONS.include?(reaction)
+    status 400
+    return { error: 'invalid reaction' }.to_json
+  end
+
+  message = Tables::Message.find(params[:message_id])
+  net = message.net
+
+  if @user.monitoring_net != net
+    status 401
+    return { error: 'not monitoring this net' }.to_json
+  end
+
+  reaction_record = Tables::MessageReaction.create!(
+    message_id: message.id,
+    reaction: reaction,
+    call_sign: @user.call_sign,
+    name: @user.name,
+    user_id: @user.id
+  )
+
+  Pusher::Client.from_env.trigger(
+    "private-net-#{net.id}",
+    'message_reaction',
+    reaction: reaction_record.as_json
+  )
+
+  { ok: true }.to_json
+rescue ActiveRecord::RecordNotUnique
+  status 409
+  { error: 'reaction already exists' }.to_json
+end
+
+delete '/api/react/:message_id' do
+  require_user!
+  content_type 'application/json'
+
+  reaction = params[:reaction].to_s.strip
+  message = Tables::Message.find(params[:message_id])
+  net = message.net
+
+  if @user.monitoring_net != net
+    status 401
+    return { error: 'not monitoring this net' }.to_json
+  end
+
+  reaction_record = Tables::MessageReaction.find_by!(
+    message_id: message.id,
+    reaction: reaction,
+    user_id: @user.id
+  )
+
+  reaction_id = reaction_record.id
+  reaction_record.destroy!
+
+  Pusher::Client.from_env.trigger(
+    "private-net-#{net.id}",
+    'message_reaction_removed',
+    reaction_id: reaction_id
+  )
+
+  { ok: true }.to_json
 end
 
 get '/api/group/:id/nets.json' do

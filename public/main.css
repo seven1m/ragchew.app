@@ -136,3 +136,51 @@ a.btn { padding: 4px; background-color: #eee; border: 1px solid #ccc; border-rad
   header.flex img { margin: 20px 0; }
   .no-wrap-on-mobile { white-space: nowrap; }
 }
+/* Message reactions */
+.reaction-bar {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  padding: 2px 5px;
+  display: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+.reaction-emoji {
+  cursor: pointer;
+  margin: 0 2px;
+  font-size: 16px;
+  user-select: none;
+  padding: 2px;
+  border-radius: 3px;
+}
+
+.reaction-emoji:hover {
+  background-color: #f0f0f0;
+}
+
+.reaction-emoji.user-reacted {
+  background-color: #333;
+}
+
+.reaction-emoji.user-reacted:hover {
+  background-color: #555;
+}
+
+.reaction-display {
+  margin-top: 5px;
+}
+
+.reaction-bubble {
+  display: inline-block;
+  background: #f0f0f0;
+  border-radius: 10px;
+  padding: 2px 6px;
+  margin: 0 2px 2px 0;
+  font-size: 12px;
+  cursor: help;
+}

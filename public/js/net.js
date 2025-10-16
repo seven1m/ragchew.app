@@ -287,6 +287,38 @@ class Net extends Component {
         this.setState({ messages: [...this.state.messages, message] })
       }
     })
+    channel.bind("message_reaction", ({ reaction }) => {
+      if (this.state.monitoringThisNet) {
+        this.setState((prevState) => {
+          const messages = [...prevState.messages]
+          const messageIndex = messages.findIndex(
+            (m) => m.id === reaction.message_id
+          )
+          if (messageIndex !== -1) {
+            if (!messages[messageIndex].reactions) {
+              messages[messageIndex].reactions = []
+            }
+            messages[messageIndex].reactions.push(reaction)
+          }
+          return { messages }
+        })
+      }
+    })
+    channel.bind("message_reaction_removed", ({ reaction_id }) => {
+      if (this.state.monitoringThisNet) {
+        this.setState((prevState) => {
+          const messages = [...prevState.messages]
+          messages.forEach((message) => {
+            if (message.reactions) {
+              message.reactions = message.reactions.filter(
+                (r) => r.id !== reaction_id
+              )
+            }
+          })
+          return { messages }
+        })
+      }
+    })
   }
 
   startUpdatingRegularly() {
@@ -1139,8 +1171,29 @@ class Messages extends Component {
 
   renderMessage(message, index) {
     const timestamp = formatTimeWithDayjs(message.sent_at, true)
+    const reactions = [
+      { emoji: "👍", code: ":thumbs_up:" },
+      { emoji: "👎", code: ":thumbs_down:" },
+      { emoji: "❤️", code: ":heart:" },
+      { emoji: "😂", code: ":joy:" },
+      { emoji: "😮", code: ":open_mouth:" },
+      { emoji: "😢", code: ":cry:" },
+      { emoji: "😡", code: ":rage:" },
+    ]
+
+    const emojiMap = Object.fromEntries(reactions.map((r) => [r.code, r.emoji]))
+
     return html`<div
       class="chat-message ${index % 2 == 0 ? "chat-even" : "chat-odd"}"
+      style="position: relative"
+      onMouseEnter=${(e) => {
+        const bar = e.target.querySelector(".reaction-bar")
+        if (bar) bar.style.display = "block"
+      }}
+      onMouseLeave=${(e) => {
+        const bar = e.target.querySelector(".reaction-bar")
+        if (bar) bar.style.display = "none"
+      }}
     >
       <span
         class="chat-sender"
@@ -1155,12 +1208,70 @@ class Messages extends Component {
         class="chat-message-text"
         dangerouslySetInnerHTML=${{ __html: this.formatText(message.message) }}
       />
+      ${message.reactions &&
+      message.reactions.length > 0 &&
+      html`
+        <div class="reaction-display">
+          ${message.reactions.map(
+            (reaction) => html`
+              <span
+                title="${reaction.name || reaction.call_sign}"
+                class="reaction-bubble"
+                >${emojiMap[reaction.reaction] || reaction.reaction}
+                ${reaction.call_sign}</span
+              >
+            `
+          )}
+        </div>
+      `}
+      <div class="reaction-bar">
+        ${reactions.map(({ emoji, code }) => {
+          const userReacted = message.reactions?.some(
+            (r) =>
+              r.reaction === code && r.call_sign === this.props.userCallSign
+          )
+          return html`
+            <span
+              class="reaction-emoji ${userReacted ? "user-reacted" : ""}"
+              onClick=${() => this.handleReaction(message.id, code)}
+              >${emoji}</span
+            >
+          `
+        })}
+      </div>
     </div>`
   }
 
   formatText(text) {
     const parser = new MessageFormatter(this.props.showFormatting)
     return parser.format(text)
+  }
+
+  async handleReaction(messageId, emoji) {
+    try {
+      const message = this.props.messages.find((m) => m.id === messageId)
+      const existingReaction = message?.reactions?.find(
+        (r) => r.reaction === emoji && r.call_sign === this.props.userCallSign
+      )
+
+      const method = existingReaction ? "DELETE" : "POST"
+
+      const response = await fetch(`/api/react/${messageId}`, {
+        method: method,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: `reaction=${encodeURIComponent(emoji)}`,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error("Reaction failed:", error)
+      }
+    } catch (error) {
+      console.error("Reaction error:", error)
+    }
   }
 
   renderLog() {

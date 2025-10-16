@@ -146,6 +146,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <td><%= format_time Tables::Favorite.maximum(:created_at) %></td>
       </tr>
       <tr>
+        <td><a href="/admin/table/favorite_nets">favorite nets</a></td>
+        <td><%= Tables::FavoriteNet.count %></td>
+        <td><%= format_time Tables::FavoriteNet.maximum(:created_at) %></td>
+      </tr>
+      <tr>
         <td><a href="/admin/table/monitors">monitors</a></td>
         <td><%= Tables::Monitor.count %></td>
         <td><%= format_time Tables::Monitor.maximum(:updated_at) %></td>
@@ -154,6 +159,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <td><a href="/admin/table/messages">messages</a></td>
         <td><%= Tables::Message.count %></td>
         <td><%= format_time Tables::Message.maximum(:created_at) %></td>
+      </tr>
+      <tr>
+        <td><a href="/admin/table/message_reactions">messages reactions</a></td>
+        <td><%= Tables::MessageReaction.count %></td>
+        <td><%= format_time Tables::MessageReaction.maximum(:created_at) %></td>
       </tr>
       <tr>
         <td><a href="/admin/nets">nets</a></td>

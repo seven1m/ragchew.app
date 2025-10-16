@@ -69,6 +69,28 @@ tr.remarks {
   color: #aaa;
 }
 
+/* Reaction bar */
+.reaction-bar {
+  background-color: #2a2a2a !important;
+  border-color: #555 !important;
+}
+
+.reaction-emoji:hover {
+  background-color: #444 !important;
+}
+
+.reaction-emoji.user-reacted {
+  background-color: #666 !important;
+}
+
+.reaction-emoji.user-reacted:hover {
+  background-color: #777 !important;
+}
+
+.reaction-bubble {
+  background: #444 !important;
+}
+
 /* Highlights and callouts */
 .highlight {
   background-color: #4a4a2a;
