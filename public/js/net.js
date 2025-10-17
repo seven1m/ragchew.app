@@ -2058,7 +2058,7 @@ function stationName({ name, preferred_name, info }) {
   if (
     !present(preferred_name) ||
     !present(name) ||
-    name.match(new RegExp(`^${preferred_name}( |$)`, "i"))
+    name.match(new RegExp(`^${RegExp.escape(preferred_name)}( |$)`, "i"))
   )
     return name
 
