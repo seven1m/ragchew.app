@@ -2058,7 +2058,9 @@ function stationName({ name, preferred_name, info }) {
   if (
     !present(preferred_name) ||
     !present(name) ||
-    name.match(new RegExp(`^${RegExp.escape(preferred_name)}( |$)`, "i"))
+    name.toLowerCase() === preferred_name.toLowerCase() ||
+    (name.toLowerCase().indexOf(preferred_name.toLowerCase()) === 0 &&
+      name[preferred_name.length] === " ")
   )
     return name
 
