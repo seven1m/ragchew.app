@@ -1183,7 +1183,7 @@ class Messages extends Component {
     ]
 
     const emojiMap = Object.fromEntries(reactions.map((r) => [r.code, r.emoji]))
-    const filteredReactions = message.reactions.filter(
+    const filteredReactions = (message.reactions || []).filter(
       (reaction) =>
         !this.props.blockedStations.includes(reaction.call_sign) &&
         (!reaction.blocked || reaction.call_sign === this.props.userCallSign)
