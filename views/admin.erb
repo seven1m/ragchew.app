@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <tr>
         <td><a href="/admin/table/message_reactions">messages reactions</a></td>
         <td><%= Tables::MessageReaction.count %></td>
-        <td><%= format_time Tables::MessageReaction.maximum(:created_at) %></td>
+        <td><%= @recent_reactions %> <%= pluralize 'reaction', @recent_reactions %> in the last week</td>
       </tr>
       <tr>
         <td><a href="/admin/nets">nets</a></td>

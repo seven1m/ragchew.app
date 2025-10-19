@@ -1006,11 +1006,11 @@ get '/admin' do
                                  .where('created_at >= ?', 7.days.ago)
                                  .includes(:club)
   @ragchew_nets = (active_nets.to_a + closed_nets.to_a).sort_by(&:created_at).reverse
-
   @new_users = Tables::User.where('created_at >= ?', 7.days.ago)
                            .order(created_at: :desc)
-
   @suggested_clubs = Tables::SuggestedClub.order(created_at: :desc)
+
+  @recent_reactions = Tables::ClosedNet.where('started_at >= ?', 7.days.ago).sum(:message_reaction_count)
 
   erb :admin
 end
