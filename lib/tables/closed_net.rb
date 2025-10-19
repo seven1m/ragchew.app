@@ -30,6 +30,7 @@ module Tables
       closed_net.ended_at = Time.now
       closed_net.checkin_count = net.checkins.count
       closed_net.message_count = net.messages.count
+      closed_net.message_reaction_count = net.message_reactions.count
       closed_net.monitor_count = net.monitors.count
       closed_net
     end

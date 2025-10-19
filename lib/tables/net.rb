@@ -9,7 +9,8 @@ module Tables
     has_many :logging_users, class_name: 'User', foreign_key: 'logging_net_id'
     has_many :checkins, dependent: :delete_all
     has_many :monitors, dependent: :delete_all
-    has_many :messages, dependent: :destroy
+    has_many :messages, dependent: :delete_all
+    has_many :message_reactions, dependent: :delete_all
     has_many :blocked_stations, as: :blocker, dependent: :delete_all
 
     def self.all_by_name
