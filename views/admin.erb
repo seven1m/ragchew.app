@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td><%= format_time Tables::Checkin.maximum(:created_at) %></td>
       </tr>
       <tr>
-        <td><a href="/admin/closed-nets">closed nets</a></td>
+        <td><a href="/admin/table/closed_nets">closed nets</a></td>
         <td><%= Tables::ClosedNet.count %></td>
         <td><%= format_time Tables::ClosedNet.maximum(:created_at) %></td>
       </tr>
