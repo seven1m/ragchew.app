@@ -1375,6 +1375,10 @@ get '/admin/table/:table' do
   if params[:column].present? && params[:value].present?
     column = ActiveRecord::Base.connection.quote_column_name(params[:column])
     value = params[:value]
+    operator = params[:operator].presence || '='
+
+    allowed_operators = %w[= < <= > >= LIKE]
+    operator = '=' unless allowed_operators.include?(operator)
 
     # Handle boolean columns
     column_info = klass.columns.find { |c| c.name == params[:column] }
@@ -1382,12 +1386,10 @@ get '/admin/table/:table' do
       value = value.to_s.downcase == 'true'
     end
 
-    if params[:like]
-      operator = 'like'
+    if operator == 'LIKE'
       value = "%#{value}%" unless value.to_s.include?('%')
-    else
-      operator = '='
     end
+
     scope = scope.where("#{column} #{operator} ?", value)
   end
   @count = scope.count

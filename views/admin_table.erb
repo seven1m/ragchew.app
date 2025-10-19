@@ -7,10 +7,16 @@
       <option <%= params[:column] == column.name ? 'selected' : '' %> value="<%== make_value_safe_for_html_attribute column.name %>"><%== column.name %></option>
     <% end %>
   </select>
+  <select name="operator">
+    <option value="=" <%= params[:operator] == '=' ? 'selected' : '' %>>=</option>
+    <option value="<" <%= params[:operator] == '<' ? 'selected' : '' %>><</option>
+    <option value="<=" <%= params[:operator] == '<=' ? 'selected' : '' %>><=</option>
+    <option value=">" <%= params[:operator] == '>' ? 'selected' : '' %>>></option>
+    <option value=">=" <%= params[:operator] == '>=' ? 'selected' : '' %>>>=</option>
+    <option value="LIKE" <%= params[:operator] == 'LIKE' ? 'selected' : '' %>>LIKE</option>
+  </select>
   <input type="text" name="value" value="<%== make_value_safe_for_html_attribute params[:value] %>"/>
   <input type="submit" value="search" class="inline"/>
-  <input type="checkbox" id="like" name="like" value="true" <%= params[:like] ? 'checked' : '' %>/>
-  <label for="like" class="inline">LIKE</label>
   <% if params[:column] %>
     <a href="?">clear</a>
   <% end %>
