@@ -1508,11 +1508,13 @@ post '/api/react/:message_id' do
   end
 
   reaction_record = Tables::MessageReaction.create!(
+    net_id: net.id,
     message_id: message.id,
     reaction: reaction,
     call_sign: @user.call_sign,
     name: @user.name,
-    user_id: @user.id
+    user_id: @user.id,
+    blocked: net.blocked_stations.pluck(:call_sign).include?(@user.call_sign),
   )
 
   Pusher::Client.from_env.trigger(

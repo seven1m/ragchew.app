@@ -279,7 +279,6 @@ class Net extends Component {
       this.startUpdatingRegularly()
     })
     channel.bind("message", ({ message }) => {
-      console.log({ message, userCallSign: this.props.userCallSign })
       const hidden =
         message.blocked && message.call_sign !== this.props.userCallSign
       if (this.state.monitoringThisNet && !hidden) {
@@ -288,7 +287,9 @@ class Net extends Component {
       }
     })
     channel.bind("message_reaction", ({ reaction }) => {
-      if (this.state.monitoringThisNet) {
+      const hidden =
+        reaction.blocked && reaction.call_sign !== this.props.userCallSign
+      if (this.state.monitoringThisNet && !hidden) {
         this.setState((prevState) => {
           const messages = [...prevState.messages]
           const messageIndex = messages.findIndex(
@@ -1182,6 +1183,11 @@ class Messages extends Component {
     ]
 
     const emojiMap = Object.fromEntries(reactions.map((r) => [r.code, r.emoji]))
+    const filteredReactions = message.reactions.filter(
+      (reaction) =>
+        !this.props.blockedStations.includes(reaction.call_sign) &&
+        (!reaction.blocked || reaction.call_sign === this.props.userCallSign)
+    )
 
     return html`<div
       class="chat-message ${index % 2 == 0 ? "chat-even" : "chat-odd"}"
@@ -1208,11 +1214,10 @@ class Messages extends Component {
         class="chat-message-text"
         dangerouslySetInnerHTML=${{ __html: this.formatText(message.message) }}
       />
-      ${message.reactions &&
-      message.reactions.length > 0 &&
+      ${filteredReactions.length > 0 &&
       html`
         <div class="reaction-display">
-          ${message.reactions.map(
+          ${filteredReactions.map(
             (reaction) => html`
               <span
                 title="${reaction.name || reaction.call_sign}"
