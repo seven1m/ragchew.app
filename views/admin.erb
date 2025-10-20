@@ -85,6 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <th>Name</th>
           <th>Created</th>
           <th>Last Signed In</th>
+          <th>Checked In</th>
         </tr>
       </thead>
       <tbody>
@@ -94,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td><%== user.first_name %> <%== user.last_name %></td>
             <td><%= format_time user.created_at %></td>
             <td><%= format_time user.last_signed_in_at %></td>
+            <td><%= erb :_last_heard, locals: { call_sign: user.call_sign } %></td>
           </tr>
         <% end %>
       </tbody>
@@ -102,6 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <% else %>
   <p><em>no data</em></p>
 <% end %>
+
+<p><%= @user_count_last_30_days %> unique users over the last 30 days</p>
 
 <h2>Data</h2>
 
