@@ -111,12 +111,6 @@ task :cleanup do
     end
   end
   puts "#{count} net(s) closed"
-
-  # stations are removed if they are expired (and not connected to something else)
-  scope = Tables::Station.expired.not_favorited.have_no_user
-  count = scope.count
-  scope.delete_all
-  puts "#{count} expired station(s) deleted"
 end
 
 # Runs every 10 minutes
