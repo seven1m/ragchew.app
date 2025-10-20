@@ -117,18 +117,24 @@
   document.addEventListener("DOMContentLoaded", () => {
     const elm = document.getElementById('net-map')
     const centers = JSON.parse(elm.getAttribute('data-centers'))
-    buildNetMap()
-    updateNetMapCenters(centers)
 
-    const minute = 60 * 1000
-    const hour = 60 * minute
-    setIntervalWithBackoff(
-      updatePage,
-      <%= @update_interval || 30 %> * 1000,
-      <%= @update_backoff || 5 %> * 1000,
-      1 * hour
-    )
+    if (typeof buildNetMap === "undefined") {
+      elm.innerHTML = "There was an error loading the JavaScript for this site. Make sure you are using a modern web browser."
+      elm.style.color = "red"
+    } else {
+      buildNetMap()
+      updateNetMapCenters(centers)
 
-    formatTimes()
+      const minute = 60 * 1000
+      const hour = 60 * minute
+      setIntervalWithBackoff(
+        updatePage,
+        <%= @update_interval || 30 %> * 1000,
+        <%= @update_backoff || 5 %> * 1000,
+        1 * hour
+      )
+
+      formatTimes()
+    }
   })
 </script>
