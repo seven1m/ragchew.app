@@ -1483,8 +1483,8 @@ post '/api/message/:net_id' do
   require_user!
 
   message = params[:message].to_s.strip
-    .tr("'ʼ'", "'")
-    .tr("""", '"')
+    .tr("'ʼ'\u2018\u2019", "'")
+    .tr("""\u201C\u201D", '"')
     .tr("-–—−⁃᠆", "-")
     .gsub("…", "...")
 
