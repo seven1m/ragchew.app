@@ -1492,7 +1492,7 @@ post '/api/message/:net_id' do
 
   if message_with_silly_encoding.empty?
     status 400
-    return 'no message sent'
+    return { error: 'no message sent' }.to_json
   end
 
   @net_info = NetInfo.new(id: params[:net_id])
