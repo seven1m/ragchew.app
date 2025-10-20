@@ -201,3 +201,15 @@ nav a:visited {
 /* General */
 .dark-only { display: revert; }
 .light-only { display: none; }
+.autocomplete-dropdown {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.autocomplete-item {
+  border-bottom-color: #333;
+}
+
+.autocomplete-item:hover {
+  background-color: #3a3a3a;
+}

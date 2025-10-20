@@ -694,6 +694,31 @@ post '/leave-group/:id' do
   end
 end
 
+get '/api/station_search/:query' do
+  require_net_logger_role!
+
+  content_type 'application/json'
+
+  unless params[:club_id]
+    status 400
+    return { 'error' => 'must supply club_id' }.to_json
+  end
+
+  if params[:query].size < 2
+    status 400
+    return [].to_json
+  end
+
+  call_signs = Tables::ClubStation
+    .joins(:station)
+    .where(club_id: params[:club_id])
+    .where('club_stations.call_sign like :query or club_stations.preferred_name like :query or stations.first_name like :query or stations.last_name like :query', query: "%#{params[:query]}%")
+    .order(updated_at: :desc)
+    .limit(15)
+    .pluck(:call_sign)
+  Tables::Station.where(call_sign: call_signs).to_json
+end
+
 get '/api/station/:call_sign' do
   require_net_logger_role!
 

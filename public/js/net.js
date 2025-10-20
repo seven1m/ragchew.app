@@ -253,6 +253,7 @@ class Net extends Component {
     monitoringThisNet: this.props.monitoringThisNet,
     reverseMessages: localStorage.getItem("reverseMessages") === "true",
     showFormatting: localStorage.getItem("showFormatting") !== "false", // default to true
+    autocomplete: { suggestions: [], visible: false },
   }
 
   formRef = createRef()
@@ -260,6 +261,7 @@ class Net extends Component {
   componentDidMount() {
     this.updateData(true)
     this.startUpdatingRegularly()
+    document.addEventListener("click", this.handleDocumentClick.bind(this))
     const pusher = new Pusher(this.props.pusher.key, {
       channelAuthorization: {
         endpoint: this.props.pusher.authEndpoint,
@@ -320,6 +322,21 @@ class Net extends Component {
         })
       }
     })
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener("click", this.handleDocumentClick.bind(this))
+  }
+
+  handleDocumentClick(e) {
+    if (
+      !e.target.closest(".autocomplete-dropdown") &&
+      !e.target.closest('input[name="call_sign"]')
+    ) {
+      this.setState({
+        autocomplete: { ...this.state.autocomplete, visible: false },
+      })
+    }
   }
 
   startUpdatingRegularly() {
@@ -452,7 +469,9 @@ class Net extends Component {
         nextNum: this.nextNum(),
         info: this.state.info,
         error: this.state.error,
+        autocomplete: this.state.autocomplete,
         onCallSignInput: this.handleCallSignInput.bind(this),
+        onAutocompleteSelect: this.handleAutocompleteSelect.bind(this),
         onPreferredNameInput: this.handleEditingValueInput.bind(
           this,
           "preferred_name"
@@ -659,8 +678,19 @@ class Net extends Component {
   handleCallSignInput(call_sign) {
     this.setState({
       editing: { ...this.state.editing, call_sign },
+      autocomplete: { ...this.state.autocomplete, visible: false },
     })
     if (window.inputTimeout) clearTimeout(window.inputTimeout)
+    if (window.autocompleteTimeout) clearTimeout(window.autocompleteTimeout)
+
+    window.autocompleteTimeout = setTimeout(async () => {
+      if (call_sign.length >= 2) {
+        await this.fetchAutocomplete(call_sign)
+      } else {
+        this.setState({ autocomplete: { suggestions: [], visible: false } })
+      }
+    }, 300)
+
     window.inputTimeout = setTimeout(async () => {
       if (this.state.editing.call_sign.length >= 4) {
         this.fetchStationInfo()
@@ -727,6 +757,39 @@ class Net extends Component {
       await this.clearStationInfo(null)
       console.error(`Error fetching station: ${error}`)
     }
+  }
+
+  async fetchAutocomplete(query) {
+    try {
+      const clubId = this.props.club?.id
+      if (!clubId) return
+
+      const response = await fetch(
+        `/api/station_search/${encodeURIComponent(query)}?club_id=${clubId}`
+      )
+      if (response.status === 200) {
+        const suggestions = await response.json()
+        this.setState({
+          autocomplete: { suggestions, visible: suggestions.length > 0 },
+        })
+      }
+    } catch (error) {
+      console.error(`Error fetching autocomplete: ${error}`)
+    }
+  }
+
+  handleAutocompleteSelect(station) {
+    this.setState(
+      {
+        editing: { ...this.state.editing, call_sign: station.call_sign },
+        autocomplete: { suggestions: [], visible: false },
+      },
+      () => {
+        if (station.call_sign.length >= 4) {
+          this.fetchStationInfo()
+        }
+      }
+    )
   }
 
   handleEditingValueInput(prop, value) {
@@ -1533,6 +1596,28 @@ class LogForm extends Component {
                 autocomplete="off"
                 autofocus
               />
+              ${this.props.autocomplete?.visible &&
+              html`
+                <div class="autocomplete-dropdown">
+                  ${this.props.autocomplete.suggestions.map(
+                    (station) => html`
+                      <div
+                        class="autocomplete-item"
+                        onclick=${() =>
+                          this.props.onAutocompleteSelect(station)}
+                      >
+                        <strong>${station.call_sign}</strong>
+                        ${station.first_name && station.last_name
+                          ? html` - ${station.first_name} ${station.last_name}`
+                          : ""}
+                        ${station.city && station.state
+                          ? html` (${station.city}, ${station.state})`
+                          : ""}
+                      </div>
+                    `
+                  )}
+                </div>
+              `}
             </label>
             <label>
               Preferred Name:<br />
