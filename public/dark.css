@@ -213,3 +213,19 @@ nav a:visited {
 .autocomplete-item:hover {
   background-color: #3a3a3a;
 }
+
+/* Layout switcher */
+.layout-switcher {
+  border-color: #555;
+  background: #2a2a2a;
+}
+
+.layout-switcher button {
+  background: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.layout-switcher button.active {
+  background: #007cba;
+  color: white;
+}

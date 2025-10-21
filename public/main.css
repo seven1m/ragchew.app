@@ -72,10 +72,15 @@ html, body { width: 100%; height: 100%; }
 .layout-a .tile:nth-child(2) { grid-area: upper-right; border-bottom: 1px solid #999; }
 .layout-a .tile:nth-child(3) { grid-area: lower-right; }
 
-.layout-b { flex-direction: column; align-items: stretch; }
-.layout-b .main { flex: 0 0 50%; width: 100%; }
-.layout-b .right-col { flex: 1 1 0; flex-direction: row; width: 100%; }
-.layout-b .right-col .tile { flex: 1 1 0; }
+.layout-b {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+.layout-b .main { display: none; }
+.layout-b .tile:nth-child(2) { grid-column: 1; border-right: 1px solid #999; }
+.layout-b .tile:nth-child(3) { grid-column: 2; }
 
 /* small responsive tweak: on narrow screens stack everything */
 @media (max-width:640px){
@@ -84,10 +89,42 @@ html, body { width: 100%; height: 100%; }
   .right-col { flex-direction: row; }
   .right-col .tile { flex:1 1 0; min-height:80px; }
 }
-.layout-c { display: flex; flex-direction: row; }
+.layout-c {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
 .layout-c .main { display: none; }
-.layout-c .right-col { display: flex; flex: 1 1 100%; flex-direction: row; gap: 12px; }
-.layout-c .right-col .tile { flex: 1 1 50%; }
+.layout-c .tile:nth-child(2) { grid-row: 1; border-bottom: 1px solid #999; }
+.layout-c .tile:nth-child(3) { grid-row: 2; }
+
+.layout-switcher-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.layout-switcher {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+}
+
+.layout-switcher button {
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: white;
+  color: #333;
+}
+
+.layout-switcher button.active {
+  background: #007cba;
+  color: white;
+}
 
 .club-logo { margin-top: 25px; max-height: 125px; }
 .small-club-logo { max-height: 50px; }

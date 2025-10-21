@@ -253,6 +253,7 @@ class Net extends Component {
     monitoringThisNet: this.props.monitoringThisNet,
     showFormatting: localStorage.getItem("showFormatting") !== "false", // default to true
     autocomplete: { suggestions: [], visible: false },
+    layout: localStorage.getItem("layout") || "layout-a",
   }
 
   formRef = createRef()
@@ -415,7 +416,7 @@ class Net extends Component {
 
   render() {
     return html`
-      <div class="workspace layout-a">
+      <div class="workspace ${this.state.layout}">
         <div class="main tile">
           <div class="net-title">
             <div class="breadcrumbs">${this.renderClubBreadcrumbs()}</div>
@@ -521,6 +522,11 @@ class Net extends Component {
           />
         </div>
         -->
+
+        <${LayoutSwitcher}
+          layout=${this.state.layout}
+          onLayoutChange=${this.handleLayoutChange.bind(this)}
+        />
       </div>
     `
   }
@@ -659,6 +665,16 @@ class Net extends Component {
     const newValue = !this.state.showFormatting
     this.setState({ showFormatting: newValue })
     localStorage.setItem("showFormatting", newValue.toString())
+  }
+
+  handleLayoutChange(layout) {
+    this.setState({ layout })
+    localStorage.setItem("layout", layout)
+    setTimeout(() => {
+      if (window.netMap) {
+        window.netMap.invalidateSize()
+      }
+    }, 100)
   }
 
   handleCallSignInput(call_sign) {
@@ -2258,6 +2274,29 @@ function getUniqueColor(username, targetLightness = 0.4) {
     targetLightness
   )
   return rgbToHex(adjustedR, adjustedG, adjustedB)
+}
+
+class LayoutSwitcher extends Component {
+  render() {
+    return html`
+      <div class="layout-switcher-container">
+        <div class="layout-switcher">
+          ${['A', 'B', 'C'].map(letter => {
+            const layout = `layout-${letter.toLowerCase()}`
+            const isActive = this.props.layout === layout
+            return html`
+              <button
+                class="${isActive ? 'active' : ''}"
+                onClick=${() => this.props.onLayoutChange(layout)}
+              >
+                ${letter}
+              </button>
+            `
+          })}
+        </div>
+      </div>
+    `
+  }
 }
 
 const components = { Net, CreateNet, Favorite, FavoriteNet }
