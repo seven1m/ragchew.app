@@ -40,6 +40,7 @@ before do
   end
   @theme = request.env['HTTP_X_RAGCHEW_THEME'] || @user&.theme
   @for_mobile = request.env['HTTP_X_RAGCHEW_UI'] == 'mobile'
+  @layout = 'normal'
 end
 
 helpers do
@@ -271,6 +272,7 @@ get '/net/:name' do
     @net_blocked_stations = @is_logger ? @net.blocked_stations.pluck(:call_sign) : []
     @last_updated_at = @net.fully_updated_at
     @update_interval = @net.update_interval_in_seconds + 1
+    @layout = :net
     erb :net
   else
     @is_logger = false

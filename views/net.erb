@@ -22,16 +22,16 @@
   }
 } %>
 
-<div data-component="Net" data-props="<%= json_for_html_attribute(net_info) %>">
+<div id="net-component" data-component="Net" data-props="<%= json_for_html_attribute(net_info) %>">
   <p id="loading">loading...</p>
 </div>
 
-<%= erb :_admin_net_controls %>
-
 <script>
-  if (typeof buildNetMap === "undefined") {
-    const elm = document.getElementById("loading")
-    elm.innerHTML = "There was an error loading the JavaScript for this site. Make sure you are using a modern web browser."
-    elm.style.color = "red"
-  }
+  setTimeout(function() {
+    if (typeof buildNetMap === "undefined") {
+      const elm = document.getElementById("loading")
+      elm.innerHTML = "There was an error loading the JavaScript for this site. Make sure you are using a modern web browser."
+      elm.style.color = "red"
+    }
+  }, 1000)
 </script>

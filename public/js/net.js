@@ -251,7 +251,6 @@ class Net extends Component {
     error: null,
     lastUpdatedAt: null,
     monitoringThisNet: this.props.monitoringThisNet,
-    reverseMessages: localStorage.getItem("reverseMessages") === "true",
     showFormatting: localStorage.getItem("showFormatting") !== "false", // default to true
     autocomplete: { suggestions: [], visible: false },
   }
@@ -416,119 +415,121 @@ class Net extends Component {
 
   render() {
     return html`
-      <header class="flex">
-        <div class="header-col-grow">
-          ${this.renderClubBreadcrumbs()}
+      <div class="workspace layout-a">
+        <div class="main tile">
+          <div class="net-title">
+            <div class="breadcrumbs">${this.renderClubBreadcrumbs()}</div>
 
-          <h1>
-            <${FavoriteNet}
-              netName=${this.props.net.name}
-              favorited=${this.state.favoritedNet}
-              big=${true}
-            />
-            ${" "} ${this.props.net.name}
-          </h1>
+            <h1>
+              <${FavoriteNet}
+                netName=${this.props.net.name}
+                favorited=${this.state.favoritedNet}
+                big=${true}
+              />${" "}${this.props.net.name}
+            </h1>
 
-          ${this.renderNetControls()} ${this.renderNetDetails()}
+            <div class="net-controls">
+              ${this.renderNetControls()} ${this.renderNetDetails()}
+            </div>
+          </div>
+
+          <${Map} coords=${this.state.coords} />
         </div>
 
-        <div class="header-col">
-          <a href=${this.props.clubUrl}>
-            <img class="club-logo" src=${this.props.clubLogo} />
-          </a>
+        <div class="right-col">
+          <div class="tile">
+            <${ScrollKeeper}
+              count=${this.state.checkins.length}>
+              <${Checkins}
+                netId=${this.props.netId}
+                checkins=${this.state.checkins}
+                favorites=${this.state.favorites}
+                onEditEntry=${this.handleEditEntry.bind(this)}
+                removeCheckinFromMemory=${this.removeCheckinFromMemory.bind(
+                  this
+                )}
+                highlightCheckinInMemory=${this.highlightCheckinInMemory.bind(
+                  this
+                )}
+                isLogger=${this.props.isLogger}
+              />
+
+              ${
+                this.props.isLogger &&
+                h(LogForm, {
+                  ...this.state.editing,
+                  club: this.props.club,
+                  ref: this.formRef,
+                  netId: this.props.netId,
+                  nextNum: this.nextNum(),
+                  info: this.state.info,
+                  error: this.state.error,
+                  autocomplete: this.state.autocomplete,
+                  onCallSignInput: this.handleCallSignInput.bind(this),
+                  onAutocompleteSelect:
+                    this.handleAutocompleteSelect.bind(this),
+                  onPreferredNameInput: this.handleEditingValueInput.bind(
+                    this,
+                    "preferred_name"
+                  ),
+                  onNotesInput: this.handleEditingValueInput.bind(
+                    this,
+                    "notes"
+                  ),
+                  onRemarksInput: this.handleEditingValueInput.bind(
+                    this,
+                    "remarks"
+                  ),
+                  onSubmit: this.handleLogFormSubmit.bind(this),
+                  onClear: this.handleLogFormClear.bind(this),
+                })
+              }
+            </${ScrollKeeper}>
+          </div>
+
+          <div class="tile messages-tile">
+            <${ScrollKeeper}
+              count=${this.state.messagesCount}>
+              ${
+                this.state.monitoringThisNet &&
+                html`<label>
+                  <input
+                    type="checkbox"
+                    id="show-formatting"
+                    checked=${this.state.showFormatting}
+                    onClick=${this.handleShowFormattingToggle.bind(this)}
+                  />
+                  Show formatting
+                </label>`
+              }
+
+              <${Messages}
+                messages=${this.state.messages}
+                monitoringThisNet=${this.state.monitoringThisNet}
+                messagesCount=${this.state.messagesCount}
+                netId=${this.props.netId}
+                userCallSign=${this.props.userCallSign}
+                isLogger=${this.props.isLogger}
+                showFormatting=${this.state.showFormatting}
+                blockedStations=${this.props.blockedStations}
+                onToggleMonitorNet=${this.handleToggleMonitorNet.bind(this)}
+              />
+            </${ScrollKeeper}>
+          </div>
+
+          <!--
+          <div class="tile">
+            <${Monitors}
+              monitors=${this.state.monitors}
+              isLogger=${this.props.isLogger}
+              userCallSign=${this.props.userCallSign}
+              netId=${this.props.netId}
+              netBlockedStations=${this.props.netBlockedStations}
+            />
+          </div>
+          -->
         </div>
-      </header>
-
-      <a name="map"></a>
-      <${Map} coords=${this.state.coords} />
-
-      <p class="timestamps">
-        Current time: <${CurrentTime} /> (Last updated${" "}
-        ${formatTimeWithDayjs(this.state.lastUpdatedAt, true)})
-      </p>
-
-      <a name="log"></a>
-      <h2>Log</h2>
-
-      <${Checkins}
-        netId=${this.props.netId}
-        checkins=${this.state.checkins}
-        favorites=${this.state.favorites}
-        onEditEntry=${this.handleEditEntry.bind(this)}
-        removeCheckinFromMemory=${this.removeCheckinFromMemory.bind(this)}
-        highlightCheckinInMemory=${this.highlightCheckinInMemory.bind(this)}
-        isLogger=${this.props.isLogger}
-      />
-
-      ${this.props.isLogger &&
-      h(LogForm, {
-        ...this.state.editing,
-        club: this.props.club,
-        ref: this.formRef,
-        netId: this.props.netId,
-        nextNum: this.nextNum(),
-        info: this.state.info,
-        error: this.state.error,
-        autocomplete: this.state.autocomplete,
-        onCallSignInput: this.handleCallSignInput.bind(this),
-        onAutocompleteSelect: this.handleAutocompleteSelect.bind(this),
-        onPreferredNameInput: this.handleEditingValueInput.bind(
-          this,
-          "preferred_name"
-        ),
-        onNotesInput: this.handleEditingValueInput.bind(this, "notes"),
-        onRemarksInput: this.handleEditingValueInput.bind(this, "remarks"),
-        onSubmit: this.handleLogFormSubmit.bind(this),
-        onClear: this.handleLogFormClear.bind(this),
-      })}
-
-      <div class="h2-with-controls">
-        <a name="messages"></a>
-        <h2>Messages</h2>
-        ${this.state.monitoringThisNet &&
-        html`<label>
-            <input
-              type="checkbox"
-              id="reverse-messages"
-              checked=${this.state.reverseMessages}
-              onClick=${this.handleReverseMessagesToggle.bind(this)}
-            />
-            Reverse messages
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              id="show-formatting"
-              checked=${this.state.showFormatting}
-              onClick=${this.handleShowFormattingToggle.bind(this)}
-            />
-            Show formatting
-          </label>`}
       </div>
-
-      <${Messages}
-        messages=${this.state.messages}
-        monitoringThisNet=${this.state.monitoringThisNet}
-        messagesCount=${this.state.messagesCount}
-        netId=${this.props.netId}
-        userCallSign=${this.props.userCallSign}
-        isLogger=${this.props.isLogger}
-        reverseMessages=${this.state.reverseMessages}
-        showFormatting=${this.state.showFormatting}
-        blockedStations=${this.props.blockedStations}
-        onToggleMonitorNet=${this.handleToggleMonitorNet.bind(this)}
-      />
-
-      <a name="monitors"></a>
-      <h2>Monitors</h2>
-
-      <${Monitors}
-        monitors=${this.state.monitors}
-        isLogger=${this.props.isLogger}
-        userCallSign=${this.props.userCallSign}
-        netId=${this.props.netId}
-        netBlockedStations=${this.props.netBlockedStations}
-      />
     `
   }
 
@@ -632,13 +633,12 @@ class Net extends Component {
 
   renderNetDetails() {
     return html`
-      <p>
+      <div>
         ${[
           this.props.net.frequency,
           this.props.net.mode,
           this.props.net.band,
           `started at ${formatTimeWithDayjs(this.props.net.started_at)}`,
-          this.props.net.host,
         ].join(" | ")}
         ${!this.props.isLogger &&
         this.props.canLogForClub &&
@@ -649,7 +649,7 @@ class Net extends Component {
             onClick=${() => this.setState({ wantsToLogThisNet: true })}
             >start logging</span
           >`}
-      </p>
+      </div>
     `
   }
 
@@ -661,12 +661,6 @@ class Net extends Component {
         present(checkin.notes)
     )
     return Math.max(...checkins.map((checkin) => checkin.num), 0) + 1
-  }
-
-  handleReverseMessagesToggle() {
-    const newValue = !this.state.reverseMessages
-    this.setState({ reverseMessages: newValue })
-    localStorage.setItem("reverseMessages", newValue.toString())
   }
 
   handleShowFormattingToggle() {
@@ -925,6 +919,36 @@ class Map extends Component {
 
   render() {
     return html`<div id="net-map"></div>`
+  }
+}
+
+class ScrollKeeper extends Component {
+  divRef = createRef()
+  wrapperRef = createRef()
+
+  getSnapshotBeforeUpdate(prevProps) {
+    if (this.props.count == prevProps.count) return null
+    if (!this.wrapperRef.current) return null
+
+    const scrollPosition =
+      this.wrapperRef.current.scrollTop + this.wrapperRef.current.clientHeight
+    const height = this.wrapperRef.current.scrollHeight
+    const atBottom = scrollPosition > height - 10
+    return { atBottom }
+  }
+
+  componentDidUpdate(_prevProps, _prevState, snapshot) {
+    if (!this.wrapperRef.current && this.divRef.current) {
+      this.wrapperRef.current = this.divRef.current.parentElement
+      this.wrapperRef.current.scrollTo(0, this.wrapperRef.current.scrollHeight)
+    }
+    if (this.wrapperRef.current && snapshot?.atBottom) {
+      this.wrapperRef.current.scrollTo(0, this.wrapperRef.current.scrollHeight)
+    }
+  }
+
+  render() {
+    return html`<div ref=${this.divRef}>${this.props.children}</div>`
   }
 }
 
@@ -1228,9 +1252,11 @@ class Messages extends Component {
         </p>
       `
 
-    return this.props.reverseMessages
-      ? [this.renderForm(), this.renderLog(), this.renderStopMonitoringForm()]
-      : [this.renderLog(), this.renderForm(), this.renderStopMonitoringForm()]
+    return [
+      this.renderLog(),
+      this.renderForm(),
+      this.renderStopMonitoringForm(),
+    ]
   }
 
   renderMessage(message, index) {
@@ -1350,11 +1376,9 @@ class Messages extends Component {
       (message) => !this.props.blockedStations.includes(message.call_sign)
     )
 
-    const messages = (
-      this.props.reverseMessages
-        ? [...filteredMessages].reverse()
-        : filteredMessages
-    ).map((message, index) => this.renderMessage(message, index))
+    const messages = filteredMessages.map((message, index) =>
+      this.renderMessage(message, index)
+    )
 
     const sendingMessage =
       this.state.sendingMessage &&
@@ -1369,11 +1393,7 @@ class Messages extends Component {
       )
 
     return html`
-      <div class="blue-screen">
-        ${this.props.reverseMessages
-          ? [sendingMessage, ...messages]
-          : [...messages, sendingMessage]}
-      </div>
+      <div class="blue-screen">${[...messages, sendingMessage]}</div>
     `
   }
 
@@ -2325,10 +2345,11 @@ function maybeUpdateNetMapCoords(coords) {
 }
 
 function buildNetMap() {
-  window.netMap = L.map("net-map", { zoomSnap: 0.5 }).setView(
-    [38.53, -100.25],
-    4
-  )
+  window.netMap = L.map("net-map", {
+    zoomSnap: 0.5,
+    zoomControl: false,
+  }).setView([38.53, -100.25], 4)
+  L.control.zoom({ position: "bottomleft" }).addTo(netMap)
   netMap.attributionControl.setPrefix("")
 
   // Add theme-aware tile layer

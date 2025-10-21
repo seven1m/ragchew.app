@@ -51,7 +51,7 @@
       }
     </script>
   </head>
-  <body data-time-format="<%= @user&.time_format %>" data-theme="<%= @theme || 'system' %>">
+  <body data-time-format="<%= @user&.time_format %>" data-theme="<%= @theme || 'system' %>" class="<%= @layout %>-layout">
     <% unless @for_mobile %>
       <%= nav %>
     <% end %>
