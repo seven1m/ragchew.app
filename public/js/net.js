@@ -43,6 +43,28 @@ function createTileLayer(theme) {
   }
 }
 
+const layouts = {
+  "layout-three-up": ["a", "b", "c"],
+  "layout-two-up-vertical": ["a", "b", "c"],
+  "layout-two-up-horizontal": ["a", "b", "c"],
+  "layout-one-up": ["a", "b", "c"],
+}
+
+function getLayout() {
+  let layout = localStorage.getItem("layout") || "layout-three-up"
+  if (!layouts[layout]) layout = "layout-three-up"
+
+  const variations = {}
+  Object.entries(layouts).forEach(([l, v]) => {
+    const value = localStorage.getItem(`${l}-variation`) || "a"
+    if (!v.includes(value)) value = "a"
+    variations[l] = value
+  })
+
+  console.log({ layout, variations })
+  return { layout, variations }
+}
+
 class MessageFormatter {
   constructor(showFormatting = true) {
     this.showFormatting = showFormatting
@@ -253,7 +275,8 @@ class Net extends Component {
     monitoringThisNet: this.props.monitoringThisNet,
     showFormatting: localStorage.getItem("showFormatting") !== "false", // default to true
     autocomplete: { suggestions: [], visible: false },
-    layout: localStorage.getItem("layout") || "layout-three-up",
+    layout: getLayout().layout,
+    layoutVariations: getLayout().variations,
   }
 
   formRef = createRef()
@@ -416,7 +439,9 @@ class Net extends Component {
 
   render() {
     return html`
-      <div class="workspace ${this.state.layout}">
+      <div class="workspace ${this.state.layout}-${
+      this.state.layoutVariations[this.state.layout] || "a"
+    }">
         <div class="tile main-tile">
           <div class="net-title">
             <div class="breadcrumbs">${this.renderClubBreadcrumbs()}</div>
@@ -525,7 +550,8 @@ class Net extends Component {
 
         <${LayoutSwitcher}
           layout=${this.state.layout}
-          onLayoutChange=${this.handleLayoutChange.bind(this)}
+          variations=${this.state.layoutVariations}
+          onChange=${this.handleLayoutChange.bind(this)}
         />
       </div>
     `
@@ -667,13 +693,21 @@ class Net extends Component {
     localStorage.setItem("showFormatting", newValue.toString())
   }
 
-  handleLayoutChange(layout) {
-    this.setState({ layout })
+  handleLayoutChange({ layout, variation }) {
+    const layoutVariations = {
+      ...this.state.layoutVariations,
+      [layout]: variation,
+    }
+    this.setState({ layout, layoutVariations })
     localStorage.setItem("layout", layout)
+    localStorage.setItem(`${layout}-variation`, variation)
     setTimeout(() => {
       if (window.netMap) {
         window.netMap.invalidateSize()
       }
+      scrollKeeperInstances.forEach((instance) => {
+        instance.scrollToBottom()
+      })
     }, 100)
   }
 
@@ -930,9 +964,28 @@ class Map extends Component {
   }
 }
 
+const scrollKeeperInstances = []
+
 class ScrollKeeper extends Component {
   divRef = createRef()
   wrapperRef = createRef()
+
+  componentDidMount() {
+    scrollKeeperInstances.push(this)
+  }
+
+  componentWillUnmount() {
+    const index = scrollKeeperInstances.indexOf(this)
+    if (index > -1) {
+      scrollKeeperInstances.splice(index, 1)
+    }
+  }
+
+  scrollToBottom() {
+    if (this.wrapperRef.current) {
+      this.wrapperRef.current.scrollTo(0, this.wrapperRef.current.scrollHeight)
+    }
+  }
 
   getSnapshotBeforeUpdate(prevProps) {
     if (this.props.count == prevProps.count) return null
@@ -2278,35 +2331,42 @@ function getUniqueColor(username, targetLightness = 0.4) {
 
 class LayoutSwitcher extends Component {
   render() {
-    const layouts = [
-      { name: "layout-three-up", icon: "/images/layout-three-up.svg" },
-      {
-        name: "layout-two-up-vertical",
-        icon: "/images/layout-two-up-vertical.svg",
-      },
-      {
-        name: "layout-two-up-horizontal",
-        icon: "/images/layout-two-up-horizontal.svg",
-      },
-      { name: "layout-one-up", icon: "/images/layout-one-up.svg" },
-    ]
-
     return html`
       <div class="layout-switcher-container">
         <div class="layout-switcher">
-          ${layouts.map(({ name, icon }) => {
-            const isActive = this.props.layout === name
-            return html`
-              <button
-                class="${isActive ? "active" : ""}"
-                onClick=${() => this.props.onLayoutChange(name)}
-              >
-                <img src="${icon}" alt="${name}" width="16" height="16" />
-              </button>
-            `
-          })}
+          ${Object.entries(layouts).map(([layout, variations]) =>
+            this.renderButton({ layout, variations })
+          )}
         </div>
       </div>
+    `
+  }
+
+  renderButton({ layout, variations }) {
+    const isActive = this.props.layout === layout
+    const icon = `/images/${layout}.svg`
+    const currentVariation = this.props.variations[layout] || "a"
+    const variationIndex = variations.indexOf(currentVariation)
+    let nextVariation = "a"
+    if (variationIndex === -1) {
+      nextVariation = "a"
+    } else if (isActive) {
+      nextVariation = variations[variationIndex + 1] || "a"
+    } else {
+      nextVariation = currentVariation
+    }
+    const variationLetter = currentVariation.toUpperCase()
+
+    return html`
+      <button
+        class="layout-switcher-button ${isActive ? "active" : ""}"
+        onClick=${() =>
+          this.props.onChange({ layout, variation: nextVariation })}
+      >
+        <img src="${icon}" alt="${layout}" width="16" height="16" />
+        ${isActive &&
+        html`<span class="layout-switcher-badge">${variationLetter}</span>`}
+      </button>
     `
   }
 }

@@ -59,7 +59,7 @@ html, body { width: 100%; height: 100%; }
 
 .messages-tile { padding: 1rem; }
 
-.layout-three-up {
+.layout-three-up-a {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
@@ -68,19 +68,65 @@ html, body { width: 100%; height: 100%; }
     "main lower-right";
 }
 
-.layout-three-up .main-tile { grid-area: main; border-right: 1px solid #999; }
-.layout-three-up .checkins-tile { grid-area: upper-right; border-bottom: 1px solid #999; }
-.layout-three-up .messages-tile { grid-area: lower-right; }
+.layout-three-up-a .main-tile { grid-area: main; border-right: 1px solid #999; }
+.layout-three-up-a .checkins-tile { grid-area: upper-right; border-bottom: 1px solid #999; }
+.layout-three-up-a .messages-tile { grid-area: lower-right; }
 
-.layout-two-up-vertical {
+.layout-three-up-b {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "checkins main"
+    "checkins messages";
+}
+
+.layout-three-up-b .main-tile { grid-area: main; border-left: 1px solid #999; border-bottom: 1px solid #999; }
+.layout-three-up-b .checkins-tile { grid-area: checkins; border-right: 1px solid #999; }
+.layout-three-up-b .messages-tile { grid-area: messages; border-left: 1px solid #999; }
+
+.layout-three-up-c {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "messages main"
+    "messages checkins";
+}
+
+.layout-three-up-c .main-tile { grid-area: main; border-left: 1px solid #999; border-bottom: 1px solid #999; }
+.layout-three-up-c .checkins-tile { grid-area: checkins; border-left: 1px solid #999; }
+.layout-three-up-c .messages-tile { grid-area: messages; border-right: 1px solid #999; }
+
+.layout-two-up-vertical-a {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
 }
 
-.layout-two-up-vertical .main-tile { display: none; }
-.layout-two-up-vertical .checkins-tile { grid-column: 1; border-right: 1px solid #999; }
-.layout-two-up-vertical .messages-tile { grid-column: 2; }
+.layout-two-up-vertical-a .main-tile { display: none; }
+.layout-two-up-vertical-a .checkins-tile { grid-column: 1; border-right: 1px solid #999; }
+.layout-two-up-vertical-a .messages-tile { grid-column: 2; }
+
+.layout-two-up-vertical-b {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+.layout-two-up-vertical-b .main-tile { grid-column: 1; border-right: 1px solid #999; }
+.layout-two-up-vertical-b .checkins-tile { grid-column: 2; }
+.layout-two-up-vertical-b .messages-tile { display: none; }
+
+.layout-two-up-vertical-c {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+.layout-two-up-vertical-c .main-tile { grid-column: 1; border-right: 1px solid #999; }
+.layout-two-up-vertical-c .checkins-tile { display: none; }
+.layout-two-up-vertical-c .messages-tile { grid-column: 2; }
 
 /* small responsive tweak: on narrow screens stack everything */
 @media (max-width:640px){
@@ -89,25 +135,65 @@ html, body { width: 100%; height: 100%; }
   .right-col { flex-direction: row; }
   .right-col .tile { flex:1 1 0; min-height:80px; }
 }
-.layout-two-up-horizontal {
+.layout-two-up-horizontal-a {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr 1fr;
 }
 
-.layout-two-up-horizontal .main-tile { display: none; }
-.layout-two-up-horizontal .checkins-tile { grid-row: 1; border-bottom: 1px solid #999; }
-.layout-two-up-horizontal .messages-tile { grid-row: 2; }
+.layout-two-up-horizontal-a .main-tile { display: none; }
+.layout-two-up-horizontal-a .checkins-tile { grid-row: 1; border-bottom: 1px solid #999; }
+.layout-two-up-horizontal-a .messages-tile { grid-row: 2; }
 
-.layout-one-up {
+.layout-two-up-horizontal-b {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.layout-two-up-horizontal-b .main-tile { grid-row: 1; border-bottom: 1px solid #999; }
+.layout-two-up-horizontal-b .checkins-tile { grid-row: 2; }
+.layout-two-up-horizontal-b .messages-tile { display: none; }
+
+.layout-two-up-horizontal-c {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.layout-two-up-horizontal-c .main-tile { grid-row: 1; border-bottom: 1px solid #999; }
+.layout-two-up-horizontal-c .checkins-tile { display: none; }
+.layout-two-up-horizontal-c .messages-tile { grid-row: 2; }
+
+.layout-one-up-a {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
 }
 
-.layout-one-up .main-tile { display: none; }
-.layout-one-up .checkins-tile { grid-column: 1; grid-row: 1; }
-.layout-one-up .messages-tile { display: none; }
+.layout-one-up-a .main-tile { grid-column: 1; grid-row: 1; }
+.layout-one-up-a .checkins-tile { display: none; }
+.layout-one-up-a .messages-tile { display: none; }
+
+.layout-one-up-b {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.layout-one-up-b .main-tile { display: none; }
+.layout-one-up-b .checkins-tile { grid-column: 1; grid-row: 1; }
+.layout-one-up-b .messages-tile { display: none; }
+
+.layout-one-up-c {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.layout-one-up-c .main-tile { display: none; }
+.layout-one-up-c .checkins-tile { display: none; }
+.layout-one-up-c .messages-tile { grid-column: 1; grid-row: 1; }
 
 .layout-switcher-container {
   position: fixed;
@@ -134,6 +220,22 @@ html, body { width: 100%; height: 100%; }
 .layout-switcher button.active {
   background: #007cba;
   color: white;
+}
+
+.layout-switcher-button {
+  position: relative;
+}
+
+.layout-switcher-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 8px;
+  line-height: 1;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  border-radius: 2px;
+  padding: 1px 2px;
 }
 
 .club-logo { margin-top: 25px; max-height: 125px; }
