@@ -1967,6 +1967,10 @@ class CreateNetForm extends Component {
     })
   }
 
+  isCallSignLike(text) {
+    return /^[a-z]+\d[a-z]+$/i.test(text.trim())
+  }
+
   render() {
     return html`
       <form onsubmit=${(e) => this.handleSubmit(e)}>
@@ -1976,10 +1980,14 @@ class CreateNetForm extends Component {
           <input
             name="net_name"
             value=${this.state.net_name}
-            onchange=${(e) => this.setState({ net_name: e.target.value })}
+            oninput=${(e) => this.setState({ net_name: e.target.value })}
             required
             maxlength="32"
           />
+          ${this.isCallSignLike(this.state.net_name) &&
+          html`<p class="warning">
+            It looks like you typed a call sign. Is the name of your net really just a call sign?
+          </p>`}
           ${this.state.closedNets.length > 0 &&
           html`<p>Choose a previously-used net name:</p>
             <ul>
