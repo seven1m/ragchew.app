@@ -61,7 +61,6 @@ function getLayout() {
     variations[l] = value
   })
 
-  console.log({ layout, variations })
   return { layout, variations }
 }
 
@@ -438,10 +437,12 @@ class Net extends Component {
   }
 
   render() {
-    return html`
-      <div class="workspace ${this.state.layout}-${
+    const layoutVariation =
       this.state.layoutVariations[this.state.layout] || "a"
-    }">
+    const layoutClass = `${this.state.layout}-${layoutVariation}`
+
+    return html`
+      <div class="workspace ${layoutClass}">
         <div class="tile main-tile">
           <div class="net-title">
             <div class="breadcrumbs">${this.renderClubBreadcrumbs()}</div>
@@ -1986,7 +1987,8 @@ class CreateNetForm extends Component {
           />
           ${this.isCallSignLike(this.state.net_name) &&
           html`<p class="warning">
-            It looks like you typed a call sign. Is the name of your net really just a call sign?
+            It looks like you typed a call sign. Is the name of your net really
+            just a call sign?
           </p>`}
           ${this.state.closedNets.length > 0 &&
           html`<p>Choose a previously-used net name:</p>
