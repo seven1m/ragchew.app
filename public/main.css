@@ -52,21 +52,25 @@ html, body { width: 100%; height: 100%; }
 .net-layout nav { height: 4rem; padding: 1rem; background-color: #000; }
 .net-layout footer { display: none; }
 .net-layout .tile #net-map { width: 100%; height: 100%; z-index: 99; }
-.net-layout .workspace { position: relative; width: 100%; height: 100%; max-height: 100%; overflow: hidden; display: flex; }
+.net-layout .workspace { position: relative; width: 100%; height: 100%; max-height: 100%; overflow: hidden; }
 .net-layout .workspace .net-title { position: absolute; left: 1rem; top: 1rem; z-index: 100; }
 .net-layout .workspace .net-title h1 { margin: 0; }
 .tile { overflow: scroll; font-size: 1.05rem; }
 
 .messages-tile { padding: 1rem; }
 
-.right-col { display: flex; }
+.layout-a {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "main upper-right"
+    "main lower-right";
+}
 
-.layout-a { flex-direction: row; flex: 1 1 50%; align-items: stretch; }
-
-.layout-a .main { flex: 0 0 50%; height: 100%; border-right: 1px solid #999; }
-.layout-a .right-col { flex: 0 0 50%; flex-direction: column; }
-.layout-a .right-col .tile { flex: 0 0 50%; }
-.layout-a .right-col .tile:nth-child(1) { border-bottom: 1px solid #999; }
+.layout-a .main { grid-area: main; border-right: 1px solid #999; }
+.layout-a .tile:nth-child(2) { grid-area: upper-right; border-bottom: 1px solid #999; }
+.layout-a .tile:nth-child(3) { grid-area: lower-right; }
 
 .layout-b { flex-direction: column; align-items: stretch; }
 .layout-b .main { flex: 0 0 50%; width: 100%; }

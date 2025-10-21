@@ -436,99 +436,91 @@ class Net extends Component {
           <${Map} coords=${this.state.coords} />
         </div>
 
-        <div class="right-col">
-          <div class="tile">
-            <${ScrollKeeper}
-              count=${this.state.checkins.length}>
-              <${Checkins}
-                netId=${this.props.netId}
-                checkins=${this.state.checkins}
-                favorites=${this.state.favorites}
-                onEditEntry=${this.handleEditEntry.bind(this)}
-                removeCheckinFromMemory=${this.removeCheckinFromMemory.bind(
-                  this
-                )}
-                highlightCheckinInMemory=${this.highlightCheckinInMemory.bind(
-                  this
-                )}
-                isLogger=${this.props.isLogger}
-              />
-
-              ${
-                this.props.isLogger &&
-                h(LogForm, {
-                  ...this.state.editing,
-                  club: this.props.club,
-                  ref: this.formRef,
-                  netId: this.props.netId,
-                  nextNum: this.nextNum(),
-                  info: this.state.info,
-                  error: this.state.error,
-                  autocomplete: this.state.autocomplete,
-                  onCallSignInput: this.handleCallSignInput.bind(this),
-                  onAutocompleteSelect:
-                    this.handleAutocompleteSelect.bind(this),
-                  onPreferredNameInput: this.handleEditingValueInput.bind(
-                    this,
-                    "preferred_name"
-                  ),
-                  onNotesInput: this.handleEditingValueInput.bind(
-                    this,
-                    "notes"
-                  ),
-                  onRemarksInput: this.handleEditingValueInput.bind(
-                    this,
-                    "remarks"
-                  ),
-                  onSubmit: this.handleLogFormSubmit.bind(this),
-                  onClear: this.handleLogFormClear.bind(this),
-                })
-              }
-            </${ScrollKeeper}>
-          </div>
-
-          <div class="tile messages-tile">
-            <${ScrollKeeper}
-              count=${this.state.messagesCount}>
-              ${
-                this.state.monitoringThisNet &&
-                html`<label>
-                  <input
-                    type="checkbox"
-                    id="show-formatting"
-                    checked=${this.state.showFormatting}
-                    onClick=${this.handleShowFormattingToggle.bind(this)}
-                  />
-                  Show formatting
-                </label>`
-              }
-
-              <${Messages}
-                messages=${this.state.messages}
-                monitoringThisNet=${this.state.monitoringThisNet}
-                messagesCount=${this.state.messagesCount}
-                netId=${this.props.netId}
-                userCallSign=${this.props.userCallSign}
-                isLogger=${this.props.isLogger}
-                showFormatting=${this.state.showFormatting}
-                blockedStations=${this.props.blockedStations}
-                onToggleMonitorNet=${this.handleToggleMonitorNet.bind(this)}
-              />
-            </${ScrollKeeper}>
-          </div>
-
-          <!--
-          <div class="tile">
-            <${Monitors}
-              monitors=${this.state.monitors}
-              isLogger=${this.props.isLogger}
-              userCallSign=${this.props.userCallSign}
+        <div class="tile">
+          <${ScrollKeeper}
+            count=${this.state.checkins.length}>
+            <${Checkins}
               netId=${this.props.netId}
-              netBlockedStations=${this.props.netBlockedStations}
+              checkins=${this.state.checkins}
+              favorites=${this.state.favorites}
+              onEditEntry=${this.handleEditEntry.bind(this)}
+              removeCheckinFromMemory=${this.removeCheckinFromMemory.bind(this)}
+              highlightCheckinInMemory=${this.highlightCheckinInMemory.bind(
+                this
+              )}
+              isLogger=${this.props.isLogger}
             />
-          </div>
-          -->
+
+            ${
+              this.props.isLogger &&
+              h(LogForm, {
+                ...this.state.editing,
+                club: this.props.club,
+                ref: this.formRef,
+                netId: this.props.netId,
+                nextNum: this.nextNum(),
+                info: this.state.info,
+                error: this.state.error,
+                autocomplete: this.state.autocomplete,
+                onCallSignInput: this.handleCallSignInput.bind(this),
+                onAutocompleteSelect: this.handleAutocompleteSelect.bind(this),
+                onPreferredNameInput: this.handleEditingValueInput.bind(
+                  this,
+                  "preferred_name"
+                ),
+                onNotesInput: this.handleEditingValueInput.bind(this, "notes"),
+                onRemarksInput: this.handleEditingValueInput.bind(
+                  this,
+                  "remarks"
+                ),
+                onSubmit: this.handleLogFormSubmit.bind(this),
+                onClear: this.handleLogFormClear.bind(this),
+              })
+            }
+          </${ScrollKeeper}>
         </div>
+
+        <div class="tile messages-tile">
+          <${ScrollKeeper}
+            count=${this.state.messagesCount}>
+            ${
+              this.state.monitoringThisNet &&
+              html`<label>
+                <input
+                  type="checkbox"
+                  id="show-formatting"
+                  checked=${this.state.showFormatting}
+                  onClick=${this.handleShowFormattingToggle.bind(this)}
+                />
+                Show formatting
+              </label>`
+            }
+
+            <${Messages}
+              messages=${this.state.messages}
+              monitoringThisNet=${this.state.monitoringThisNet}
+              messagesCount=${this.state.messagesCount}
+              netId=${this.props.netId}
+              userCallSign=${this.props.userCallSign}
+              isLogger=${this.props.isLogger}
+              showFormatting=${this.state.showFormatting}
+              blockedStations=${this.props.blockedStations}
+              onToggleMonitorNet=${this.handleToggleMonitorNet.bind(this)}
+            />
+          </${ScrollKeeper}>
+        </div>
+
+        <!--
+        <div class="tile">
+          <${Monitors}
+            monitors=${this.state.monitors}
+            isLogger=${this.props.isLogger}
+            userCallSign=${this.props.userCallSign}
+            netId=${this.props.netId}
+            netBlockedStations=${this.props.netBlockedStations}
+          />
+        </div>
+        -->
       </div>
     `
   }
