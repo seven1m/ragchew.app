@@ -958,39 +958,37 @@ class Checkins extends Component {
       return html`<p><em>no check-ins yet</em></p>`
 
     return html`
-      <div class="table-wrapper">
-        <table id="checkins-table" class="full-width-table">
-          <thead>
-            <tr>
-              <th>Num</th>
-              <th>Image</th>
-              <th>Call Sign</th>
-              <th>Name</th>
-              <th>Time</th>
-              <th>Grid Square</th>
-              <th>Status</th>
-              <th>City</th>
-              <th>County</th>
-              <th>State</th>
-              <th>Country</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${this.props.checkins.map((checkin, index) =>
-              h(CheckinRow, {
-                ...checkin,
-                index,
-                netId: this.props.netId,
-                favorited: this.props.favorites.indexOf(checkin.call_sign) > -1,
-                onEditEntry: this.props.onEditEntry,
-                removeCheckinFromMemory: this.props.removeCheckinFromMemory,
-                highlightCheckinInMemory: this.props.highlightCheckinInMemory,
-                isLogger: this.props.isLogger,
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      <table id="checkins-table" class="full-width-table">
+        <thead>
+          <tr>
+            <th>Num</th>
+            <th>Image</th>
+            <th>Call Sign</th>
+            <th>Name</th>
+            <th>Time</th>
+            <th>Grid Square</th>
+            <th>Status</th>
+            <th>City</th>
+            <th>County</th>
+            <th>State</th>
+            <th>Country</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${this.props.checkins.map((checkin, index) =>
+            h(CheckinRow, {
+              ...checkin,
+              index,
+              netId: this.props.netId,
+              favorited: this.props.favorites.indexOf(checkin.call_sign) > -1,
+              onEditEntry: this.props.onEditEntry,
+              removeCheckinFromMemory: this.props.removeCheckinFromMemory,
+              highlightCheckinInMemory: this.props.highlightCheckinInMemory,
+              isLogger: this.props.isLogger,
+            })
+          )}
+        </tbody>
+      </table>
     `
   }
 }
