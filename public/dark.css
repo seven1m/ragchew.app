@@ -229,3 +229,11 @@ nav a:visited {
   background: #007cba;
   color: white;
 }
+
+.layout-switcher button img {
+  filter: invert(1);
+}
+
+.layout-switcher button.active img {
+  filter: none;
+}

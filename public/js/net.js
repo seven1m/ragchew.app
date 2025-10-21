@@ -253,7 +253,7 @@ class Net extends Component {
     monitoringThisNet: this.props.monitoringThisNet,
     showFormatting: localStorage.getItem("showFormatting") !== "false", // default to true
     autocomplete: { suggestions: [], visible: false },
-    layout: localStorage.getItem("layout") || "layout-a",
+    layout: localStorage.getItem("layout") || "layout-three-up",
   }
 
   formRef = createRef()
@@ -417,7 +417,7 @@ class Net extends Component {
   render() {
     return html`
       <div class="workspace ${this.state.layout}">
-        <div class="main tile">
+        <div class="tile main-tile">
           <div class="net-title">
             <div class="breadcrumbs">${this.renderClubBreadcrumbs()}</div>
 
@@ -437,7 +437,7 @@ class Net extends Component {
           <${Map} coords=${this.state.coords} />
         </div>
 
-        <div class="tile">
+        <div class="tile checkins-tile">
           <${ScrollKeeper}
             count=${this.state.checkins.length}>
             <${Checkins}
@@ -2278,18 +2278,30 @@ function getUniqueColor(username, targetLightness = 0.4) {
 
 class LayoutSwitcher extends Component {
   render() {
+    const layouts = [
+      { name: "layout-three-up", icon: "/images/layout-three-up.svg" },
+      {
+        name: "layout-two-up-vertical",
+        icon: "/images/layout-two-up-vertical.svg",
+      },
+      {
+        name: "layout-two-up-horizontal",
+        icon: "/images/layout-two-up-horizontal.svg",
+      },
+      { name: "layout-one-up", icon: "/images/layout-one-up.svg" },
+    ]
+
     return html`
       <div class="layout-switcher-container">
         <div class="layout-switcher">
-          ${['A', 'B', 'C'].map(letter => {
-            const layout = `layout-${letter.toLowerCase()}`
-            const isActive = this.props.layout === layout
+          ${layouts.map(({ name, icon }) => {
+            const isActive = this.props.layout === name
             return html`
               <button
-                class="${isActive ? 'active' : ''}"
-                onClick=${() => this.props.onLayoutChange(layout)}
+                class="${isActive ? "active" : ""}"
+                onClick=${() => this.props.onLayoutChange(name)}
               >
-                ${letter}
+                <img src="${icon}" alt="${name}" width="16" height="16" />
               </button>
             `
           })}
