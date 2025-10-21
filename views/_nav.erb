@@ -1,23 +1,20 @@
 <nav>
   <div class="nav-left">
     <% if request.path != '/' %>
-      <a href="/">home</a>
+      <span><a href="/">home</a></span>
     <% end %>
     <% if request.path =~ %r{^/admin.+} %>
-      |
-      <a href="/admin">admin</a>
+      <span><a href="/admin">admin</a></span>
     <% end %>
     <% if request.path =~ %r{^/admin/clubs.+} %>
-      |
-      <a href="/admin/clubs">clubs</a>
+      <span><a href="/admin/clubs">clubs</a></span>
     <% end %>
     <% if request.path =~ %r{^/admin/users.+} %>
-      |
-      <a href="/admin/users">users</a>
+      <span><a href="/admin/users">users</a></span>
     <% end %>
   </div>
 
   <div class="nav-right">
-    <%= links.join(' | ') %>
+    <%= nav_links.join(' ') %>
   </div>
 </nav>

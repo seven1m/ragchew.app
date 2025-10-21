@@ -44,21 +44,25 @@ before do
 end
 
 helpers do
-  def nav
+  def nav_links
     if @user
       links = [
-        "<a href='/user'>#{erb "<%== @user.call_sign %>"}</a>",
-        @user.admin? ? "<a href='/admin'>admin</a>" : nil,
+        "<span><a href='/user'>#{erb "<%== @user.call_sign %>"}</a></span>",
+        @user.admin? ? "<span><a href='/admin'>admin</a></span>" : nil,
       ].compact
     else
       links = [
-        "<a href='/login'>log in</a>"
+        "<span><a href='/login'>log in</a></span>"
       ]
     end
     if @user&.logging_net && @net != @user.logging_net
-      links << "logging: <a href='/net/#{url_escape @user.logging_net.name}' class='warning'>#{erb "<%== @user.logging_net.name %>"}</a>"
+      links << "<span>logging: <a href='/net/#{url_escape @user.logging_net.name}' class='warning'>#{erb "<%== @user.logging_net.name %>"}</a></span>"
     end
-    erb :_nav, locals: { links: }
+    links
+  end
+
+  def nav
+    erb :_nav
   end
 
   def format_time(ts, time_only: false)

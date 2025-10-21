@@ -5,8 +5,17 @@
 .right { float: right; }
 
 nav { display: flex; justify-content: space-between; }
+nav .nav-left, nav .nav-right { flex: 0 0 20%; }
+nav .nav-center { flex: 0 0 60%; }
 .nav-right { text-align: right; padding-left: 25px; }
+.nav-center { text-align: center; }
 nav a { white-space: nowrap; }
+nav .nav-left span + span::before,
+nav .nav-right span + span::before { content: " | "; }
+nav .breadcrumbs { font-size: 1rem; margin-top: -1rem; }
+nav h1 { margin: 0; font-size: 1.4rem; }
+.title-expand-triangle { font-size: 0.7em; cursor: pointer; user-select: none; color: #39f; }
+.net-layout nav.nav-tall { height: auto; }
 
 .single-login-user { color: #888; }
 
@@ -255,7 +264,7 @@ td.avatar-cell { height: 64px; }
 .chat-timestamp { color: #888; }
 
 .favorite-star { width: 15px; height: 15px; max-width: none; cursor: pointer; }
-.favorite-star-big { width: 30px; height: 30px; cursor: pointer; }
+.favorite-star-big { width: 1.4rem; height: 1.4rem; cursor: pointer; }
 
 #net-map { height: 500px; }
 

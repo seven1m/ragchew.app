@@ -276,6 +276,7 @@ class Net extends Component {
     autocomplete: { suggestions: [], visible: false },
     layout: getLayout().layout,
     layoutVariations: getLayout().variations,
+    titleExpanded: false,
   }
 
   formRef = createRef()
@@ -442,24 +443,39 @@ class Net extends Component {
     const layoutClass = `${this.state.layout}-${layoutVariation}`
 
     return html`
+      <nav class="${this.state.titleExpanded ? "nav-tall" : ""}">
+        <div class="nav-left">
+          <span><a href="/">home</a></span>
+        </div>
+        <div class="nav-center">
+          ${this.renderClubBreadcrumbs()}
+          <h1>
+            <${FavoriteNet}
+              netName=${this.props.net.name}
+              favorited=${this.state.favoritedNet}
+              big=${true}
+            />${" "}${this.props.net.name}${" "}
+            <span 
+              class="title-expand-triangle"
+              onclick=${() =>
+                this.setState({ titleExpanded: !this.state.titleExpanded })}
+            >${this.state.titleExpanded ? "▼" : "▶"}</span>
+          </h1>
+          ${
+            this.state.titleExpanded
+              ? html`${this.renderNetControls()} ${this.renderNetDetails()}`
+              : ""
+          }
+        </div>
+        <div class="nav-right">
+          ${this.props.navLinks.map(
+            (link) =>
+              html`<span dangerouslySetInnerHTML=${{ __html: link }}></span>`
+          )}
+        </div>
+      </nav>
       <div class="workspace ${layoutClass}">
         <div class="tile main-tile">
-          <div class="net-title">
-            <div class="breadcrumbs">${this.renderClubBreadcrumbs()}</div>
-
-            <h1>
-              <${FavoriteNet}
-                netName=${this.props.net.name}
-                favorited=${this.state.favoritedNet}
-                big=${true}
-              />${" "}${this.props.net.name}
-            </h1>
-
-            <div class="net-controls">
-              ${this.renderNetControls()} ${this.renderNetDetails()}
-            </div>
-          </div>
-
           <${Map} coords=${this.state.coords} />
         </div>
 
@@ -559,14 +575,14 @@ class Net extends Component {
   }
 
   renderClubBreadcrumbs() {
-    if (!this.props.club) return ""
-    if (!this.props.club.about_url) return ""
+    if (!this.props.club) return
+    if (!this.props.club.about_url) return
 
     let name = this.props.club.full_name
     if (!name) name = this.props.club.name
 
     return html`
-      <div class="net-breadcrumbs">
+      <div class="breadcrumbs">
         <a href=${this.props.clubUrl}>${name}</a>
       </div>
     `
@@ -579,7 +595,7 @@ class Net extends Component {
 
     if (this.props.isLogger) {
       return html`
-        <div>
+        <div class="net-controls">
           <button
             onClick=${() => {
               location.href = `/net/${this.props.netId}/log`
@@ -658,7 +674,7 @@ class Net extends Component {
 
   renderNetDetails() {
     return html`
-      <div>
+      <div class="net-details">
         ${[
           this.props.net.frequency,
           this.props.net.mode,

@@ -19,7 +19,8 @@
     cluster: pusher_cluster,
     authEndpoint: "/pusher/auth/#{@net.id}",
     channel: "private-net-#{@net.id}",
-  }
+  },
+  navLinks: nav_links,
 } %>
 
 <div id="net-component" data-component="Net" data-props="<%= json_for_html_attribute(net_info) %>">
