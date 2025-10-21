@@ -128,22 +128,15 @@ html, body { width: 100%; height: 100%; }
 .layout-two-up-vertical-c .checkins-tile { display: none; }
 .layout-two-up-vertical-c .messages-tile { grid-column: 2; }
 
-/* small responsive tweak: on narrow screens stack everything */
-@media (max-width:640px){
-  .workspace { flex-direction: column; }
-  .workspace .main-tile, .workspace .right-col { flex: 0 0 auto; width:100%;}
-  .right-col { flex-direction: row; }
-  .right-col .tile { flex:1 1 0; min-height:80px; }
-}
 .layout-two-up-horizontal-a {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr 1fr;
 }
 
-.layout-two-up-horizontal-a .main-tile { display: none; }
-.layout-two-up-horizontal-a .checkins-tile { grid-row: 1; border-bottom: 1px solid #999; }
-.layout-two-up-horizontal-a .messages-tile { grid-row: 2; }
+.layout-two-up-horizontal-a .main-tile { grid-row: 1; border-bottom: 1px solid #999; }
+.layout-two-up-horizontal-a .checkins-tile { grid-row: 2; }
+.layout-two-up-horizontal-a .messages-tile { display: none; }
 
 .layout-two-up-horizontal-b {
   display: grid;
@@ -151,9 +144,9 @@ html, body { width: 100%; height: 100%; }
   grid-template-rows: 1fr 1fr;
 }
 
-.layout-two-up-horizontal-b .main-tile { grid-row: 1; border-bottom: 1px solid #999; }
-.layout-two-up-horizontal-b .checkins-tile { grid-row: 2; }
-.layout-two-up-horizontal-b .messages-tile { display: none; }
+.layout-two-up-horizontal-b .main-tile { display: none; }
+.layout-two-up-horizontal-b .checkins-tile { grid-row: 1; border-bottom: 1px solid #999; }
+.layout-two-up-horizontal-b .messages-tile { grid-row: 2; }
 
 .layout-two-up-horizontal-c {
   display: grid;
@@ -222,6 +215,10 @@ html, body { width: 100%; height: 100%; }
   color: white;
 }
 
+.layout-switcher button.hidden {
+  display: none;
+}
+
 .layout-switcher-button {
   position: relative;
 }
@@ -263,10 +260,6 @@ td.avatar-cell { height: 64px; }
 #net-map { height: 500px; }
 
 .logger-control, .logger-control .material-symbols-outlined { font-size: 1.0em; }
-
-@media only screen and (max-height: 800px) {
-  #net-map { height: 300px; }
-}
 
 /* Forms */
 
@@ -315,6 +308,10 @@ a.btn { padding: 4px; background-color: #eee; border: 1px solid #ccc; border-rad
 .closed-ragchew-net {}
 
 /* Mobile */
+
+@media only screen and (max-height: 800px) {
+  #net-map { height: 300px; }
+}
 
 @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
   .table-wrapper { overflow-x: auto; }

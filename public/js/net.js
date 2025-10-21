@@ -2330,6 +2330,42 @@ function getUniqueColor(username, targetLightness = 0.4) {
 }
 
 class LayoutSwitcher extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { windowWidth: window.innerWidth }
+    this.handleResize = this.handleResize.bind(this)
+  }
+
+  componentDidMount() {
+    window.addEventListener("resize", this.handleResize)
+    this.checkLayoutCompatibility()
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.handleResize)
+  }
+
+  handleResize() {
+    this.setState({ windowWidth: window.innerWidth })
+    this.checkLayoutCompatibility()
+  }
+
+  checkLayoutCompatibility() {
+    const isSmallScreen = window.innerWidth <= 760
+    const currentLayout = this.props.layout
+
+    if (
+      isSmallScreen &&
+      (currentLayout === "layout-three-up" ||
+        currentLayout === "layout-two-up-vertical")
+    ) {
+      this.props.onChange({
+        layout: "layout-two-up-horizontal",
+        variation: "a",
+      })
+    }
+  }
+
   render() {
     return html`
       <div class="layout-switcher-container">
@@ -2357,9 +2393,16 @@ class LayoutSwitcher extends Component {
     }
     const variationLetter = currentVariation.toUpperCase()
 
+    const isSmallScreen = this.state.windowWidth <= 760
+    const isHidden =
+      isSmallScreen &&
+      (layout === "layout-three-up" || layout === "layout-two-up-vertical")
+
     return html`
       <button
-        class="layout-switcher-button ${isActive ? "active" : ""}"
+        class="layout-switcher-button ${isActive ? "active" : ""} ${isHidden
+          ? "hidden"
+          : ""}"
         onClick=${() =>
           this.props.onChange({ layout, variation: nextVariation })}
       >
