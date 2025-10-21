@@ -49,7 +49,7 @@ table.full-width-table { width: 100%; }
 html, body { width: 100%; height: 100%; }
 #net-component { width: 100%; height: calc(100% - 4rem); }
 .net-layout { width: 100%; height: 100%; max-height: 100%; padding: 0; margin: 0; overflow: hidden; }
-.net-layout nav { height: 4rem; padding: 1rem; background-color: #000; }
+.net-layout nav { height: 4rem; padding: 1rem; border-bottom: 1px solid #999; }
 .net-layout footer { display: none; }
 .net-layout .tile #net-map { width: 100%; height: 100%; z-index: 99; }
 .net-layout .workspace { position: relative; width: 100%; height: 100%; max-height: 100%; overflow: hidden; }
@@ -89,7 +89,6 @@ html, body { width: 100%; height: 100%; }
 .layout-c .right-col { display: flex; flex: 1 1 100%; flex-direction: row; gap: 12px; }
 .layout-c .right-col .tile { flex: 1 1 50%; }
 
-.net-breadcrumbs { margin-top: 25px; }
 .club-logo { margin-top: 25px; max-height: 125px; }
 .small-club-logo { max-height: 50px; }
 
