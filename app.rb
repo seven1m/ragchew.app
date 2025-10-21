@@ -48,10 +48,8 @@ helpers do
     if @user
       links = [
         "<a href='/user'>#{erb "<%== @user.call_sign %>"}</a>",
-        "<a href='/favorites'>favorites</a>",
         @user.admin? ? "<a href='/admin'>admin</a>" : nil,
         (!@user.logging_net && !@user.net_creation_blocked?) ? "<a href='/create-net'>create net</a>" : nil,
-        "<a href='/logout' data-method='post'>log out</a>"
       ].compact
     else
       links = [
@@ -808,9 +806,9 @@ post '/favorite' do
     last_name: station && station[:last_name],
   )
 
-  redirect '/favorites'
+  redirect '/user'
 rescue ActiveRecord::RecordNotUnique
-  redirect '/favorites'
+  redirect '/user'
 end
 
 post '/api/favorite/:call_sign' do
@@ -877,6 +875,7 @@ get '/user' do
 
   @my_clubs = @user.clubs.order_by_name
   @blocked_stations = @user.blocked_stations.order(:call_sign)
+  set_favorites
 
   @page_title = 'User Profile and Settings'
   erb :user
@@ -884,9 +883,7 @@ end
 
 get '/favorites' do
   require_user!
-  set_favorites
-  @page_title = 'Favorites'
-  erb :favorites
+  redirect '/user'
 end
 
 get '/api/favorites' do
