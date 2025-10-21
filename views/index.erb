@@ -54,7 +54,10 @@
 <% end %>
 
 <p>
-  More:
+  <% if @user && !@user.logging_net && !@user.net_creation_blocked? %>
+    <button onclick="location.href = '/create-net'">Start a Net</button>
+    &nbsp;
+  <% end %>
   <a href="/closed-nets">closed nets</a> |
   <a href="/groups">groups and clubs</a>
 </p>

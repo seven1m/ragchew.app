@@ -49,7 +49,6 @@ helpers do
       links = [
         "<a href='/user'>#{erb "<%== @user.call_sign %>"}</a>",
         @user.admin? ? "<a href='/admin'>admin</a>" : nil,
-        (!@user.logging_net && !@user.net_creation_blocked?) ? "<a href='/create-net'>create net</a>" : nil,
       ].compact
     else
       links = [
