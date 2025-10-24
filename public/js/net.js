@@ -1136,12 +1136,7 @@ class CheckinRow extends Component {
     return html`<tr class="details ${this.rowClass()}">
       <td>${this.props.num} ${this.renderLoggerControls()}</td>
       <td class="avatar-cell">
-        <a
-          href="/station/${encodeURIComponent(this.props.call_sign)}/image"
-          style="text-decoration:none"
-        >
-          <${Avatar} ...${this.props} />
-        </a>
+        <${Avatar} ...${this.props} />
       </td>
       <td>
         <${Favorite}
@@ -1219,17 +1214,85 @@ class CheckinRow extends Component {
   }
 }
 
+// Global popup manager to ensure only one avatar popup is open at a time
+const avatarPopupManager = {
+  currentPopup: null,
+  register(avatar) {
+    if (this.currentPopup && this.currentPopup !== avatar) {
+      this.currentPopup.hidePopup()
+    }
+    this.currentPopup = avatar
+  },
+  unregister(avatar) {
+    if (this.currentPopup === avatar) {
+      this.currentPopup = null
+    }
+  },
+  closeAll() {
+    if (this.currentPopup) {
+      this.currentPopup.hidePopup()
+    }
+  },
+}
+
+// Global document click handler for avatar popups
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".avatar-container")) {
+    avatarPopupManager.closeAll()
+  }
+})
+
 class Avatar extends Component {
-  state = { error: false }
+  state = { error: false, showPopup: false }
+
+  showPopup = () => {
+    avatarPopupManager.register(this)
+    this.setState({ showPopup: true })
+  }
+  hidePopup = () => {
+    avatarPopupManager.unregister(this)
+    this.setState({ showPopup: false })
+  }
+
+  componentDidMount() {
+    // No longer need individual document click listeners
+  }
+
+  componentWillUnmount() {
+    avatarPopupManager.unregister(this)
+  }
+
+  handleDocumentClick = (e) => {
+    // Removed - now handled globally
+  }
+
   render() {
     if (this.state.error) return null
 
     return html`
-      <img
-        src="/station/${encodeURIComponent(this.props.call_sign)}/image"
-        style="max-height:40px;max-width:40px"
-        onerror="${() => this.setState({ error: true })}"
-      />
+      <div class="avatar-container">
+        <img
+          src="/station/${encodeURIComponent(this.props.call_sign)}/image"
+          class="avatar-thumbnail"
+          onerror="${() => this.setState({ error: true })}"
+          onclick=${this.showPopup}
+        />
+        ${this.state.showPopup &&
+        html`
+          <div class="avatar-popup">
+            <img
+              src="/images/close.svg"
+              alt="close"
+              class="avatar-popup-close"
+              onclick=${this.hidePopup}
+            />
+            <img
+              src="/station/${encodeURIComponent(this.props.call_sign)}/image"
+              class="avatar-popup-image"
+            />
+          </div>
+        `}
+      </div>
     `
   }
 }

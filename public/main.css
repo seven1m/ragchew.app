@@ -257,6 +257,12 @@ tr.odd { background-color: #eee; }
 tr.remarks { color: #777 }
 td.avatar-cell { height: 64px; }
 
+.avatar-container { position: relative; display: inline-block; }
+.avatar-thumbnail { max-height: 40px; max-width: 40px; cursor: pointer; }
+.avatar-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; }
+.avatar-popup-image { max-height: 80vh; max-width: 80vw; }
+.avatar-popup-close { position: absolute; top: 20px; right: 20px; cursor: pointer; }
+
 .blue-screen { background-color: #e8f4f8; }
 .chat-message { padding: 5px; margin: 5px 0; }
 .chat-odd { background-color: #d4e5ea; }
