@@ -67,6 +67,7 @@ html, body { width: 100%; height: 100%; }
 .tile { overflow: scroll; font-size: 1.05rem; }
 
 .messages-tile { padding: 1rem; }
+.message-input { width: calc(100% - 300px); min-width: 200px; }
 
 .layout-three-up-a {
   display: grid;

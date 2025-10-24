@@ -1616,7 +1616,7 @@ class Messages extends Component {
           type="text"
           name="message"
           placeholder="type your message"
-          style="width:calc(100% - 100px)"
+          class="message-input"
         />
         <input type="submit" value="Send" />
       </form>
