@@ -332,6 +332,9 @@ a.btn { padding: 4px; background-color: #eee; border: 1px solid #ccc; border-rad
   header.flex { flex-direction: column-reverse; }
   header.flex img { margin: 20px 0; }
   .no-wrap-on-mobile { white-space: nowrap; }
+  nav .nav-right { display: none; }
+  nav .nav-left { flex: 0 0 20%; }
+  nav .nav-center { flex: 0 0 80%; }
 }
 /* Message reactions */
 .reaction-bar {
