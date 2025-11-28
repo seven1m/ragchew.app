@@ -36,7 +36,7 @@
       </thead>
       <tbody>
         <% @closed_nets.each do |closed_net| %>
-          <% next if Tables::BlockedNet.blocked?(closed_net.name) %>
+          <% next if Tables::BlockedNet.blocked?(closed_net.name, names: @blocked_net_names) %>
           <tr>
             <td><a href="/closed-net/<%= closed_net.id %>"><%== closed_net.name %></a></td>
             <td><%= closed_net.frequency %></td>

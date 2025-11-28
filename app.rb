@@ -612,8 +612,9 @@ get '/closed-nets' do
   @total_count = @closed_nets.count
   @closed_nets = @closed_nets.offset(params[:offset])
   @per_page = 100
-  @more_pages = @closed_nets.count > @per_page
+  @more_pages = @total_count > @per_page
   @closed_nets = @closed_nets.limit(@per_page)
+  @blocked_net_names = Tables::BlockedNet.pluck(:name)
 
   erb :closed_nets
 end
