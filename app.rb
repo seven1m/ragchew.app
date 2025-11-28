@@ -584,8 +584,10 @@ get '/closed-nets' do
 
   scope = Tables::ClosedNet.all
   if params[:days] != 'all'
-    days = params[:days].to_i
-    scope = scope.where('started_at > ?', Time.now - (days * 24 * 60 * 60))
+    start = params[:days].to_i.days.ago
+    if start > Time.new(2000, 1, 1, 0, 0)
+      scope = scope.where('started_at > ?', start)
+    end
   end
 
   sort_name, sort_direction = params[:sort].to_s.split(' ', 2)
