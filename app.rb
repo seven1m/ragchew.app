@@ -1598,7 +1598,7 @@ get '/api/group/:id/nets.json' do
 
   nets = club.closed_nets
              .where('started_at > ?', 60.days.ago)
-             .order(:name, :frequency)
+             .order(started_at: :desc)
              .select(:id, :name, :frequency, :band, :mode, :started_at)
              .to_a
              .uniq { |n| [n.name.downcase, n.frequency] }
