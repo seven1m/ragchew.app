@@ -1785,6 +1785,10 @@ class CreateNetForm extends Component {
     showAdvanced: false,
   }
 
+  isCallSign(name) {
+    return /^[A-Z]{1,2}[0-9][A-Z]{1,3}$/i.test(name.trim())
+  }
+
   guessStuffFromFrequency(frequencyValue) {
     const freq = parseFloat(frequencyValue)
     if (freq == 0.0) return
@@ -1892,7 +1896,12 @@ class CreateNetForm extends Component {
     return html`
       <form onsubmit=${(e) => this.handleSubmit(e)}>
         ${this.renderClubSelect()}
-        <label class="${this.state.errorFields.net_name ? "error" : ""}">
+        <label
+          class="${this.state.errorFields.net_name ||
+          this.isCallSign(this.state.net_name)
+            ? "error"
+            : ""}"
+        >
           Name of Net:<br />
           <input
             name="net_name"
@@ -1901,28 +1910,33 @@ class CreateNetForm extends Component {
             required
             maxlength="32"
           />
-          ${this.state.closedNets.length > 0 &&
-          html`<p>Choose a previously-used net name:</p>
-            <ul>
-              ${this.state.closedNets.map(
-                (net) =>
-                  html`<li>
-                    <span
-                      class="linkish"
-                      onClick=${() =>
-                        this.setState({
-                          net_name: net.name,
-                          frequency: net.frequency,
-                          band: net.band,
-                          mode: net.mode,
-                        })}
-                      >${net.name}</span
-                    >${" "} (${net.frequency}, ${" "}
-                    ${dayjs().to(dayjs(net.started_at))})
-                  </li>`
-              )}
-            </ul>`}
         </label>
+        ${this.isCallSign(this.state.net_name) &&
+        html`<p class="warning-callout" style="margin-top: 0.5em;">
+          <strong>Warning:</strong> This should be the name of the net — not
+          usually a call sign.
+        </p>`}
+        ${this.state.closedNets.length > 0 &&
+        html`<p>Choose a previously-used net name:</p>
+          <ul>
+            ${this.state.closedNets.map(
+              (net) =>
+                html`<li>
+                  <span
+                    class="linkish"
+                    onClick=${() =>
+                      this.setState({
+                        net_name: net.name,
+                        frequency: net.frequency,
+                        band: net.band,
+                        mode: net.mode,
+                      })}
+                    >${net.name}</span
+                  >${" "} (${net.frequency}, ${" "}
+                  ${dayjs().to(dayjs(net.started_at))})
+                </li>`
+            )}
+          </ul>`}
         <label class="${this.state.errorFields.net_password ? "error" : ""}">
           Password:<br />
           <input
