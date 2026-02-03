@@ -101,6 +101,8 @@ input, select { padding: 8px; font-size: larger; margin: 0 3px 3px 0; }
 .highlight { background-color: #ffc; }
 em.highlight { font-style: normal; }
 
+.discreet { color: #999; }
+
 .error, .danger { color: red; }
 .warning, .warning a { color: orange !important; }
 .info-callout { background-color: #9cf; padding: 15px; border: 1px solid #39f; }

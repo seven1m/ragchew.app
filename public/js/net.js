@@ -1902,7 +1902,10 @@ class CreateNetForm extends Component {
             ? "error"
             : ""}"
         >
-          Name of Net:<br />
+          What to call this Net:<br />
+          <span class="discreet"
+            >This is how people find your net, so be consistent.</span
+          ><br />
           <input
             name="net_name"
             value=${this.state.net_name}
