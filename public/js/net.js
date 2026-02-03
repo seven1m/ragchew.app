@@ -1906,7 +1906,7 @@ class CreateNetForm extends Component {
           <input
             name="net_name"
             value=${this.state.net_name}
-            onchange=${(e) => this.setState({ net_name: e.target.value })}
+            oninput=${(e) => this.setState({ net_name: e.target.value })}
             required
             maxlength="32"
           />
