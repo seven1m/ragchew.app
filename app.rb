@@ -2,11 +2,47 @@ require 'bundler/setup'
 
 require 'sinatra'
 require 'sinatra/reloader' if development?
+require 'rack/attack'
+require 'redis'
 
 require_relative './boot'
 
 disable :protection
 set :host_authorization, { permitted_hosts: [] }
+
+use Rack::Attack
+
+Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new(url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0'))
+
+# Rate limit login endpoints by IP
+Rack::Attack.throttle('login/ip', limit: 5, period: 15.minutes) do |req|
+  req.ip if (req.path == '/login' || req.path == '/api/auth/login') && req.post?
+end
+
+# Rate limit login endpoints by call sign
+Rack::Attack.throttle('login/call_sign', limit: 5, period: 15.minutes) do |req|
+  if req.post?
+    if req.path == '/login'
+      req.params['call_sign'].to_s.strip.downcase.presence
+    elsif req.path == '/api/auth/login'
+      body = req.env['rack.input'].read
+      req.env['rack.input'] = StringIO.new(body)
+      begin
+        JSON.parse(body)['call_sign'].to_s.strip.downcase.presence
+      rescue JSON::ParserError
+        nil
+      end
+    end
+  end
+end
+
+Rack::Attack.throttled_responder = lambda do |request|
+  if request.env['HTTP_AUTHORIZATION'] || request.env['HTTP_ACCEPT']&.include?('application/json')
+    [429, { 'content-type' => 'application/json' }, [{ error: 'too many login attempts, try again later' }.to_json]]
+  else
+    [429, { 'content-type' => 'text/html' }, ['<html><body><h1>Too many login attempts</h1><p>Please try again later.</p></body></html>']]
+  end
+end
 
 enable :sessions
 set :session_secret, ENV.fetch('SESSION_SECRET') { SecureRandom.hex(64) }
@@ -1014,7 +1050,7 @@ post '/api/auth/login' do
 
   api_token = Tables::ApiToken.generate_for(user)
 
-  { token: api_token.token, user: user }.to_json
+  { token: api_token.raw_token, user: user }.to_json
 end
 
 delete '/api/auth/logout' do
@@ -1026,7 +1062,7 @@ delete '/api/auth/logout' do
     return { error: 'not authenticated' }.to_json
   end
 
-  api_token = Tables::ApiToken.find_by(token: token)
+  api_token = Tables::ApiToken.find_by_raw_token(token)
   unless api_token
     status 401
     return { error: 'not authenticated' }.to_json
@@ -1854,7 +1890,8 @@ def get_user
   # Check for Bearer token auth first (mobile app)
   if (auth_header = request.env['HTTP_AUTHORIZATION'])
     token_string = auth_header.sub(/\ABearer\s+/i, '')
-    if token_string.present? && (api_token = Tables::ApiToken.find_by(token: token_string))
+    api_token = Tables::ApiToken.find_by_raw_token(token_string)
+    if api_token && !api_token.expired?
       user = api_token.user
       api_token.touch_last_used!
       now = Time.now
