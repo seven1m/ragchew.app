@@ -982,6 +982,60 @@ post '/logout' do
   redirect '/'
 end
 
+post '/api/auth/login' do
+  content_type 'application/json'
+
+  begin
+    body = JSON.parse(request.body.read)
+  rescue JSON::ParserError
+    status 400
+    return { error: 'invalid JSON' }.to_json
+  end
+
+  call_sign = body['call_sign'].to_s.strip
+  password = body['password'].to_s
+
+  if call_sign.empty? || password.empty?
+    status 400
+    return { error: 'call_sign and password are required' }.to_json
+  end
+
+  begin
+    qrz = Qrz.login(username: call_sign, password: password)
+    result = qrz.lookup(call_sign)
+  rescue Qrz::Error => e
+    status 401
+    return { error: e.message }.to_json
+  end
+
+  user = Tables::User.find_or_initialize_by(call_sign: result[:call_sign])
+  user.last_signed_in_at = Time.now
+  user.update!(result.slice(:call_sign, :first_name, :last_name, :image))
+
+  api_token = Tables::ApiToken.generate_for(user)
+
+  { token: api_token.token, user: user }.to_json
+end
+
+delete '/api/auth/logout' do
+  content_type 'application/json'
+
+  token = request.env['HTTP_AUTHORIZATION']&.sub(/\ABearer\s+/i, '')
+  unless token
+    status 401
+    return { error: 'not authenticated' }.to_json
+  end
+
+  api_token = Tables::ApiToken.find_by(token: token)
+  unless api_token
+    status 401
+    return { error: 'not authenticated' }.to_json
+  end
+
+  api_token.destroy!
+  { success: true }.to_json
+end
+
 def net_centers(nets)
   nets.map do |net|
     next unless net.show_circle?
@@ -1797,6 +1851,21 @@ get '/sitemap.txt' do
 end
 
 def get_user
+  # Check for Bearer token auth first (mobile app)
+  if (auth_header = request.env['HTTP_AUTHORIZATION'])
+    token_string = auth_header.sub(/\ABearer\s+/i, '')
+    if token_string.present? && (api_token = Tables::ApiToken.find_by(token: token_string))
+      user = api_token.user
+      api_token.touch_last_used!
+      now = Time.now
+      if user.last_signed_in_at && now - user.last_signed_in_at > 20 * 60
+        user.update!(last_signed_in_at: now)
+      end
+      return user
+    end
+  end
+
+  # Fall back to session auth (web browser)
   if !session[:user_id] || !(user = Tables::User.find_by(id: session[:user_id]))
     return
   end
@@ -1812,8 +1881,8 @@ end
 def require_user!
   return if @user
 
-  if content_type == 'application/json'
-    return { error: 'not logged in' }.to_json
+  if request.env['HTTP_AUTHORIZATION'] || request.accept.include?('application/json')
+    halt 401, { 'Content-Type' => 'application/json' }, { error: 'not authenticated' }.to_json
   else
     redirect '/'
   end
