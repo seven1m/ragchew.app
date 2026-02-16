@@ -28,7 +28,7 @@
         "type": "startup",
         "name": "content check",
         "path": "/",
-        "content": "RagChew.app",
+        "content": "RagChew.site",
         "attempts": 3
       }
     ]

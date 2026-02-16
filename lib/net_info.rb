@@ -130,7 +130,7 @@ class NetInfo
     #NetName:      Test net JUST TESTING
     #Callsign:     KI5ZDF-TIM MORGAN
     #IsNetControl: X
-    #Message:      hello just testing https://ragchew.app
+    #Message:      hello just testing https://ragchew.site
 
     with_lock do
       blocked_stations = (@record.monitors.blocked.pluck(:call_sign).map(&:upcase) + @record.blocked_stations.pluck(:call_sign).map(&:upcase)).uniq

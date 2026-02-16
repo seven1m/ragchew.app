@@ -1,6 +1,6 @@
-# RagChew.app
+# RagChew.site
 
-This is the source code for the website [ragchew.app](https://ragchew.app).
+This is the source code for the website [ragchew.site](https://ragchew.site).
 
 ## Copyright
 

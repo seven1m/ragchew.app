@@ -69,6 +69,13 @@ if development?
 end
 
 before do
+  if request.host == 'ragchew.app' || request.host == 'www.ragchew.app'
+    redirect "https://ragchew.site#{request.fullpath}", 302
+    return
+  end
+end
+
+before do
   @user = get_user
   if @user
     headers['X-RagChew-User'] = @user.call_sign
@@ -236,7 +243,7 @@ include DOTIW::Methods
 ENV['TZ'] = 'UTC'
 
 MAX_FAVORITES = 50
-BASE_URL = ENV['BASE_URL'] || 'https://ragchew.app'
+BASE_URL = ENV['BASE_URL'] || 'https://ragchew.site'
 SUPPORT_EMAIL = ENV['SUPPORT_EMAIL'] || 'tim@timmorgan.org'
 ONE_PIXEL_IMAGE = File.read(File.expand_path('./public/images/1x1.png', __dir__))
 

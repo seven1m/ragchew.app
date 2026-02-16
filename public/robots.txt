@@ -4,4 +4,4 @@ Disallow:
 User-agent: googlebot-image
 Disallow: /
 
-Sitemap: https://ragchew.app/sitemap.txt
+Sitemap: https://ragchew.site/sitemap.txt
