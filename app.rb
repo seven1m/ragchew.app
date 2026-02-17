@@ -662,6 +662,45 @@ get '/closed-nets' do
   erb :closed_nets
 end
 
+get '/api/closed-nets' do
+  content_type 'application/json'
+
+  params[:days] ||= '1'
+
+  scope = Tables::ClosedNet.all
+  if params[:days] != 'all'
+    start = params[:days].to_i.days.ago
+    if start > Time.new(2000, 1, 1, 0, 0)
+      scope = scope.where('started_at > ?', start)
+    end
+  end
+
+  sort_name, sort_direction = params[:sort].to_s.split(' ', 2)
+  sort_name = 'name' unless %w[name frequency band mode started_at].include?(sort_name)
+  sort_direction = 'asc' unless %w[asc desc].include?(sort_direction)
+  sort = { sort_name => sort_direction }
+  if sort_name == 'started_at'
+    sort[:name] = 'asc'
+  else
+    sort[:started_at] = 'asc'
+  end
+  scope = scope.order(sort)
+
+  if params[:name].present?
+    scope = scope.where('name like :name or frequency like :name', { name: "%#{params[:name].gsub(/%/, '\%')}%" })
+  end
+
+  total_count = scope.count
+  per_page = 100
+  scope = scope.offset(params[:offset]).limit(per_page)
+
+  {
+    closed_nets: scope,
+    total_count:,
+    per_page:,
+  }.to_json
+end
+
 get '/closed-net/:id' do
   set_closed_net_details
   @page_title = @name
