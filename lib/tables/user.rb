@@ -46,9 +46,5 @@ module Tables
     def one_time_user?
       last_signed_in_at && created_at && (last_signed_in_at - created_at) < (12 * 60 * 60)
     end
-
-    def as_json(options = {})
-      super(options.reverse_merge(only: [:id, :call_sign, :first_name, :last_name, :image]))
-    end
   end
 end
