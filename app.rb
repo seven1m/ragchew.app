@@ -750,10 +750,7 @@ get '/api/groups' do
     }
   end
 
-  {
-    ids: groups.map { |g| g[:id] },
-    groups: groups,
-  }.to_json
+  groups.to_json
 end
 
 get '/api/group/:id' do
