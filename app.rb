@@ -734,6 +734,13 @@ get '/groups' do
   erb :clubs
 end
 
+get '/api/groups' do
+  content_type 'application/json'
+
+  ids = Tables::Club.order_by_name.pluck(:id)
+  { ids: ids }.to_json
+end
+
 get '/suggest-club' do
   if @user
     erb :suggest_club
