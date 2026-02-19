@@ -734,6 +734,49 @@ get '/groups' do
   erb :clubs
 end
 
+get '/api/groups' do
+  content_type 'application/json'
+
+  clubs = Tables::Club.order_by_name.to_a
+  groups = clubs.map do |club|
+    {
+      id: club.id,
+      name: club.name,
+      slug: club.name,
+      full_name: club.full_name,
+      website: club.about_url,
+      description: club.description,
+      logo_url: club.logo_url,
+    }
+  end
+
+  groups.to_json
+end
+
+get '/api/group/:id' do
+  content_type 'application/json'
+
+  club = Tables::Club.find(params[:id])
+
+  nets = club.closed_nets
+             .where('started_at > ?', 60.days.ago)
+             .order(:name, :frequency)
+             .select(:id, :name, :frequency, :band, :mode, :started_at)
+             .to_a
+             .uniq { |n| [n.name.downcase, n.frequency] }
+
+  {
+    club: club.as_json.merge(
+      slug: club.name,
+      website: club.about_url,
+    ),
+    nets: nets,
+  }.to_json
+rescue ActiveRecord::RecordNotFound
+  status 404
+  { error: 'not found' }.to_json
+end
+
 get '/suggest-club' do
   if @user
     erb :suggest_club
